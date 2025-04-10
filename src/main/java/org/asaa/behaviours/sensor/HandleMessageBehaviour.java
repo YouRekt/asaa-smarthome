@@ -25,12 +25,15 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
                 case ACLMessage.REQUEST -> handleRequest(msg);
                 case ACLMessage.SUBSCRIBE -> handleSubscribe(msg);
                 case ACLMessage.CANCEL -> handleCancel(msg);
+                case ACLMessage.INFORM -> handleInform(msg);
                 default -> block();
             }
         } else {
             block();
         }
     }
+
+    protected abstract void handleInform(ACLMessage msg);
 
     private void handleCancel(ACLMessage msg) {
         logger.info("Cancelled {}'s subscription", msg.getSender().getLocalName());

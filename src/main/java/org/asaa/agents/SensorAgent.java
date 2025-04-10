@@ -2,6 +2,11 @@ package org.asaa.agents;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.Property;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
@@ -9,14 +14,18 @@ import org.apache.logging.log4j.Logger;
 import org.asaa.behaviours.sensor.HandleMessageBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.environment.Environment;
+import org.asaa.exceptions.InvalidServiceSpecification;
 
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Add failure handling
 public abstract class SensorAgent extends Agent {
     protected String areaName;
     @Getter
-    protected List<AID> subscribers = new ArrayList<AID>();
+    protected String type;
+    @Getter
+    protected List<AID> subscribers = new ArrayList<>();
     protected Logger logger;
 
     @Override
@@ -29,15 +38,38 @@ public abstract class SensorAgent extends Agent {
             this.areaName = "default-area";
         }
 
-        logger.info("initialized in area {}", areaName);
+        logger.info("Sensor of type {} initialized in area {}", type, areaName);
+
+        registerSensor();
 
         addBehaviour(new HandleMessageBehaviour(this) {
+            @Override
+            protected void handleInform(ACLMessage msg) {
+                trigger();
+            }
+
             @Override
             protected void handleRequest(ACLMessage msg) {
                 logger.info("Responding to {}'s request", msg.getSender().getLocalName());
                 respond(msg);
             }
+
         });
+    }
+
+    private void registerSensor() {
+        final ServiceDescription sd = new ServiceDescription();
+        sd.setType(getType());
+        sd.setName(getLocalName());
+        sd.addProperties(new Property("type", type));
+
+        try {
+            final DFAgentDescription dfd = new DFAgentDescription();
+            dfd.addServices(sd);
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+            throw new InvalidServiceSpecification(e);
+        }
     }
 
     protected Area getMyArea() {
@@ -46,7 +78,7 @@ public abstract class SensorAgent extends Agent {
     }
 
     public void trigger() {
-        logger.info("sending trigger information to all subscribers");
+        logger.info("I have been triggered! Sending trigger sensor information to all subscribers");
         handleTrigger(subscribers);
     }
 

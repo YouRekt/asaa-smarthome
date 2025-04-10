@@ -25,6 +25,7 @@ public class Engine {
         Environment env = Environment.getInstance();
         Area kitchen = new Area("kitchen");
         kitchen.setAttribute("temperature", 20.0); // Initial value
+        kitchen.setAttribute("human", false);
         env.addArea("kitchen", kitchen);
 
         Simulator.startSimulation();
@@ -34,9 +35,15 @@ public class Engine {
             final ContainerController container = jadeExecutor.submit(() -> runtime.createMainContainer(profile)).get();
 
             runGUI(container);
-            runAgent(container, "Temperature Sensor", "TemperatureSensorAgent", new Object[]{"kitchen"});
+            runAgents(container);
+
         } catch (final InterruptedException | ExecutionException e) {
             throw new JadePlatformInitializationException(e);
         }
+    }
+
+    private static void runAgents(final ContainerController container) {
+        runAgent(container, "Temperature Sensor", "TemperatureSensorAgent", new Object[]{"kitchen"});
+        runAgent(container, "Motion Sensor", "MotionSensorAgent", new Object[]{"kitchen"});
     }
 }

@@ -26,6 +26,12 @@ public class Simulator {
                         kitchen.setAttribute("temperature", newTemp);
                         logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
                     }
+                    if(rand.nextInt(10) == 0) {
+                        boolean isHumanInTheKitchen = (boolean) kitchen.getAttribute("human");
+                        logger.info("Human {} the kitchen", !isHumanInTheKitchen ? "entered" : "left");
+                        kitchen.setAttribute("human", !isHumanInTheKitchen);
+
+                    }
                 } catch (InterruptedException e) {
                     logger.error("Simulator interrupted", e);
                 }
