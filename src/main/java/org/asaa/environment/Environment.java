@@ -1,5 +1,9 @@
 package org.asaa.environment;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -7,10 +11,11 @@ import java.util.Set;
 public class Environment {
     private static Environment instance;
 
-    private final Map<String, Area> areas;
+    private final Map<String, Area> areas = new HashMap<>();
+
+    private LocalDateTime simulationTime = LocalDateTime.now();
 
     private Environment() {
-        this.areas = new HashMap<>();
     }
 
     public static synchronized Environment getInstance() {
@@ -18,6 +23,18 @@ public class Environment {
             instance = new Environment();
         }
         return instance;
+    }
+
+    public static synchronized LocalDateTime getSimulationTime() {
+        return getInstance().simulationTime;
+    }
+
+    public static synchronized String getSimulationTimeString() {
+        return getSimulationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT));
+    }
+
+    public synchronized void advanceSimulationTime(Duration duration) {
+        simulationTime = simulationTime.plus(duration);
     }
 
     public void addArea(String name, Area area) {
