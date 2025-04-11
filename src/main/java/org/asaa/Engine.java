@@ -22,6 +22,7 @@ public class Engine {
     public static void main(String[] args) {
         final Runtime runtime = Runtime.instance();
         final Profile profile = new ProfileImpl();
+        profile.setParameter(Profile.MTPS, "");
         Environment env = Environment.getInstance();
         Area kitchen = new Area("kitchen");
         kitchen.setAttribute("temperature", 20.0); // Initial value
@@ -43,7 +44,7 @@ public class Engine {
     }
 
     private static void runAgents(final ContainerController container) {
-        runAgent(container, "Temperature Sensor", "TemperatureSensorAgent", new Object[]{"kitchen"});
-        runAgent(container, "Motion Sensor", "MotionSensorAgent", new Object[]{"kitchen"});
+        runAgent(container, "Temperature Sensor", "sensors", "TemperatureSensorAgent", new Object[]{"kitchen"});
+        runAgent(container, "Motion Sensor", "sensors", "MotionSensorAgent", new Object[]{"kitchen"});
     }
 }

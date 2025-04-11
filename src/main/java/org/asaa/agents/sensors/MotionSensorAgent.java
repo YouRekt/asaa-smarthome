@@ -1,8 +1,9 @@
-package org.asaa.agents;
+package org.asaa.agents.sensors;
 
 import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
+import org.asaa.agents.SensorAgent;
 import org.asaa.environment.Area;
 
 import java.util.List;

@@ -4,7 +4,6 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
@@ -23,8 +22,6 @@ import java.util.List;
 public abstract class SensorAgent extends Agent {
     protected String areaName;
     @Getter
-    protected String type;
-    @Getter
     protected List<AID> subscribers = new ArrayList<>();
     protected Logger logger;
 
@@ -38,7 +35,7 @@ public abstract class SensorAgent extends Agent {
             this.areaName = "default-area";
         }
 
-        logger.info("Sensor of type {} initialized in area {}", type, areaName);
+        logger.info("Sensor initialized in area {}", areaName);
 
         registerSensor();
 
@@ -53,15 +50,14 @@ public abstract class SensorAgent extends Agent {
                 logger.info("Responding to {}'s request", msg.getSender().getLocalName());
                 respond(msg);
             }
-
         });
     }
 
     private void registerSensor() {
         final ServiceDescription sd = new ServiceDescription();
-        sd.setType(getType());
+        sd.setType("sensor");
         sd.setName(getLocalName());
-        sd.addProperties(new Property("type", type));
+        sd.setOwnership(getLocalName());
 
         try {
             final DFAgentDescription dfd = new DFAgentDescription();

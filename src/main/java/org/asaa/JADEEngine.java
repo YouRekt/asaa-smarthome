@@ -41,9 +41,9 @@ public class JADEEngine {
         }
     }
 
-    public static void runAgent(final ContainerController mainContainer, final String agentName, final String className) {
+    public static void runAgent(final ContainerController mainContainer, final String agentName, final String packageName, final String className) {
         try {
-            final String path = format("org.asaa.agents.%s", className);
+            final String path = format("org.asaa.agents.%s.%s", packageName, className);
             final AgentController agent = mainContainer.createNewAgent(agentName, path, new Object[]{});
             agent.start();
         } catch (final StaleProxyException e) {
@@ -51,9 +51,9 @@ public class JADEEngine {
         }
     }
 
-    public static void runAgent(final ContainerController mainContainer, final String agentName, final String className, final Object[] args) {
+    public static void runAgent(final ContainerController mainContainer, final String agentName, final String packageName, final String className, final Object[] args) {
         try {
-            final String path = format("org.asaa.agents.%s", className);
+            final String path = format("org.asaa.agents.%s.%s", packageName, className);
             final AgentController agent = mainContainer.createNewAgent(agentName, path, args);
             agent.start();
         } catch (final StaleProxyException e) {
