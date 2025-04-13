@@ -12,6 +12,7 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
 
     public HandleMessageBehaviour(SensorAgent sensorAgent) {
         super(sensorAgent);
+
         this.sensorAgent = sensorAgent;
         this.logger = LogManager.getLogger(sensorAgent.getLocalName());
     }

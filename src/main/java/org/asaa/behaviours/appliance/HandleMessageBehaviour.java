@@ -1,17 +1,20 @@
 package org.asaa.behaviours.appliance;
 
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.asaa.agents.SmartApplianceAgent;
 
 public abstract class HandleMessageBehaviour extends CyclicBehaviour {
-    //TODO: add ApplianceAgent
+    protected final SmartApplianceAgent smartApplianceAgent;
     protected final Logger logger;
 
-    public HandleMessageBehaviour(Agent a, Logger logger) {
-        super(a);
-        this.logger = logger;
+    public HandleMessageBehaviour(SmartApplianceAgent smartApplianceAgent) {
+        super(smartApplianceAgent);
+
+        this.smartApplianceAgent = smartApplianceAgent;
+        this.logger = LogManager.getLogger(smartApplianceAgent.getLocalName());
     }
 
     @Override
@@ -32,7 +35,8 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
     }
 
     private void handleAgree(ACLMessage msg) {
-        //TODO: add sensor to subscribed sensor list
+        logger.info("Subscribed to {}", msg.getSender().getLocalName());
+        smartApplianceAgent.getFollowedSensors().add(msg.getSender());
     }
 
     private void handleRefuse(ACLMessage msg) {

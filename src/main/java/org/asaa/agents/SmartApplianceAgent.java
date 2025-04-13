@@ -1,51 +1,26 @@
 package org.asaa.agents;
 
+import jade.core.AID;
 import jade.core.Agent;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.asaa.exceptions.InvalidServiceSpecification;
+import jade.lang.acl.ACLMessage;
+import lombok.Getter;
+import org.asaa.behaviours.appliance.HandleMessageBehaviour;
 
 import java.util.List;
 
-public abstract class SmartApplianceAgent extends Agent {
-    protected String areaName;
-    protected List<SensorAgent> followedSensors;
-    protected Logger logger;
+@Getter
+public abstract class SmartApplianceAgent extends PhysicalAgent {
+    protected List<AID> followedSensors;
 
-    //TODO: #1 Wrap all common behaviours of abstract agents into one PhysicalAgent.
     @Override
     protected void setup() {
-        logger = LogManager.getLogger(getLocalName());
+        super.setup();
 
-        Object[] args = getArguments();
-        if (args != null && args.length > 0) {
-            this.areaName = (String) args[0];
-        } else {
-            this.areaName = "default-area";
-        }
-
-        logger.info("Appliance initialized in area {}", areaName);
-
-        registerSmartAppliance();
-    }
-
-    //TODO: #1 Wrap all common behaviours of abstract agents into one PhysicalAgent.
-    private void registerSmartAppliance() {
-        final ServiceDescription sd = new ServiceDescription();
-        sd.setType("smart-appliance");
-        sd.setName(getLocalName());
-        sd.setOwnership(getLocalName());
-
-        try {
-            final DFAgentDescription dfd = new DFAgentDescription();
-            dfd.addServices(sd);
-            DFService.register(this, dfd);
-        } catch (FIPAException e) {
-            throw new InvalidServiceSpecification(e);
-        }
+        addBehaviour(new HandleMessageBehaviour(this) {
+            @Override
+            protected void handleInform(ACLMessage msg) {
+                trigger();
+            }
+        });
     }
 }
