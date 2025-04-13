@@ -1,12 +1,8 @@
 package org.asaa.agents.sensors;
 
-import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SensorAgent;
-import org.asaa.environment.Area;
-
-import java.util.List;
 
 public class MotionSensorAgent extends SensorAgent {
     private boolean previousState;
@@ -14,7 +10,9 @@ public class MotionSensorAgent extends SensorAgent {
     @Override
     protected void setup() {
         super.setup();
+
         previousState = getHumanPresence();
+
         addBehaviour(new TickerBehaviour(this, 100) {
             @Override
             protected void onTick() {
@@ -27,8 +25,7 @@ public class MotionSensorAgent extends SensorAgent {
     }
 
     private boolean getHumanPresence() {
-        Area area = getMyArea();
-        return (boolean) area.getAttribute("human");
+        return (boolean) getArea().getAttribute("human");
     }
 
     private String getHumanPresenceString() {
@@ -36,15 +33,12 @@ public class MotionSensorAgent extends SensorAgent {
     }
 
     @Override
-    protected void respond(ACLMessage msg) {
-        ACLMessage reply = msg.createReply();
-        reply.setPerformative(ACLMessage.INFORM);
-        reply.setContent(getHumanPresenceString());
-        send(reply);
+    protected String responseMsgContent() {
+        return getHumanPresenceString();
     }
 
     @Override
-    protected void handleTrigger(final List<AID> subscribers) {
+    protected void handleTrigger() {
         final ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setContent(getHumanPresenceString());
         subscribers.forEach(msg::addReceiver);

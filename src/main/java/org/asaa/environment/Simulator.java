@@ -18,7 +18,6 @@ public class Simulator {
 
             while (true) {
                 try {
-                    //Thread.sleep(1000);
                     TimeUnit.SECONDS.sleep(1);
                     env.advanceSimulationTime(Duration.ofMinutes(1));
                     if (Environment.getSimulationTime().getMinute() % 30 == 0) {

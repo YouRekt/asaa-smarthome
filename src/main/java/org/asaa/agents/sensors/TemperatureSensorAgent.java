@@ -1,32 +1,22 @@
 package org.asaa.agents.sensors;
 
-import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SensorAgent;
-import org.asaa.environment.Area;
-
-import java.util.List;
 
 public class TemperatureSensorAgent extends SensorAgent {
 
     private String getTemperatureString()
     {
-        Area area = getMyArea();
-        Double temperature = (Double) area.getAttribute("temperature");
-
-        return String.valueOf(temperature);
+        return String.valueOf(getArea().getAttribute("temperature"));
     }
 
     @Override
-    protected void respond(ACLMessage msg) {
-        ACLMessage reply = msg.createReply();
-        reply.setPerformative(ACLMessage.INFORM);
-        reply.setContent(getTemperatureString());
-        send(reply);
+    protected String responseMsgContent() {
+        return getTemperatureString();
     }
 
     @Override
-    protected void handleTrigger(final List<AID> subscribers) {
+    protected void handleTrigger() {
         final ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setContent(getTemperatureString());
         subscribers.forEach(msg::addReceiver);

@@ -33,8 +33,6 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
         }
     }
 
-    protected abstract void handleInform(ACLMessage msg);
-
     private void handleCancel(ACLMessage msg) {
         logger.info("Cancelled {}'s subscription", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().remove(msg.getSender());
@@ -52,6 +50,8 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
         msg.setContent("subscribed");
         myAgent.send(reply);
     }
+
+    protected abstract void handleInform(ACLMessage msg);
 
     protected abstract void handleRequest(ACLMessage msg);
 }

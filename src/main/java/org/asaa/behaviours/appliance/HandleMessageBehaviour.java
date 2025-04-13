@@ -31,8 +31,6 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
         }
     }
 
-    protected abstract void handleInform(ACLMessage msg);
-
     private void handleAgree(ACLMessage msg) {
         //TODO: add sensor to subscribed sensor list
     }
@@ -40,6 +38,8 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
     private void handleRefuse(ACLMessage msg) {
         logger.warn("{} has refused the subscription", msg.getSender().getLocalName());
     }
+
+    protected abstract void handleInform(ACLMessage msg);
 
     private void handleFailure(ACLMessage msg) {
         logger.warn("{} has failed", msg.getSender().getLocalName());

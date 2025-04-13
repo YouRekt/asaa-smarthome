@@ -5,18 +5,17 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
+import jade.lang.acl.ACLMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.asaa.environment.Area;
+import org.asaa.environment.Environment;
 import org.asaa.exceptions.InvalidServiceSpecification;
 
-import java.util.List;
-
-public abstract class SmartApplianceAgent extends Agent {
+public abstract class PhysicalAgent extends Agent {
     protected String areaName;
-    protected List<SensorAgent> followedSensors;
     protected Logger logger;
 
-    //TODO: #1 Wrap all common behaviours of abstract agents into one PhysicalAgent.
     @Override
     protected void setup() {
         logger = LogManager.getLogger(getLocalName());
@@ -28,17 +27,16 @@ public abstract class SmartApplianceAgent extends Agent {
             this.areaName = "default-area";
         }
 
-        logger.info("Appliance initialized in area {}", areaName);
+        logger.info("Initialized in area: {}", areaName);
 
-        registerSmartAppliance();
+        registerBaseAgent();
     }
 
-    //TODO: #1 Wrap all common behaviours of abstract agents into one PhysicalAgent.
-    private void registerSmartAppliance() {
+    private void registerBaseAgent() {
         final ServiceDescription sd = new ServiceDescription();
-        sd.setType("smart-appliance");
+        sd.setType(getClass().getSimpleName());
         sd.setName(getLocalName());
-        sd.setOwnership(getLocalName());
+        sd.setOwnership(getName());
 
         try {
             final DFAgentDescription dfd = new DFAgentDescription();
@@ -48,4 +46,24 @@ public abstract class SmartApplianceAgent extends Agent {
             throw new InvalidServiceSpecification(e);
         }
     }
+
+    protected Area getArea() {
+        return Environment.getInstance().getArea(areaName);
+    }
+
+    public void trigger() {
+        logger.info("I have been triggered!");
+        handleTrigger();
+    }
+
+    protected abstract void handleTrigger();
+
+    protected void respond(ACLMessage msg) {
+        ACLMessage reply = msg.createReply();
+        reply.setPerformative(ACLMessage.INFORM);
+        reply.setContent(responseMsgContent());
+        send(reply);
+    }
+
+    protected abstract String responseMsgContent();
 }
