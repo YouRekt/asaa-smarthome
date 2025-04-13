@@ -1,7 +1,6 @@
 package org.asaa.agents;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import org.asaa.behaviours.appliance.HandleMessageBehaviour;
