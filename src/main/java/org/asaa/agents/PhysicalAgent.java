@@ -13,8 +13,6 @@ import org.asaa.environment.Area;
 import org.asaa.environment.Environment;
 import org.asaa.exceptions.InvalidServiceSpecification;
 
-import java.util.concurrent.TimeUnit;
-
 public abstract class PhysicalAgent extends Agent {
     protected String areaName;
     protected Logger logger;

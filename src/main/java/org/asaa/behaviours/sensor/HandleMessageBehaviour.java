@@ -1,20 +1,16 @@
 package org.asaa.behaviours.sensor;
 
-import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.asaa.agents.SensorAgent;
+import org.asaa.behaviours.BaseMessageHandler;
 
-public abstract class HandleMessageBehaviour extends CyclicBehaviour {
+public abstract class HandleMessageBehaviour extends BaseMessageHandler {
     protected final SensorAgent sensorAgent;
-    protected final Logger logger;
 
     public HandleMessageBehaviour(SensorAgent sensorAgent) {
         super(sensorAgent);
 
         this.sensorAgent = sensorAgent;
-        this.logger = LogManager.getLogger(sensorAgent.getLocalName());
     }
 
     @Override
@@ -22,19 +18,15 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
         final ACLMessage msg = myAgent.receive();
 
         if (msg != null) {
-            switch (msg.getPerformative()) {
-                case ACLMessage.REQUEST -> handleRequest(msg);
-                case ACLMessage.SUBSCRIBE -> handleSubscribe(msg);
-                case ACLMessage.CANCEL -> handleCancel(msg);
-                case ACLMessage.INFORM -> handleInform(msg);
-                default -> block();
-            }
+            // Here we can add a specialized switch if needed (default -> processMsg(msg);)
+            super.processMsg(msg);
         } else {
             block();
         }
     }
 
-    private void handleCancel(ACLMessage msg) {
+    @Override
+    protected void handleCancel(ACLMessage msg) {
         logger.info("Cancelled {}'s subscription", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().remove(msg.getSender());
         ACLMessage reply = msg.createReply();
@@ -43,7 +35,8 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
         myAgent.send(reply);
     }
 
-    private void handleSubscribe(ACLMessage msg) {
+    @Override
+    protected void handleSubscribe(ACLMessage msg) {
         logger.info("{} has subscribed", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().add(msg.getSender());
         ACLMessage reply = msg.createReply();
@@ -51,8 +44,4 @@ public abstract class HandleMessageBehaviour extends CyclicBehaviour {
         msg.setContent("subscribed");
         myAgent.send(reply);
     }
-
-    protected abstract void handleInform(ACLMessage msg);
-
-    protected abstract void handleRequest(ACLMessage msg);
 }
