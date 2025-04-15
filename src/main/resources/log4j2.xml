@@ -2,7 +2,7 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%logger @ %simTime] %msg%n" />
+            <PatternLayout pattern="[%logger %notEmpty{| %X{area} }@ %simTime] %msg%n" />
         </Console>
     </Appenders>
 

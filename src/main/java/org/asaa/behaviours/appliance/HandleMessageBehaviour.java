@@ -1,5 +1,6 @@
 package org.asaa.behaviours.appliance;
 
+import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.BaseMessageHandler;
@@ -28,7 +29,9 @@ public abstract class HandleMessageBehaviour extends BaseMessageHandler {
     @Override
     protected void handleAgree(ACLMessage msg) {
         logger.info("Subscribed to {}", msg.getSender().getLocalName());
-        smartApplianceAgent.getFollowedSensors().add(msg.getSender());
+        AID sensor = msg.getSender();
+        String sensorType = sensor.getClass().getSimpleName();
+        smartApplianceAgent.subscribeSensor(sensor,sensorType);
     }
 
     @Override

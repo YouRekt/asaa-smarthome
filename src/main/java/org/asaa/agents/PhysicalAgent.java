@@ -9,6 +9,7 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.asaa.environment.Area;
 import org.asaa.environment.Environment;
 import org.asaa.exceptions.InvalidServiceSpecification;
@@ -26,6 +27,7 @@ public abstract class PhysicalAgent extends Agent {
         } else {
             this.areaName = "default-area";
         }
+        ThreadContext.put("area", areaName);
 
         logger.info("Initialized in area: {}", areaName);
 
