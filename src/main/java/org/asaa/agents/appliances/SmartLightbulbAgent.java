@@ -2,7 +2,7 @@ package org.asaa.agents.appliances;
 
 import org.asaa.agents.SmartApplianceAgent;
 
-public class SmartLightbulbAgent extends SmartApplianceAgent {
+public final class SmartLightbulbAgent extends SmartApplianceAgent {
     private boolean isTurnedOn = false;
 
     @Override

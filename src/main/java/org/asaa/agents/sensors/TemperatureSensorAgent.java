@@ -3,7 +3,7 @@ package org.asaa.agents.sensors;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SensorAgent;
 
-public class TemperatureSensorAgent extends SensorAgent {
+public final class TemperatureSensorAgent extends SensorAgent {
 
     private Double getTemperature() {
         return (Double) getArea().getAttribute("temperature");
