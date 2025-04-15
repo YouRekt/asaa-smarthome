@@ -4,7 +4,7 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SensorAgent;
 
-public class MotionSensorAgent extends SensorAgent {
+public final class MotionSensorAgent extends SensorAgent {
     private boolean previousState;
 
     @Override

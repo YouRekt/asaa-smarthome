@@ -47,5 +47,6 @@ public class Engine {
         runAgent(container, "Temperature Sensor", "sensors", "TemperatureSensorAgent", new Object[]{"kitchen"});
         runAgent(container, "Motion Sensor", "sensors", "MotionSensorAgent", new Object[]{"kitchen"});
         runAgent(container, "Smart Lightbulb", "appliances", "SmartLightbulbAgent", new Object[]{"kitchen"});
+        runAgent(container, "Coordinator", "coordinators", "CoordinatorAgent");
     }
 }
