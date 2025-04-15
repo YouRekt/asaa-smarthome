@@ -2,6 +2,7 @@ package org.asaa.agents.appliances;
 
 import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.Property;
@@ -27,8 +28,7 @@ public class ACAgent extends SmartApplianceAgent {
     protected void setup() {
         super.setup();
 
-        while(!findTemperatureSensor())
-        {
+        while (!findTemperatureSensor()) {
             logger.info("Looking for temperature sensor");
         }
 
@@ -37,11 +37,18 @@ public class ACAgent extends SmartApplianceAgent {
             protected void handleInform(ACLMessage msg) {
                 Double temperature = Double.valueOf(msg.getContent());
                 if (temperature > targetTemperature) {
+                    addBehaviour(new WakerBehaviour(myAgent, 1000) {
+                        @Override
+                        protected void onWake() {
+                            Environment.getInstance().getArea(areaName).setAttribute("temperature", temperature - coolingRate);
+                            requestTemperature();
+                        }
+                    });
                     isCooling = true;
-                    Environment.getInstance().getArea(areaName).setAttribute("temperature", temperature - coolingRate);
-                    requestTemperature();
                 } else {
-                    logger.info("Finished cooling");
+                    if (isCooling) {
+                        logger.info("Finished cooling");
+                    }
                     isCooling = false;
                 }
             }

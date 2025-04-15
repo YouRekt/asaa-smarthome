@@ -41,7 +41,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                 for (AID agent : foundAgents)
                     agents.put(agent.getClass().getSimpleName(), foundAgents);
 
-                coordinatorAgent.getLogger().info("Found {} agents:\n {}", foundAgents.size(), foundAgents);
+                //coordinatorAgent.getLogger().info("Found {} agents:\n {}", foundAgents.size(), foundAgents);
                 coordinatorAgent.getPhysicalAgents().put(Environment.getInstance().getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);
