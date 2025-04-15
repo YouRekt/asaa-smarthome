@@ -1,18 +1,18 @@
 package org.asaa.behaviours;
 
+import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.asaa.agents.PhysicalAgent;
 
 public abstract class BaseMessageHandler extends CyclicBehaviour {
     protected final Logger logger;
 
-    public BaseMessageHandler(PhysicalAgent physicalAgent) {
-        super(physicalAgent);
+    public BaseMessageHandler(Agent agent) {
+        super(agent);
 
-        logger = LogManager.getLogger(physicalAgent.getLocalName());
+        logger = LogManager.getLogger(agent.getLocalName());
     }
 
     public void processMsg(ACLMessage msg) {

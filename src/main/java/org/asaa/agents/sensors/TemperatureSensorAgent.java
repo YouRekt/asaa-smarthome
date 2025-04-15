@@ -6,7 +6,7 @@ import org.asaa.agents.SensorAgent;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TemperatureSensorAgent extends SensorAgent {
+public final class TemperatureSensorAgent extends SensorAgent {
 
     private final AtomicInteger alertTimeout = new AtomicInteger(60);
     private final int timeout = 60;
