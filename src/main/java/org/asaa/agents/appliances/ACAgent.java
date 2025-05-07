@@ -35,7 +35,7 @@ public class ACAgent extends SmartApplianceAgent {
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
-                Double temperature = Double.valueOf(msg.getContent());
+                double temperature = Double.parseDouble(msg.getContent());
                 if (temperature > targetTemperature) {
                     addBehaviour(new WakerBehaviour(myAgent, 1000) {
                         @Override
