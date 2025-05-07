@@ -2,15 +2,19 @@ package org.asaa.agents.coordinators;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.asaa.behaviours.coordinator.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
 import org.asaa.environment.Area;
+import org.asaa.exceptions.InvalidServiceSpecification;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Getter
 public final class CoordinatorAgent extends Agent {
@@ -22,11 +26,7 @@ public final class CoordinatorAgent extends Agent {
         logger = LogManager.getLogger(getLocalName());
         logger.info("Initialized");
 
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
 
@@ -34,5 +34,20 @@ public final class CoordinatorAgent extends Agent {
 
         });
 
+    }
+
+    private void registerCoordinatorAgent() {
+        final ServiceDescription sd = new ServiceDescription();
+        sd.setType(getClass().getSimpleName());
+        sd.setName(getLocalName());
+        sd.setOwnership(getName());
+
+        try {
+            final DFAgentDescription dfd = new DFAgentDescription();
+            dfd.addServices(sd);
+            DFService.register(this, dfd);
+        } catch (FIPAException e) {
+            throw new InvalidServiceSpecification(e);
+        }
     }
 }
