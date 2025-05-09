@@ -2,12 +2,11 @@ package org.asaa.behaviours.scheduler;
 
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.asaa.agents.coordinators.SchedulerAgent;
-import org.asaa.environment.Environment;
+import org.asaa.services.EnvironmentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.asaa.util.Util;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class ScheduleLoopBehaviour extends TickerBehaviour {
-    private final Environment env;
+    private final EnvironmentService env;
     private final Random rand = new Random();
     private final Map<String, Boolean> oneShotSchedules = new HashMap<>();
     private final Map<String, LocalDateTime> cyclicSchedules = new HashMap<>();
@@ -24,9 +23,9 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
     public ScheduleLoopBehaviour(SchedulerAgent schedulerAgent, long period) {
         super(schedulerAgent, period);
-        env = Environment.getInstance();
+        env = schedulerAgent.environmentService;
         this.schedulerAgent = schedulerAgent;
-        logger = LogManager.getLogger(getBehaviourName());
+        logger = LoggerFactory.getLogger(getBehaviourName());
         initSchedulesStatus();
     }
 
@@ -48,7 +47,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
     @Override
     public void onTick() {
-        LocalDateTime currentTime = Environment.getSimulationTime();
+        LocalDateTime currentTime = env.getSimulationTime();
         // Time-based events should go here, the schedulerAgent will send messages to coordinator (? - TBD).
 
 

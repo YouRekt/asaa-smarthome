@@ -8,22 +8,24 @@ import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import org.asaa.agents.coordinators.CoordinatorAgent;
-import org.asaa.environment.Environment;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.asaa.services.EnvironmentService;
 
 import java.util.*;
 
 public class AgentScanningBehaviour extends TickerBehaviour {
     private final CoordinatorAgent coordinatorAgent;
+    private final EnvironmentService environmentService;
 
     public AgentScanningBehaviour(CoordinatorAgent coordinatorAgent, long period) {
         super(coordinatorAgent, period);
         this.coordinatorAgent = coordinatorAgent;
+        this.environmentService = coordinatorAgent.environmentService;
     }
 
     @Override
     protected void onTick() {
-        Set<String> areas = Environment.getInstance().getAllAreaNames();
+        Set<String> areas = environmentService.getAllAreaNames();
 
         for (String area : areas) {
             Map<String, List<AID>> agents = new HashMap<>();
@@ -43,7 +45,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                     agents.put(agent.getClass().getSimpleName(), foundAgents);
 
                 //coordinatorAgent.getLogger().info("Found {} agents:\n {}", foundAgents.size(), foundAgents);
-                coordinatorAgent.getPhysicalAgents().put(Environment.getInstance().getArea(area), agents);
+                coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);
             }
