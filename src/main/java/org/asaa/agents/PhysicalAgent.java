@@ -1,42 +1,34 @@
 package org.asaa.agents;
 
-import jade.core.AID;
-import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 import org.asaa.environment.Area;
-import org.asaa.environment.Environment;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-
-public abstract class PhysicalAgent extends Agent {
+public abstract class PhysicalAgent extends SpringAwareAgent {
     protected String areaName;
     protected Logger logger;
-    public AID coordinatorAgent;
 
     @Override
     protected void setup() {
-        logger = LogManager.getLogger(getLocalName());
+        super.setup();
+        logger = LoggerFactory.getLogger(getLocalName());
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
             this.areaName = (String) args[0];
         } else {
             this.areaName = "default-area";
         }
-        ThreadContext.put("area", areaName);
 
         logger.info("Initialized in area: {}", areaName);
 
         registerBaseAgent();
-        findCoordinatorAgent();
     }
 
     private void registerBaseAgent() {
@@ -59,24 +51,12 @@ public abstract class PhysicalAgent extends Agent {
         }
     }
 
-    private void findCoordinatorAgent() {
-        final ServiceDescription sd = new ServiceDescription();
-        sd.setType("CoordinatorAgent");
-
-        try {
-            final DFAgentDescription dfd = new DFAgentDescription();
-            dfd.addServices(sd);
-            coordinatorAgent = Arrays.stream(DFService.search(this, dfd)).map(DFAgentDescription::getName).toList().getFirst();
-            if (!coordinatorAgent.getLocalName().equals("Coordinator"))
-                logger.warn("Coordinator agent was not of the expected type!!! Found: {}", coordinatorAgent.getLocalName());
-            logger.info("Found coordinator agent");
-        } catch (FIPAException e) {
-            throw new InvalidServiceSpecification(e);
-        }
-    }
-
     protected Area getArea() {
-        return Environment.getInstance().getArea(areaName);
+        if (environmentService == null) {
+            logger.error("Environment service not set");
+            return null;
+        }
+        return environmentService.getArea(areaName);
     }
 
     public void trigger() {

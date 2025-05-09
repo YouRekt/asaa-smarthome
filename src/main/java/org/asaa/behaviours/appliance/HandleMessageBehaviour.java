@@ -1,10 +1,11 @@
 package org.asaa.behaviours.appliance;
 
+import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.BaseMessageHandler;
 
-public class HandleMessageBehaviour extends BaseMessageHandler {
+public abstract class HandleMessageBehaviour extends BaseMessageHandler {
     protected final SmartApplianceAgent smartApplianceAgent;
 
     public HandleMessageBehaviour(SmartApplianceAgent smartApplianceAgent) {
@@ -27,42 +28,19 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleAgree(ACLMessage msg) {
-        switch (msg.getConversationId()) {
-            case "enable-passive":
-                logger.info("Coordinator AGREED: {}", msg.getContent());
-                smartApplianceAgent.setEnabled(true);
-                break;
-            case "enable-active":
-                logger.info("Coordinator AGREED: {}", msg.getContent());
-                smartApplianceAgent.setWorking(true);
-                String replyWith = msg.getInReplyTo();
-                Runnable callback = smartApplianceAgent.onPowerGrantedCallbacks.remove(replyWith);
-                if (callback != null) {
-                    logger.debug("Callback triggered: {}", callback);
-                    callback.run();
-                }
-                break;
-            default:
-                super.handleAgree(msg);
-        }
+        logger.info("Subscribed to {}", msg.getSender().getLocalName());
+        AID sensor = msg.getSender();
+        String sensorType = sensor.getClass().getSimpleName();
+        smartApplianceAgent.subscribeSensor(sensor,sensorType);
     }
 
     @Override
     protected void handleRefuse(ACLMessage msg) {
-        switch (msg.getConversationId()) {
-            case "enable-passive":
-                logger.warn("Coordinator REFUSED: convId=enable-passive");
-                break;
-            case "enable-active":
-                logger.warn("Coordinator REFUSED: convId=enable-active");
-                String replyWith = msg.getInReplyTo();
-                Runnable callback = smartApplianceAgent.onPowerGrantedCallbacks.remove(replyWith);
-                if (callback != null) {
-                    logger.debug("Callback cancelled tied with request {}", replyWith);
-                }
-                break;
-            default:
-                super.handleAgree(msg);
-        }
+        logger.warn("{} has refused the subscription", msg.getSender().getLocalName());
+    }
+
+    @Override
+    protected void handleFailure(ACLMessage msg) {
+        logger.warn("{} has failed", msg.getSender().getLocalName());
     }
 }

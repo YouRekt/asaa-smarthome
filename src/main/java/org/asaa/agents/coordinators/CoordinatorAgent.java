@@ -7,31 +7,34 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.asaa.agents.SpringAwareAgent;
 import org.asaa.behaviours.coordinator.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
-public final class CoordinatorAgent extends Agent {
-    private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
-    private Logger logger;
+public final class CoordinatorAgent extends SpringAwareAgent {
+    private final Map<Area, Map<String , List<AID>>> physicalAgents = new HashMap<>();
+    private final static Logger logger = LoggerFactory.getLogger("Coordinator");
 
     @Override
     protected void setup() {
-        logger = LogManager.getLogger(getLocalName());
+        super.setup();
         logger.info("Initialized");
 
         registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
-        addBehaviour(new HandleMessageBehaviour(this));
+
+        addBehaviour(new HandleMessageBehaviour(this) {
+
+        });
+
     }
 
     private void registerCoordinatorAgent() {
@@ -47,19 +50,5 @@ public final class CoordinatorAgent extends Agent {
         } catch (FIPAException e) {
             throw new InvalidServiceSpecification(e);
         }
-    }
-
-    public void performMorningRoutine() {
-        /*
-        TODO: Implement functionality:
-        - Check if human is home
-        - Based on the day of the week maybe do different stuff
-        - Some common functionalities:
-            * Start making coffee
-            * Notify the user about today's weather and upcoming events
-            * Open the blinds
-            * Play morning playlist
-            * Perform resource check (for simplicity now just check the fridge and maybe order missing items)
-         */
     }
 }

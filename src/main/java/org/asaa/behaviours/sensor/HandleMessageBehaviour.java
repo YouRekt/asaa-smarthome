@@ -4,7 +4,7 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SensorAgent;
 import org.asaa.behaviours.BaseMessageHandler;
 
-public class HandleMessageBehaviour extends BaseMessageHandler {
+public abstract class HandleMessageBehaviour extends BaseMessageHandler {
     protected final SensorAgent sensorAgent;
 
     public HandleMessageBehaviour(SensorAgent sensorAgent) {
