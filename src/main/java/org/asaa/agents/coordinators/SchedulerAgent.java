@@ -15,7 +15,7 @@ import org.asaa.exceptions.InvalidServiceSpecification;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class SchedulerAgent extends Agent {
+public final class SchedulerAgent extends Agent {
     @Getter
     private AID coordinatorAgent;
     private Logger logger;
@@ -25,14 +25,14 @@ public class SchedulerAgent extends Agent {
         logger = LogManager.getLogger(getLocalName());
         logger.info("Initialized");
 
-        final ServiceDescription sd = new ServiceDescription();
-        sd.setType("CoordinatorAgent");
-
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        final ServiceDescription sd = new ServiceDescription();
+        sd.setType("CoordinatorAgent");
 
         try {
             final DFAgentDescription dfd = new DFAgentDescription();

@@ -29,11 +29,7 @@ public final class CoordinatorAgent extends Agent {
         registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
-
-        addBehaviour(new HandleMessageBehaviour(this) {
-
-        });
-
+        addBehaviour(new HandleMessageBehaviour(this));
     }
 
     private void registerCoordinatorAgent() {
@@ -49,5 +45,19 @@ public final class CoordinatorAgent extends Agent {
         } catch (FIPAException e) {
             throw new InvalidServiceSpecification(e);
         }
+    }
+
+    public void performMorningRoutine() {
+        /*
+        TODO: Implement functionality:
+        - Check if human is home
+        - Based on the day of the week maybe do different stuff
+        - Some common functionalities:
+            * Start making coffee
+            * Notify the user about today's weather and upcoming events
+            * Open the blinds
+            * Play morning playlist
+            * Perform resource check (for simplicity now just check the fridge and maybe order missing items)
+         */
     }
 }

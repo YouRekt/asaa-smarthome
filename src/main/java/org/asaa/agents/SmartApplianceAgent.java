@@ -3,20 +3,24 @@ package org.asaa.agents;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
-import org.asaa.behaviours.appliance.HandleMessageBehaviour;
-import org.asaa.environment.Area;
+import lombok.Setter;
+import org.asaa.util.Util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-@Getter
 public abstract class SmartApplianceAgent extends PhysicalAgent {
-    protected final Map<String,List<AID>> subscribedSensors = new HashMap<>();
+    public final Map<String, Runnable> onPowerGrantedCallbacks = new ConcurrentHashMap<>();
 
-    public final void subscribeSensor(AID aid, String sensorType)
-    {
+    protected final Map<String,List<AID>> subscribedSensors = new HashMap<>();
+    @Setter @Getter
+    protected boolean isEnabled = false;
+    @Setter @Getter
+    protected boolean isWorking = false;
+    protected int idleDraw = 0;
+    protected int activeDraw = 0;
+
+    public final void subscribeSensor(AID aid, String sensorType) {
         subscribedSensors.computeIfAbsent(sensorType, k -> new ArrayList<>()).add(aid);
     }
 }

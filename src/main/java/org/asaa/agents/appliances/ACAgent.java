@@ -10,7 +10,10 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.behaviours.appliance.AwaitEnableBehaviour;
 import org.asaa.behaviours.appliance.HandleMessageBehaviour;
+import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
+import org.asaa.behaviours.appliance.RequestPowerBehaviour;
 import org.asaa.environment.Environment;
 
 import java.util.Arrays;
@@ -18,50 +21,57 @@ import java.util.Date;
 import java.util.Optional;
 
 public class ACAgent extends SmartApplianceAgent {
-
     private final Double targetTemperature = 21.0;
     private final Double threshold = 0.5; // +/- margin before action (e.g., ±0.5°C)
     private final Double coolingRate = 0.1;
-    private boolean isCooling = false;
 
     @Override
     protected void setup() {
         super.setup();
 
-        while (!findTemperatureSensor()) {
-            logger.info("Looking for temperature sensor");
-        }
+        activeDraw = 2000;
+        idleDraw = 10;
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
+                if (!isEnabled) {
+                    logger.debug("Ignoring INFORM because not enabled");
+                    return;
+                }
+
                 double temperature = Double.parseDouble(msg.getContent());
                 if (temperature > targetTemperature) {
-                    addBehaviour(new WakerBehaviour(myAgent, 1000) {
-                        @Override
-                        protected void onWake() {
-                            Environment.getInstance().getArea(areaName).setAttribute("temperature", temperature - coolingRate);
-                            requestTemperature();
-                        }
-                    });
-                    isCooling = true;
+                    if (!isWorking) {
+                        String replyWith = "req-" + System.currentTimeMillis();
+                        smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
+                        addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw - idleDraw, "enable-active", replyWith));
+                    } else
+                        performCooling(temperature);
                 } else {
-                    if (isCooling) {
+                    if (isWorking) {
                         logger.info("Finished cooling");
                     }
-                    isCooling = false;
+                    addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw - idleDraw, "disable-active"));
+                    isWorking = false;
                 }
             }
         });
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, "enable-passive", ""));
+        addBehaviour(new AwaitEnableBehaviour(this, () -> {
+            while (!findTemperatureSensor()) {
+                logger.info("Looking for temperature sensor");
+            }
 
-        addBehaviour(new TickerBehaviour(this, 10000) {
-            @Override
-            protected void onTick() {
-                if (!isCooling) {
-                    requestTemperature();
+            addBehaviour(new TickerBehaviour(this, 10000) {
+                @Override
+                protected void onTick() {
+                    if (!isWorking) {
+                        requestTemperature();
+                    }
                 }
-            }
-        });
+            });
+        }));
     }
 
     private boolean findTemperatureSensor() {
@@ -100,13 +110,24 @@ public class ACAgent extends SmartApplianceAgent {
         }
     }
 
+    private void performCooling(double temperature) {
+        addBehaviour(new WakerBehaviour(this, 1000) {
+            @Override
+            protected void onWake() {
+                Environment.getInstance().getArea(areaName).setAttribute("temperature", temperature - coolingRate);
+                requestTemperature();
+            }
+        });
+        isWorking = true;
+    }
+
     @Override
     protected void handleTrigger() {
-        isCooling = !isCooling;
+        isWorking = !isWorking;
     }
 
     @Override
     protected String responseMsgContent() {
-        return String.valueOf(isCooling);
+        return String.valueOf(isWorking);
     }
 }
