@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-public class ACAgent extends SmartApplianceAgent {
+public final class ACAgent extends SmartApplianceAgent {
     private final Double targetTemperature = 21.0;
     private final Double threshold = 0.5; // +/- margin before action (e.g., ±0.5°C)
     private final Double coolingRate = 0.1;

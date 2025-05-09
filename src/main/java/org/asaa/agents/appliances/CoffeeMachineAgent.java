@@ -2,7 +2,7 @@ package org.asaa.agents.appliances;
 
 import org.asaa.agents.SmartApplianceAgent;
 
-public class CoffeeMachineAgent extends SmartApplianceAgent {
+public final class CoffeeMachineAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
