@@ -1,28 +1,29 @@
 package org.asaa.agents.coordinators;
 
 import jade.core.AID;
-import jade.core.Agent;
+
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.asaa.agents.SpringAwareAgent;
 import org.asaa.behaviours.scheduler.ScheduleLoopBehaviour;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class SchedulerAgent extends Agent {
+public class SchedulerAgent extends SpringAwareAgent {
     @Getter
     private AID coordinatorAgent;
-    private Logger logger;
+    private final static Logger logger = LoggerFactory.getLogger("Scheduler");
 
     @Override
     protected void setup() {
-        logger = LogManager.getLogger(getLocalName());
+        super.setup();
         logger.info("Initialized");
 
         final ServiceDescription sd = new ServiceDescription();

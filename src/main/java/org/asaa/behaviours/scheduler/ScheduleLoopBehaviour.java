@@ -2,10 +2,10 @@ package org.asaa.behaviours.scheduler;
 
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.asaa.agents.coordinators.SchedulerAgent;
-import org.asaa.environment.Environment;
+import org.asaa.services.EnvironmentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class ScheduleLoopBehaviour extends TickerBehaviour {
-    private final Environment env;
+    private final EnvironmentService env;
     private final Random rand = new Random();
     // TODO: PLEASE THINK OF SOME BETTER NAMES FOR THESE MAPS...
     private final Map<String, Boolean> oneTimeSchedules = new HashMap<>();
@@ -24,9 +24,9 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
     public ScheduleLoopBehaviour(SchedulerAgent schedulerAgent, long period) {
         super(schedulerAgent, period);
-        env = Environment.getInstance();
+        env = schedulerAgent.environmentService;
         this.schedulerAgent = schedulerAgent;
-        logger = LogManager.getLogger(getBehaviourName());
+        logger = LoggerFactory.getLogger(getBehaviourName());
         initSchedulesStatus();
     }
 
@@ -41,12 +41,14 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
     //  <> Reset all scheduled events so they can be executed again
     private void resetSchedulesStatus() {
-        oneTimeSchedules.forEach((key, value) -> {value = false;});
+        oneTimeSchedules.forEach((key, value) -> {
+            value = false;
+        });
     }
 
     @Override
     public void onTick() {
-        LocalDateTime currentTime = Environment.getSimulationTime();
+        LocalDateTime currentTime = env.getSimulationTime();
         // Time-based events should go here, the schedulerAgent will send messages to coordinator (? - TBD).
 
         /*
@@ -66,8 +68,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 //            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
 //        }
         // TODO: Check whether this works as outlined above, this is a possible solution
-        if (Duration.between(lastSchedulesExecutionTime.get("kitchen-temp"), currentTime).toMinutes() >= 30)
-        {
+        if (Duration.between(lastSchedulesExecutionTime.get("kitchen-temp"), currentTime).toMinutes() >= 30) {
             lastSchedulesExecutionTime.put("kitchen-temp", currentTime);
             double newTemp = 21 + rand.nextDouble() * 6;
             env.getArea("kitchen").setAttribute("temperature", newTemp);

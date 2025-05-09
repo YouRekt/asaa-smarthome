@@ -3,8 +3,8 @@ package org.asaa.behaviours;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseMessageHandler extends CyclicBehaviour {
     protected final Logger logger;
@@ -12,7 +12,7 @@ public abstract class BaseMessageHandler extends CyclicBehaviour {
     public BaseMessageHandler(Agent agent) {
         super(agent);
 
-        logger = LogManager.getLogger(agent.getLocalName());
+        logger = LoggerFactory.getLogger(agent.getLocalName());
     }
 
     public void processMsg(ACLMessage msg) {
@@ -43,47 +43,70 @@ public abstract class BaseMessageHandler extends CyclicBehaviour {
         }
     }
 
-    protected void handleAgree(ACLMessage msg) {};
+    protected void handleAgree(ACLMessage msg) {
+    }
 
-    protected void handleCancel(ACLMessage msg) {};
+    protected void handleCancel(ACLMessage msg) {
+    }
 
-    protected void handleCfp(ACLMessage msg) {};
+    protected void handleCfp(ACLMessage msg) {
+    }
 
-    protected void handleConfirm(ACLMessage msg) {};
+    protected void handleConfirm(ACLMessage msg) {
+    }
 
-    protected void handleDisconfirm(ACLMessage msg) {};
+    protected void handleDisconfirm(ACLMessage msg) {
+    }
 
-    protected void handleFailure(ACLMessage msg) {};
+    protected void handleFailure(ACLMessage msg) {
+    }
 
-    protected void handleInform(ACLMessage msg) {};
+    protected void handleInform(ACLMessage msg) {
+    }
 
-    protected void handleInformIf(ACLMessage msg) {};
+    protected void handleInformIf(ACLMessage msg) {
+    }
 
-    protected void handleInformRef(ACLMessage msg) {};
+    protected void handleInformRef(ACLMessage msg) {
+    }
 
-    protected void handleNotUnderstood(ACLMessage msg) {};
+    protected void handleNotUnderstood(ACLMessage msg) {
+    }
 
-    protected void handlePropose(ACLMessage msg) {};
+    protected void handlePropose(ACLMessage msg) {
+    }
 
-    protected void handleQueryIf(ACLMessage msg) {};
+    protected void handleQueryIf(ACLMessage msg) {
+    }
 
-    protected void handleQueryRef(ACLMessage msg) {};
+    protected void handleQueryRef(ACLMessage msg) {
+    }
 
-    protected void handleRefuse(ACLMessage msg) {};
+    protected void handleRefuse(ACLMessage msg) {
+    }
 
-    protected void handleRejectProposal(ACLMessage msg) {};
+    protected void handleRejectProposal(ACLMessage msg) {
+    }
 
-    protected void handleRequest(ACLMessage msg) {};
+    protected void handleRequest(ACLMessage msg) {
+    }
 
-    protected void handleRequestWhen(ACLMessage msg) {};
+    protected void handleRequestWhen(ACLMessage msg) {
+    }
 
-    protected void handleRequestWhenever(ACLMessage msg) {};
+    protected void handleRequestWhenever(ACLMessage msg) {
+    }
 
-    protected void handleSubscribe(ACLMessage msg) {};
+    protected void handleSubscribe(ACLMessage msg) {
+    }
 
-    protected void handleProxy(ACLMessage msg) {};
+    protected void handleProxy(ACLMessage msg) {
+    }
 
-    protected void handlePropagate(ACLMessage msg) {};
+    protected void handlePropagate(ACLMessage msg) {
+    }
 
-    protected void handleUnknown(ACLMessage msg) {};
+    protected void handleUnknown(ACLMessage msg) {
+    }
+
 }

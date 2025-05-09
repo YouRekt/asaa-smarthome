@@ -11,13 +11,12 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.appliance.HandleMessageBehaviour;
-import org.asaa.environment.Environment;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-public class ACAgent extends SmartApplianceAgent {
+public final class ACAgent extends SmartApplianceAgent {
 
     private final Double targetTemperature = 21.0;
     private final Double threshold = 0.5; // +/- margin before action (e.g., ±0.5°C)
@@ -40,7 +39,7 @@ public class ACAgent extends SmartApplianceAgent {
                     addBehaviour(new WakerBehaviour(myAgent, 1000) {
                         @Override
                         protected void onWake() {
-                            Environment.getInstance().getArea(areaName).setAttribute("temperature", temperature - coolingRate);
+                            environmentService.getArea(areaName).setAttribute("temperature", temperature - coolingRate);
                             requestTemperature();
                         }
                     });
