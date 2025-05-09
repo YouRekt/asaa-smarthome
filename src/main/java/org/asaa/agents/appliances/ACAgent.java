@@ -29,7 +29,7 @@ public final class ACAgent extends SmartApplianceAgent {
     protected void setup() {
         super.setup();
 
-        activeDraw = 2000;
+        activeDraw = 2000 - idleDraw;
         idleDraw = 10;
 
         addBehaviour(new HandleMessageBehaviour(this) {
@@ -45,14 +45,14 @@ public final class ACAgent extends SmartApplianceAgent {
                     if (!isWorking) {
                         String replyWith = "req-" + System.currentTimeMillis();
                         smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
-                        addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw - idleDraw, "enable-active", replyWith));
+                        addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, "enable-active", replyWith));
                     } else
                         performCooling(temperature);
                 } else {
                     if (isWorking) {
                         logger.info("Finished cooling");
                     }
-                    addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw - idleDraw, "disable-active"));
+                    addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
                     isWorking = false;
                 }
             }
