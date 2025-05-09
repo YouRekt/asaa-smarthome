@@ -1,7 +1,6 @@
 package org.asaa.agents.coordinators;
 
 import jade.core.AID;
-
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -16,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class SchedulerAgent extends SpringAwareAgent {
+public final class SchedulerAgent extends SpringAwareAgent {
     @Getter
     private AID coordinatorAgent;
     private final static Logger logger = LoggerFactory.getLogger("Scheduler");
@@ -26,14 +25,14 @@ public class SchedulerAgent extends SpringAwareAgent {
         super.setup();
         logger.info("Initialized");
 
-        final ServiceDescription sd = new ServiceDescription();
-        sd.setType("CoordinatorAgent");
-
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        final ServiceDescription sd = new ServiceDescription();
+        sd.setType("CoordinatorAgent");
 
         try {
             final DFAgentDescription dfd = new DFAgentDescription();

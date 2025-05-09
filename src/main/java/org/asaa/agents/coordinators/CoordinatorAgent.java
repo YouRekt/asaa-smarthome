@@ -1,7 +1,6 @@
 package org.asaa.agents.coordinators;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -14,12 +13,13 @@ import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 public final class CoordinatorAgent extends SpringAwareAgent {
-    private final Map<Area, Map<String , List<AID>>> physicalAgents = new HashMap<>();
+    private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
     private final static Logger logger = LoggerFactory.getLogger("Coordinator");
 
     @Override
@@ -30,11 +30,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
-
-        addBehaviour(new HandleMessageBehaviour(this) {
-
-        });
-
+        addBehaviour(new HandleMessageBehaviour(this));
     }
 
     private void registerCoordinatorAgent() {
@@ -50,5 +46,19 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         } catch (FIPAException e) {
             throw new InvalidServiceSpecification(e);
         }
+    }
+
+    public void performMorningRoutine() {
+        /*
+        TODO: Implement functionality:
+        - Check if human is home
+        - Based on the day of the week maybe do different stuff
+        - Some common functionalities:
+            * Start making coffee
+            * Notify the user about today's weather and upcoming events
+            * Open the blinds
+            * Play morning playlist
+            * Perform resource check (for simplicity now just check the fridge and maybe order missing items)
+         */
     }
 }

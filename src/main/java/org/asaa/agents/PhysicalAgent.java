@@ -1,5 +1,6 @@
 package org.asaa.agents;
 
+import jade.core.AID;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.Property;
@@ -10,10 +11,12 @@ import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Arrays;
 
 public abstract class PhysicalAgent extends SpringAwareAgent {
     protected String areaName;
     protected Logger logger;
+    public AID coordinatorAgent;
 
     @Override
     protected void setup() {
@@ -29,6 +32,7 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         logger.info("Initialized in area: {}", areaName);
 
         registerBaseAgent();
+        findCoordinatorAgent();
     }
 
     private void registerBaseAgent() {
@@ -51,11 +55,23 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         }
     }
 
-    protected Area getArea() {
-        if (environmentService == null) {
-            logger.error("Environment service not set");
-            return null;
+    private void findCoordinatorAgent() {
+        final ServiceDescription sd = new ServiceDescription();
+        sd.setType("CoordinatorAgent");
+
+        try {
+            final DFAgentDescription dfd = new DFAgentDescription();
+            dfd.addServices(sd);
+            coordinatorAgent = Arrays.stream(DFService.search(this, dfd)).map(DFAgentDescription::getName).toList().getFirst();
+            if (!coordinatorAgent.getLocalName().equals("Coordinator"))
+                logger.warn("Coordinator agent was not of the expected type!!! Found: {}", coordinatorAgent.getLocalName());
+            logger.info("Found coordinator agent");
+        } catch (FIPAException e) {
+            throw new InvalidServiceSpecification(e);
         }
+    }
+
+    protected Area getArea() {
         return environmentService.getArea(areaName);
     }
 

@@ -2,15 +2,21 @@ package org.asaa.agents.appliances;
 
 import org.asaa.agents.SmartApplianceAgent;
 
-public final class SmartLightbulbAgent extends SmartApplianceAgent {
+public final class CoffeeMachineAgent extends SmartApplianceAgent {
+
+    @Override
+    protected void setup() {
+        super.setup();
+        activeDraw = 120;
+    }
 
     @Override
     protected void handleTrigger() {
-        isEnabled = !isEnabled;
+
     }
 
     @Override
     protected String responseMsgContent() {
-        return String.valueOf(isEnabled);
+        return "";
     }
 }
