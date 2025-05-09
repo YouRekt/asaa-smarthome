@@ -15,6 +15,7 @@ import java.util.*;
 
 public class AgentScanningBehaviour extends TickerBehaviour {
     private final CoordinatorAgent coordinatorAgent;
+
     public AgentScanningBehaviour(CoordinatorAgent coordinatorAgent, long period) {
         super(coordinatorAgent, period);
         this.coordinatorAgent = coordinatorAgent;

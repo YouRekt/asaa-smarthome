@@ -46,8 +46,7 @@ public final class ACAgent extends SmartApplianceAgent {
                         String replyWith = "req-" + System.currentTimeMillis();
                         smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
                         addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, "enable-active", replyWith));
-                    } else
-                        performCooling(temperature);
+                    } else performCooling(temperature);
                 } else {
                     if (isWorking) {
                         logger.info("Finished cooling");

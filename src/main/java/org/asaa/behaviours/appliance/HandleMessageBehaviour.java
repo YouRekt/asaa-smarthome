@@ -1,6 +1,5 @@
 package org.asaa.behaviours.appliance;
 
-import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.BaseMessageHandler;
@@ -28,8 +27,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleAgree(ACLMessage msg) {
-        switch (msg.getConversationId())
-        {
+        switch (msg.getConversationId()) {
             case "enable-passive":
                 logger.info("Coordinator AGREED: {}", msg.getContent());
                 smartApplianceAgent.setEnabled(true);
@@ -51,8 +49,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleRefuse(ACLMessage msg) {
-        switch (msg.getConversationId())
-        {
+        switch (msg.getConversationId()) {
             case "enable-passive":
                 logger.warn("Coordinator REFUSED: convId=enable-passive");
                 break;

@@ -20,8 +20,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
         if (msg != null) {
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
-            switch (msg.getConversationId())
-            {
+            switch (msg.getConversationId()) {
                 case "routine-morning" -> coordinatorAgent.performMorningRoutine();
                 default -> super.processMsg(msg);
             }

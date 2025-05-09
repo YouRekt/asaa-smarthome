@@ -6,8 +6,8 @@ import jade.lang.acl.ACLMessage;
 
 public class Util {
     public static int AWAIT_ENABLE_BLOCK_TIME = 1000;
-    public static void SendMessage(Agent agent, String content, AID receiver, int performative, String conversationId)
-    {
+
+    public static void SendMessage(Agent agent, String content, AID receiver, int performative, String conversationId) {
         ACLMessage msg = new ACLMessage(performative);
         msg.addReceiver(receiver);
         msg.setContent(content);

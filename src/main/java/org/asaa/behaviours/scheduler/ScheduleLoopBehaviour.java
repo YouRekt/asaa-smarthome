@@ -41,7 +41,9 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
     // Reset all scheduled events so they can be executed again
     private void resetSchedulesStatus() {
-        oneShotSchedules.forEach((key, value) -> {value = false;});
+        oneShotSchedules.forEach((key, value) -> {
+            value = false;
+        });
     }
 
     @Override
@@ -59,8 +61,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         - After planning out our home schema, open doors with rooms with substantial temperature differences
           can affect the temperature of the kitchen
          */
-        if (Duration.between(cyclicSchedules.get("kitchen-temp"), currentTime).toMinutes() >= 30)
-        {
+        if (Duration.between(cyclicSchedules.get("kitchen-temp"), currentTime).toMinutes() >= 30) {
             cyclicSchedules.put("kitchen-temp", currentTime);
             double newTemp = 21 + rand.nextDouble() * 2;
             env.getArea("kitchen").setAttribute("temperature", newTemp);

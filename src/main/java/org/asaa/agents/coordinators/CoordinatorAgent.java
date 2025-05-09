@@ -14,11 +14,13 @@ import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 public final class CoordinatorAgent extends Agent {
-    private final Map<Area, Map<String , List<AID>>> physicalAgents = new HashMap<>();
+    private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
     private Logger logger;
 
     @Override
