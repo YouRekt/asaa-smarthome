@@ -1,3 +1,4 @@
+import { House } from '@/components/House';
 import { ReactElement } from 'react';
 
 export default function HouseMap({ onRoomClick }) {
@@ -7,8 +8,6 @@ export default function HouseMap({ onRoomClick }) {
   };
 
   return (
-    <div onClick={handleClick} className="cursor-pointer">
-      <img src="/house.svg" alt="House schematic" />
-    </div>
+    <House onClick={handleClick}/>
   );
 }
