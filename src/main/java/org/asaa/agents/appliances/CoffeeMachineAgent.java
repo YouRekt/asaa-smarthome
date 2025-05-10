@@ -16,7 +16,7 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
     }
 
     @Override
-    protected String responseMsgContent() {
+    protected String responseDefaultMsgContent() {
         return "";
     }
 }

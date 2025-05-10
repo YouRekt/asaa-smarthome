@@ -20,6 +20,9 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     @Setter
     @Getter
     protected boolean isWorking = false;
+    @Setter
+    @Getter
+    protected int priority = 0;
     protected int idleDraw = 0;
     protected int activeDraw = 0;
 

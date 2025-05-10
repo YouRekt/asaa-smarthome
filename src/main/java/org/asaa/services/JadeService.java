@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
@@ -26,11 +27,17 @@ public class JadeService {
 
     private static void runAgents(final ContainerController container) {
         runAgent(container, "Coordinator", "coordinators", "CoordinatorAgent");
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         runAgent(container, "Scheduler", "coordinators", "SchedulerAgent");
         runAgent(container, "Temperature Sensor", "sensors", "TemperatureSensorAgent", new Object[]{"kitchen"});
         runAgent(container, "Motion Sensor", "sensors", "MotionSensorAgent", new Object[]{"kitchen"});
         runAgent(container, "Smart Lightbulb", "appliances", "SmartLightbulbAgent", new Object[]{"kitchen"});
         runAgent(container, "AC", "appliances", "ACAgent", new Object[]{"kitchen"});
+        runAgent(container, "Fridge", "appliances", "FridgeAgent", new Object[]{"kitchen"});
     }
 
     public static void runGUI(final ContainerController mainContainer) {

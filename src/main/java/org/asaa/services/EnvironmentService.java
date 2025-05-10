@@ -23,13 +23,21 @@ public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
     private final Map<String, Area> areas = new HashMap<>();
     private final Random rand = new Random();
+
+    // Power
     private final int MAX_POWER_CAPACITY = 2000;
+    private int currentPowerConsumption = 0;
+
+    // Money
+    private int credits = 9999;
+    private final Map<String, Integer> unitPrice = new HashMap<>(); // price per single unit
+    private final Map<String, Integer> batchSize = new HashMap<>(); // minimal purchase batch size per item
+
     @Setter
     private int delta = 1;
     @Getter
     private LocalDateTime simulationTime;
     private ScheduledFuture<?> future;
-    private int currentPowerConsumption = 0;
 
     public void startSimulation() {
         if (future != null && future.isDone()) return;
@@ -53,17 +61,6 @@ public class EnvironmentService {
 
     private void tick() {
         simulationTime = simulationTime.plusMinutes(delta);
-
-//        if (simulationTime.getMinute() % 30 == 0) {
-//            double newTemp = 21 + rand.nextDouble() * 6; // random temp 18–24
-//            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
-//            getArea("kitchen").setAttribute("temperature", newTemp);
-//        }
-//        if (rand.nextInt(10) == 0) {
-//            boolean isHumanInTheKitchen = (boolean) getArea("kitchen").getAttribute("human");
-//            logger.info("Human {} the kitchen", !isHumanInTheKitchen ? "entered" : "left");
-//            getArea("kitchen").setAttribute("human", !isHumanInTheKitchen);
-//        }
     }
 
     public String getSimulationTimeString() {
@@ -83,6 +80,61 @@ public class EnvironmentService {
             logger.error("We went into negative power consumption, something had to go wrong!!!");
             currentPowerConsumption = 0;
         }
+    }
+
+    public synchronized int getCredits() {
+        return credits;
+    }
+
+    /** Try to buy exactly batchSize(item) units.
+     * @return number of units actually bought (0 if insufficient credits) */
+    public int buyBatch(String itemName) {
+        int batch = batchSize.getOrDefault(itemName, 1);
+        int pricePerUnit = unitPrice.getOrDefault(itemName, Integer.MAX_VALUE);
+        int totalCost = batch * pricePerUnit;
+        if (credits >= totalCost) {
+            credits -= totalCost;
+            return batch;
+        } else {
+            return 0;
+        }
+    }
+
+    /** Try to buy up to 'needed' units, in allowed batch multiples.
+     * e.g if batch = 6 and needed = 4, you end up buying 6. */
+    public int buyNeeded(String itemName, int needed) {
+        int batch = batchSize.getOrDefault(itemName, 1);
+        int pricePerUnit = unitPrice.getOrDefault(itemName, Integer.MAX_VALUE);
+
+        int batches = (needed + batch - 1) / batch;
+        int cost = batches * batch * pricePerUnit;
+        if (credits >= cost) {
+            credits -= cost;
+            return batches * batch;
+        } else {
+            if (credits >= batch * pricePerUnit) {
+                credits -= batch * pricePerUnit;
+                return batch;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    public void initializePriceMaps() {
+        unitPrice.put("Milk", 2);
+        unitPrice.put("Eggs", 3);
+        unitPrice.put("Butter", 5);
+        unitPrice.put("Cheese", 4);
+        unitPrice.put("Yogurt", 1);
+        unitPrice.put("Juice", 3);
+
+        batchSize.put("Eggs", 6);
+        batchSize.put("Milk", 1);
+        batchSize.put("Butter",1);
+        batchSize.put("Cheese",1);
+        batchSize.put("Yogurt",1);
+        batchSize.put("Juice",1);
     }
 
     public void addArea(String name, Area area) {

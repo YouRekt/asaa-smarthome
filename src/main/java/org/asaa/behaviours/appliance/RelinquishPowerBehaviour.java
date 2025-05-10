@@ -28,5 +28,6 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
         inform.setContent(Integer.toString(amount));
         smartApplianceAgent.send(inform);
         logger.info("Sent INFORM for {}W, convId={}", amount, convId);
+        smartApplianceAgent.setWorking(false);
     }
 }

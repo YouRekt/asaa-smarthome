@@ -14,7 +14,7 @@ public final class TemperatureSensorAgent extends SensorAgent {
     }
 
     @Override
-    protected String responseMsgContent() {
+    protected String responseDefaultMsgContent() {
         return getTemperatureString();
     }
 

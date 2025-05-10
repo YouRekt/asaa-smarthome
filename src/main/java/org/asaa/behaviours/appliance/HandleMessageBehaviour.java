@@ -18,6 +18,12 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         final ACLMessage msg = myAgent.receive();
 
         if (msg != null) {
+            if (!smartApplianceAgent.isEnabled() &&
+                    (msg.getConversationId() == null ||
+                            !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active")))) {
+                logger.warn("{} is not enabled. Ignoring message {} {}", smartApplianceAgent.getLocalName(), msg.getConversationId(), msg.getContent());
+                return;
+            }
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
             super.processMsg(msg);
         } else {

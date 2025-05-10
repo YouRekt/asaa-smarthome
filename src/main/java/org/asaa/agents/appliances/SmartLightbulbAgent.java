@@ -10,7 +10,7 @@ public final class SmartLightbulbAgent extends SmartApplianceAgent {
     }
 
     @Override
-    protected String responseMsgContent() {
+    protected String responseDefaultMsgContent() {
         return String.valueOf(isEnabled);
     }
 }

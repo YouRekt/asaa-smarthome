@@ -39,12 +39,20 @@ public class AgentScanningBehaviour extends TickerBehaviour {
             try {
                 final DFAgentDescription dfd = new DFAgentDescription();
                 dfd.addServices(sd);
-                final List<AID> foundAgents = Arrays.stream(DFService.search(coordinatorAgent, dfd)).map(DFAgentDescription::getName).toList();
 
-                for (AID agent : foundAgents)
-                    agents.put(agent.getClass().getSimpleName(), foundAgents);
+                DFAgentDescription[] results = DFService.search(coordinatorAgent, dfd);
 
-                //coordinatorAgent.getLogger().info("Found {} agents:\n {}", foundAgents.size(), foundAgents);
+                for (DFAgentDescription desc : results) {
+                    jade.util.leap.Iterator it = desc.getAllServices();
+                    while (it.hasNext()) {
+                        ServiceDescription service = (ServiceDescription) it.next();
+                        String type = service.getType();
+
+                        agents.computeIfAbsent(type, k -> new ArrayList<>()).add(desc.getName());
+                    }
+                }
+
+                CoordinatorAgent.getLogger().info("Found {} agents in {}:\n {}", agents.size(), area, agents);
                 coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);

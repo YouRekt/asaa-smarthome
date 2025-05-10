@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class ScheduleLoopBehaviour extends TickerBehaviour {
     private final EnvironmentService env;
@@ -69,6 +70,11 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
         // At 8AM perform Morning Schedule
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
+            try {
+                TimeUnit.SECONDS.sleep(7);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             oneShotSchedules.put("routine-morning", true);
             startMorningSchedule();
         }

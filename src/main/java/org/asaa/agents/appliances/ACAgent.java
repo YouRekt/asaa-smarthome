@@ -34,17 +34,12 @@ public final class ACAgent extends SmartApplianceAgent {
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
-                if (!isEnabled) {
-                    logger.debug("Ignoring INFORM because not enabled");
-                    return;
-                }
-
                 double temperature = Double.parseDouble(msg.getContent());
                 if (temperature > targetTemperature) {
                     if (!isWorking) {
                         String replyWith = "req-" + System.currentTimeMillis();
                         smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
-                        addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, "enable-active", replyWith));
+                        addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
                     } else performCooling(temperature);
                 } else {
                     if (isWorking) {
@@ -55,7 +50,7 @@ public final class ACAgent extends SmartApplianceAgent {
                 }
             }
         });
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, "enable-passive", ""));
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
         addBehaviour(new AwaitEnableBehaviour(this, () -> {
             while (!findTemperatureSensor()) {
                 logger.info("Looking for temperature sensor");
@@ -121,11 +116,16 @@ public final class ACAgent extends SmartApplianceAgent {
 
     @Override
     protected void handleTrigger() {
-        isWorking = !isWorking;
+        logger.warn("I have been triggered without a purpose! {}", (isWorking ? "active -> idle" : "idle -> active"));
+        if (isWorking) {
+            addBehaviour(new RelinquishPowerBehaviour(this, activeDraw, "disable-active"));
+        } else {
+            addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", ""));
+        }
     }
 
     @Override
-    protected String responseMsgContent() {
+    protected String responseDefaultMsgContent() {
         return String.valueOf(isWorking);
     }
 }

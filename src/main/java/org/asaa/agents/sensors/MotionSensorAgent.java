@@ -33,7 +33,7 @@ public final class MotionSensorAgent extends SensorAgent {
     }
 
     @Override
-    protected String responseMsgContent() {
+    protected String responseDefaultMsgContent() {
         return getHumanPresenceString();
     }
 

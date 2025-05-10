@@ -23,6 +23,7 @@ public class ApplicationController {
     @PostMapping("/start")
     public ResponseEntity<Void> start() {
         jadeService.start();
+        environmentService.initializePriceMaps();
         environmentService.startSimulation();
 
         return ResponseEntity.ok().build();
