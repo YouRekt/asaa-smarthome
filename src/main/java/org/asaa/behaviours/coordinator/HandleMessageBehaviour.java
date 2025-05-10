@@ -31,6 +31,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         }
     }
 
+    // TODO: Add negotiations
     @Override
     protected void handleCfp(ACLMessage msg) {
         var availablePower = environmentService.getPowerAvailability();

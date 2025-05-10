@@ -29,7 +29,7 @@ public final class ACAgent extends SmartApplianceAgent {
         super.setup();
 
         idleDraw = 10;
-        activeDraw = 1990;
+        activeDraw = 190;
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
