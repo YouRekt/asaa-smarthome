@@ -66,6 +66,30 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                 }
 
                 CoordinatorAgent.getLogger().debug("Found {} agents in {}:\n {}", agents.size(), area, agents);
+
+                Map<String, List<AID>> oldAgentsMap = coordinatorAgent.getPhysicalAgents().get(environmentService.getArea(area));
+                if (oldAgentsMap != null) {
+                    for (var entry : agents.entrySet()) {
+                        String agentClass = entry.getKey();
+                        List<AID> newList = entry.getValue();
+
+                        List<AID> oldList = oldAgentsMap.getOrDefault(agentClass, Collections.emptyList());
+
+                        for (AID aid : newList) {
+                            if (!oldList.contains(aid)) {
+                                coordinatorAgent.onAgentDiscovered(area, agentClass, aid); // Replace with frontend function
+                            }
+                        }
+                    }
+                } else {
+                    for (var entry : agents.entrySet()) {
+                        String agentClass = entry.getKey();
+                        for (AID aid : entry.getValue()) {
+                            coordinatorAgent.onAgentDiscovered(area, agentClass, aid); // Replace with frontend function
+                        }
+                    }
+                }
+
                 coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);
