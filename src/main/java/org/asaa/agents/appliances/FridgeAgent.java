@@ -23,6 +23,8 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
         super.setup();
 
+        runnables.add(this::initializeFridgeItems);
+
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
@@ -74,10 +76,10 @@ public final class FridgeAgent extends SmartApplianceAgent {
                 }
             }
         });
+
         addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-        addBehaviour(new AwaitEnableBehaviour(this, () -> {
-            initializeFridgeItems();
-        }));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     private void initializeFridgeItems() {

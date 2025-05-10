@@ -15,10 +15,10 @@ public final class SmartLightbulbAgent extends SmartApplianceAgent {
         super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this));
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-        addBehaviour(new AwaitEnableBehaviour(this, () -> {
 
-        }));
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     @Override

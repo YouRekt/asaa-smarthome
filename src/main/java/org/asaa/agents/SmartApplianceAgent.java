@@ -1,6 +1,7 @@
 package org.asaa.agents;
 
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import lombok.Getter;
 import lombok.Setter;
 import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
@@ -29,6 +30,10 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected int idleDraw = 0;
     @Getter
     protected int activeDraw = 0;
+    protected final long awaitEnablePeriod = 1000;
+
+    protected final List<Runnable> runnables = new ArrayList<>();
+    protected final List<Behaviour> behaviours = new ArrayList<>();
 
     public final void subscribeSensor(AID aid, String sensorType) {
         subscribedSensors.computeIfAbsent(sensorType, k -> new ArrayList<>()).add(aid);
