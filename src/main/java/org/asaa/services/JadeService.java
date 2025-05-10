@@ -72,7 +72,7 @@ public class JadeService {
             try {
                 container = jadeExecutor.submit(() -> runtime.createMainContainer(profile)).get();
 
-//                runGUI(container);
+                runGUI(container);
                 runAgents(container);
 
             } catch (final InterruptedException | ExecutionException e) {
