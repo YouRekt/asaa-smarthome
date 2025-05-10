@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Client } from "@stomp/stompjs";
+import { Button } from "@/components/ui/button";
 
 type Agent = {
+	aid: string;
 	name: string;
 	area: string;
-	status: string;
 };
 
 const Agents = () => {
@@ -17,29 +18,7 @@ const Agents = () => {
 			onConnect: () => {
 				stompClient.subscribe("/topic/agent", (message) => {
 					const data = JSON.parse(message.body);
-					setAgents((prev) => {
-						// Update existing agent or add new one
-						const existingIndex = prev.findIndex(
-							(a) => a.name === data.agentName
-						);
-						if (existingIndex >= 0) {
-							const newAgents = [...prev];
-							newAgents[existingIndex] = {
-								name: data.agentName,
-								area: data.area,
-								status: data.message,
-							};
-							return newAgents;
-						}
-						return [
-							...prev,
-							{
-								name: data.agentName,
-								area: data.area,
-								status: data.message,
-							},
-						];
-					});
+					setAgents((prevAgents) => [...prevAgents, data]);
 				});
 			},
 			debug: (str) => console.log("[STOMP]", str),
@@ -53,18 +32,21 @@ const Agents = () => {
 	}, []);
 
 	return (
-		<div className="agents-container">
-			<h2>Agents</h2>
-			<div className="agents-grid">
-				{agents.map((agent) => (
-					<div key={agent.name} className="agent-card">
-						<h3>{agent.name}</h3>
-						<p>Area: {agent.area}</p>
-						<p>Status: {agent.status}</p>
-					</div>
-				))}
-			</div>
-		</div>
+		<>
+			{agents.map((agent, index) => (
+				<div
+					key={agent.aid}
+					className="absolute top-10 bg-red-500/25 rounded-md p-2"
+					style={{
+						left: `${index * 200 + 100}px`,
+					}}
+				>
+					<h3 className="left-[100px]">{agent.name}</h3>
+					<p>Area: {agent.area}</p>
+					<Button>Do sth</Button>
+				</div>
+			))}
+		</>
 	);
 };
 

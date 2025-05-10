@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import HouseMap from "@/components/HouseMap";
 import EnvironmentViewer from "@/components/EnvironmentViewer";
+import Agents from "@/components/Agents";
 
 export default function App() {
 	const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
@@ -15,6 +16,7 @@ export default function App() {
 		<div className="flex h-screen">
 			<div className="flex-1 p-4 relative" ref={floorPlanContainerRef}>
 				<HouseMap onRoomClick={handleRoomClick} />
+				<Agents />
 			</div>
 			<div className="w-1/3 border-l p-4">
 				<h2 className="text-xl font-semibold mb-2">

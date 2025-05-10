@@ -10,17 +10,20 @@ import jade.domain.FIPAException;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.asaa.services.EnvironmentService;
+import org.asaa.util.AgentPresenceController;
 
 import java.util.*;
 
 public class AgentScanningBehaviour extends TickerBehaviour {
     private final CoordinatorAgent coordinatorAgent;
     private final EnvironmentService environmentService;
+    private final AgentPresenceController agentPresenceController;
 
     public AgentScanningBehaviour(CoordinatorAgent coordinatorAgent, long period) {
         super(coordinatorAgent, period);
         this.coordinatorAgent = coordinatorAgent;
         this.environmentService = coordinatorAgent.environmentService;
+        this.agentPresenceController = coordinatorAgent.agentPresenceController;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
 
                         for (AID aid : newList) {
                             if (!oldList.contains(aid)) {
-                                coordinatorAgent.onAgentDiscovered(area, agentClass, aid); // Replace with frontend function
+                                agentPresenceController.updatePresence(aid.getName(), area, agentClass);
                             }
                         }
                     }
@@ -85,7 +88,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                     for (var entry : agents.entrySet()) {
                         String agentClass = entry.getKey();
                         for (AID aid : entry.getValue()) {
-                            coordinatorAgent.onAgentDiscovered(area, agentClass, aid); // Replace with frontend function
+                            agentPresenceController.updatePresence(aid.getName(), area, agentClass);
                         }
                     }
                 }
