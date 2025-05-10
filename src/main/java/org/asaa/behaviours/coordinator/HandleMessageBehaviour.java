@@ -86,6 +86,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 environmentService.modifyPowerConsumption(-returnedPower);
                 break;
             case "get-missing-items":
+            case "action-morning":
                 if (msg.getContent().isEmpty()) {
                     logger.info("No missing items in fridge to buy");
                     return;

@@ -28,7 +28,7 @@ public class EnvironmentService {
     private final Random rand = new Random();
 
     // Power
-    private final int MAX_POWER_CAPACITY = 2000;
+    private final int MAX_POWER_CAPACITY = 350;
     private int currentPowerConsumption = 0;
 
     // Money
@@ -45,7 +45,7 @@ public class EnvironmentService {
     public void startSimulation() {
         if (future != null && future.isDone()) return;
 
-        simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 40));
+        simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 50));
         Area kitchen = new Area("kitchen");
         kitchen.setAttribute("temperature", 20.0);
         kitchen.setAttribute("human", false);

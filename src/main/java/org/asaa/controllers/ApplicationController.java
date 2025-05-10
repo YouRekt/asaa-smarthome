@@ -22,17 +22,17 @@ public class ApplicationController {
 
     @PostMapping("/start")
     public ResponseEntity<Void> start() {
-        jadeService.start();
         environmentService.initializePriceMaps();
         environmentService.startSimulation();
+        jadeService.start();
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/stop")
     public ResponseEntity<Void> stop() {
-        jadeService.stop();
         environmentService.stopSimulation();
+        jadeService.stop();
         return ResponseEntity.ok().build();
     }
 

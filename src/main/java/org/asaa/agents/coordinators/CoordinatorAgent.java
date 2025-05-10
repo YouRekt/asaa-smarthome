@@ -49,18 +49,20 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         }
     }
 
-    private AID getFridgeAIDForArea(String area) {
-        Area kitchenArea = environmentService.getArea(area);
-        Map<String, List<AID>> agentsInArea = physicalAgents.get(kitchenArea);
+    private List<AID> getAgentListAIDForArea(String agentClass, String areaStr) {
+        Area area = environmentService.getArea(areaStr);
+        Map<String, List<AID>> agentsInArea = physicalAgents.get(area);
 
-        if (agentsInArea != null) {
-            List<AID> fridgeAgents = agentsInArea.get("FridgeAgent");
-            if (fridgeAgents != null && !fridgeAgents.isEmpty()) {
-                return fridgeAgents.getFirst();
-            }
+        if (agentsInArea == null) {
+            return Collections.emptyList();
         }
 
-        return null;
+        List<AID> agents = agentsInArea.get(agentClass);
+        if (agents == null || agents.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return agents;
     }
 
     public void performMorningRoutine() {
@@ -75,15 +77,25 @@ public final class CoordinatorAgent extends SpringAwareAgent {
             * Play morning playlist
             * Perform resource check (for simplicity now just check the fridge and maybe order missing items)
          */
-        AID fridgeAgent = getFridgeAIDForArea("kitchen");
+        List<AID> receivers = new ArrayList<>();
+
+        List<AID> fridgeAgents = getAgentListAIDForArea("FridgeAgent", "kitchen");
+        AID fridgeAgent = (!fridgeAgents.isEmpty()) ? fridgeAgents.getFirst() : null;
         if (fridgeAgent == null) {
             logger.warn("Morning Routine | Fridge agent not found in kitchen");
-            return;
         }
+        receivers.add(fridgeAgent);
+
+        List<AID> coffeeAgents = getAgentListAIDForArea("CoffeeMachineAgent", "kitchen");
+        AID coffeeAgent = (!coffeeAgents.isEmpty()) ? coffeeAgents.getFirst() : null;
+        if (coffeeAgent == null) {
+            logger.warn("Morning Routine | Coffee agent not found in kitchen");
+        }
+        receivers.add(coffeeAgent);
 
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-        msg.addReceiver(fridgeAgent);
-        msg.setConversationId("get-missing-items");
+        receivers.forEach(msg::addReceiver);
+        msg.setConversationId("action-morning");
         send(msg);
     }
 }
