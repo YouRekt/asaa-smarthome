@@ -8,7 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.asaa.util.Util;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -36,7 +38,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         oneShotSchedules.put("routine-morning", false);
 
         // These are more cyclical (once 30 minutes etc.)
-        cyclicSchedules.put("kitchen-temp", LocalDateTime.now());
+        cyclicSchedules.put("kitchen-temp", LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45)));
     }
 
     // Reset all scheduled events so they can be executed again

@@ -10,17 +10,20 @@ import jade.domain.FIPAException;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.asaa.services.EnvironmentService;
+import org.asaa.util.AgentPresenceController;
 
 import java.util.*;
 
 public class AgentScanningBehaviour extends TickerBehaviour {
     private final CoordinatorAgent coordinatorAgent;
     private final EnvironmentService environmentService;
+    private final AgentPresenceController agentPresenceController;
 
     public AgentScanningBehaviour(CoordinatorAgent coordinatorAgent, long period) {
         super(coordinatorAgent, period);
         this.coordinatorAgent = coordinatorAgent;
         this.environmentService = coordinatorAgent.environmentService;
+        this.agentPresenceController = coordinatorAgent.agentPresenceController;
     }
 
     @Override
@@ -49,10 +52,47 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                         String type = service.getType();
 
                         agents.computeIfAbsent(type, k -> new ArrayList<>()).add(desc.getName());
+
+                        jade.util.leap.Iterator propIt = service.getAllProperties();
+                        while (propIt.hasNext()) {
+                            Property prop = (Property) propIt.next();
+                            if ("agentPriority".equals(prop.getName())) {
+                                try {
+                                    int priority = Integer.parseInt(prop.getValue().toString());
+                                    coordinatorAgent.registerAgentPriority(desc.getName(), priority);
+                                } catch (NumberFormatException e) {
+                                    CoordinatorAgent.getLogger().warn("Invalid priority for {}: {}", desc.getName(), prop.getValue());
+                                }
+                            }
+                        }
                     }
                 }
 
                 CoordinatorAgent.getLogger().debug("Found {} agents in {}:\n {}", agents.size(), area, agents);
+
+                Map<String, List<AID>> oldAgentsMap = coordinatorAgent.getPhysicalAgents().get(environmentService.getArea(area));
+                if (oldAgentsMap != null) {
+                    for (var entry : agents.entrySet()) {
+                        String agentClass = entry.getKey();
+                        List<AID> newList = entry.getValue();
+
+                        List<AID> oldList = oldAgentsMap.getOrDefault(agentClass, Collections.emptyList());
+
+                        for (AID aid : newList) {
+                            if (!oldList.contains(aid)) {
+                                agentPresenceController.updatePresence(aid.getName(), area, agentClass);
+                            }
+                        }
+                    }
+                } else {
+                    for (var entry : agents.entrySet()) {
+                        String agentClass = entry.getKey();
+                        for (AID aid : entry.getValue()) {
+                            agentPresenceController.updatePresence(aid.getName(), area, agentClass);
+                        }
+                    }
+                }
+
                 coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);

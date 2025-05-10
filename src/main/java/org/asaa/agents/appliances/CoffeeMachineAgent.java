@@ -12,11 +12,11 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 5;
         activeDraw = 120;
         priority = 10;
+
+        super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
@@ -30,10 +30,10 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
                 }
             }
         });
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-        addBehaviour(new AwaitEnableBehaviour(this, () -> {
 
-        }));
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     private void makeCoffee() {

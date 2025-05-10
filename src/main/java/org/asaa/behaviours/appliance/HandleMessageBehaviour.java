@@ -20,7 +20,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         if (msg != null) {
             if (!smartApplianceAgent.isEnabled() &&
                     (msg.getConversationId() == null ||
-                            !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active")))) {
+                            !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief")))) {
                 logger.warn("{} is not enabled. Ignoring message {} {}", smartApplianceAgent.getLocalName(), msg.getConversationId(), msg.getContent());
                 return;
             }
@@ -69,6 +69,51 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 break;
             default:
                 super.handleAgree(msg);
+        }
+    }
+
+    @Override
+    protected void handleCfp(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "power-relief":
+                int canFree = 0;
+                if (smartApplianceAgent.isWorking()) {
+                    if (smartApplianceAgent.isInterruptible()) {
+                        canFree = smartApplianceAgent.getActiveDraw();
+                    } else {
+                        ACLMessage reply = msg.createReply();
+                        reply.setPerformative(ACLMessage.REFUSE);
+                        smartApplianceAgent.send(reply);
+                        return;
+                    }
+                } else if (smartApplianceAgent.isEnabled()) {
+                    canFree = smartApplianceAgent.getIdleDraw();
+                }
+
+                logger.info("APPLIANCE CFP: {} canFree={}", myAgent.getLocalName(), canFree);
+                ACLMessage propose = msg.createReply();
+                propose.setPerformative(ACLMessage.PROPOSE);
+                propose.setContent(Integer.toString(canFree));
+                smartApplianceAgent.send(propose);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void handleAcceptProposal(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "power-relief":
+                int freed = Integer.parseInt(msg.getContent());
+                if (smartApplianceAgent.isWorking()) {
+                    smartApplianceAgent.addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, freed, "disable-active-cfp"));
+                } else {
+                    smartApplianceAgent.addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, freed, "disable-passive-cfp"));
+                }
+                break;
+            default:
+                break;
         }
     }
 }

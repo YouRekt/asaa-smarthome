@@ -17,11 +17,13 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 200; // We assume that the fridge is always fully on or off
         activeDraw = 0;
         priority = 999;
+
+        super.setup();
+
+        runnables.add(this::initializeFridgeItems);
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
@@ -74,10 +76,10 @@ public final class FridgeAgent extends SmartApplianceAgent {
                 }
             }
         });
+
         addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-        addBehaviour(new AwaitEnableBehaviour(this, () -> {
-            initializeFridgeItems();
-        }));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     private void initializeFridgeItems() {

@@ -26,11 +26,24 @@ public final class ACAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 10;
         activeDraw = 190;
         priority = 50;
+
+        super.setup();
+
+        runnables.add(() -> {while (!findTemperatureSensor()) {
+            logger.info("Looking for temperature sensor");
+        }});
+
+        behaviours.add(new TickerBehaviour(this, 10000) {
+            @Override
+            protected void onTick() {
+                if (!isWorking) {
+                    requestTemperature();
+                }
+            }
+        });
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
@@ -51,21 +64,10 @@ public final class ACAgent extends SmartApplianceAgent {
                 }
             }
         });
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-        addBehaviour(new AwaitEnableBehaviour(this, () -> {
-            while (!findTemperatureSensor()) {
-                logger.info("Looking for temperature sensor");
-            }
 
-            addBehaviour(new TickerBehaviour(this, 10000) {
-                @Override
-                protected void onTick() {
-                    if (!isWorking) {
-                        requestTemperature();
-                    }
-                }
-            });
-        }));
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     private boolean findTemperatureSensor() {

@@ -1,32 +1,43 @@
 package org.asaa.behaviours.appliance;
 
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class AwaitEnableBehaviour extends Behaviour {
+import java.util.ArrayList;
+import java.util.List;
+
+public class AwaitEnableBehaviour extends TickerBehaviour {
     private final SmartApplianceAgent smartApplianceAgent;
-    private final Runnable action;
-    private boolean executed = false;
+    private final List<Runnable> runnables = new ArrayList<>();
+    private final List<Behaviour> behaviours = new ArrayList<>();
+    private final Logger logger;
+    private boolean previouslyEnabled = false;
 
-    public AwaitEnableBehaviour(SmartApplianceAgent smartApplianceAgent, Runnable action) {
-        super(smartApplianceAgent);
+    public AwaitEnableBehaviour(SmartApplianceAgent smartApplianceAgent, long period, List<Runnable> runnables, List<Behaviour> behaviours) {
+        super(smartApplianceAgent, period);
         this.smartApplianceAgent = smartApplianceAgent;
-        this.action = action;
+        this.runnables.addAll(runnables);
+        this.behaviours.addAll(behaviours);
+        this.logger = LoggerFactory.getLogger(smartApplianceAgent.getLocalName());
     }
 
     @Override
-    public void action() {
-        if (smartApplianceAgent.isEnabled() && !executed) {
-            action.run();
-            executed = true;
-        } else {
-            block(Util.AWAIT_ENABLE_BLOCK_TIME);
+    public void onTick() {
+        if (smartApplianceAgent.isEnabled() && !previouslyEnabled) {
+            previouslyEnabled = true;
+            logger.info("{} enabled, starting runnables & behaviours", smartApplianceAgent.getLocalName());
+
+            runnables.forEach(Runnable::run);
+            behaviours.forEach(smartApplianceAgent::addBehaviour);
+        } else if (!smartApplianceAgent.isEnabled() && previouslyEnabled) {
+            previouslyEnabled = false;
+            logger.info("{} disabled, stopping runnables & behaviours", smartApplianceAgent.getLocalName());
+
+            behaviours.forEach(smartApplianceAgent::removeBehaviour);
         }
-    }
-
-    @Override
-    public boolean done() {
-        return executed;
     }
 }

@@ -2,10 +2,12 @@ package org.asaa.services;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
+import org.asaa.dto.AreaDTO;
+import org.asaa.dto.EnvironmentDTO;
 import org.asaa.environment.Area;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,34 +24,50 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Accessors(chain = true)
 public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
-    private final Map<String, Area> areas = new HashMap<>();
     private final Random rand = new Random();
-
-    // Power
-    private final int MAX_POWER_CAPACITY = 350;
-    private int currentPowerConsumption = 0;
-
-    // Money
-    private int credits = 9999;
-    private final Map<String, Integer> unitPrice = new HashMap<>(); // price per single unit
-    private final Map<String, Integer> batchSize = new HashMap<>(); // minimal purchase batch size per item
-
-    @Setter
-    private int delta = 1;
     @Getter
+    @Setter
+    private Map<String, Area> areas = new HashMap<>();
+    @Getter
+    @Setter
+    private Map<String, Integer> unitPrice = new HashMap<>(); // price per single unit
+    @Getter
+    @Setter
+    private Map<String, Integer> batchSize = new HashMap<>(); // minimal purchase batch size per item
+    // Power
+    @Getter
+    @Setter
+    private int MAX_POWER_CAPACITY = 400;
+    @Getter
+    private int currentPowerConsumption = 0;
+    // Money
+    @Getter
+    @Setter
+    private int credits = 9999;
+    @Getter
+    @Setter
+    private int timeDelta = 1;
+    @Getter
+    @Setter
     private LocalDateTime simulationTime;
+    @Getter
     private ScheduledFuture<?> future;
+    @Setter
+    private boolean configProvided = false;
 
     public void startSimulation() {
         if (future != null && future.isDone()) return;
-
-        simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 50));
-        Area kitchen = new Area("kitchen");
-        kitchen.setAttribute("temperature", 20.0);
-        kitchen.setAttribute("human", false);
-        addArea("kitchen", kitchen);
+        if (!configProvided) {
+            simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
+            Area kitchen = new Area("kitchen");
+            kitchen.setAttribute("temperature", 20.0);
+            kitchen.setAttribute("human", false);
+            addArea("kitchen", kitchen);
+            initializePriceMaps();
+        }
         future = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
     }
 
@@ -63,7 +81,7 @@ public class EnvironmentService {
     }
 
     private void tick() {
-        simulationTime = simulationTime.plusMinutes(delta);
+        simulationTime = simulationTime.plusMinutes(timeDelta);
     }
 
     public String getSimulationTimeString() {
@@ -77,20 +95,22 @@ public class EnvironmentService {
     public synchronized void modifyPowerConsumption(int powerConsumption) {
         currentPowerConsumption += powerConsumption;
         if (currentPowerConsumption > MAX_POWER_CAPACITY) {
-            logger.error("We went over MAX_POWER_CAPACITY, something had to go wrong!!!");
-            currentPowerConsumption = MAX_POWER_CAPACITY;
+            logger.error("We went over MAX_POWER_CAPACITY, something had to go wrong!!! {}", currentPowerConsumption);
         } else if (currentPowerConsumption < 0) {
-            logger.error("We went into negative power consumption, something had to go wrong!!!");
-            currentPowerConsumption = 0;
+            logger.error("We went into negative power consumption, something had to go wrong!!! {}", currentPowerConsumption);
         }
+        logger.info("Current power consumption is {}", currentPowerConsumption);
     }
 
-    public synchronized int getCredits() {
-        return credits;
-    }
+//    public synchronized int getCredits() {
+//        return credits;
+//    }
 
-    /** Try to buy exactly batchSize(item) units.
-     * @return number of units actually bought (0 if insufficient credits) */
+    /**
+     * Try to buy exactly batchSize(item) units.
+     *
+     * @return number of units actually bought (0 if insufficient credits)
+     */
     public int buyBatch(String itemName) {
         int batch = batchSize.getOrDefault(itemName, 1);
         int pricePerUnit = unitPrice.getOrDefault(itemName, Integer.MAX_VALUE);
@@ -103,8 +123,10 @@ public class EnvironmentService {
         }
     }
 
-    /** Try to buy up to 'needed' units, in allowed batch multiples.
-     * e.g if batch = 6 and needed = 4, you end up buying 6. */
+    /**
+     * Try to buy up to 'needed' units, in allowed batch multiples.
+     * e.g if batch = 6 and needed = 4, you end up buying 6.
+     */
     public int buyNeeded(String itemName, int needed) {
         int batch = batchSize.getOrDefault(itemName, 1);
         int pricePerUnit = unitPrice.getOrDefault(itemName, Integer.MAX_VALUE);
@@ -134,10 +156,10 @@ public class EnvironmentService {
 
         batchSize.put("Eggs", 6);
         batchSize.put("Milk", 1);
-        batchSize.put("Butter",1);
-        batchSize.put("Cheese",1);
-        batchSize.put("Yogurt",1);
-        batchSize.put("Juice",1);
+        batchSize.put("Butter", 1);
+        batchSize.put("Cheese", 1);
+        batchSize.put("Yogurt", 1);
+        batchSize.put("Juice", 1);
     }
 
     public void addArea(String name, Area area) {

@@ -8,17 +8,17 @@ import org.asaa.behaviours.appliance.RequestPowerBehaviour;
 public final class SmartLightbulbAgent extends SmartApplianceAgent {
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 5;
         activeDraw = 0;
         priority = 15;
 
-        addBehaviour(new HandleMessageBehaviour(this));
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-        addBehaviour(new AwaitEnableBehaviour(this, () -> {
+        super.setup();
 
-        }));
+        addBehaviour(new HandleMessageBehaviour(this));
+
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     @Override
