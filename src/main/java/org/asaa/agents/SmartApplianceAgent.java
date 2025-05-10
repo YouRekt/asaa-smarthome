@@ -17,6 +17,8 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     public final Map<String, Runnable> onPowerGrantedCallbacks = new ConcurrentHashMap<>();
 
     protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
+    protected final List<Runnable> runnables = new ArrayList<>();
+    protected final List<Behaviour> behaviours = new ArrayList<>();
     @Setter
     @Getter
     protected boolean isEnabled = false;
@@ -31,9 +33,6 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     @Getter
     protected int activeDraw = 0;
     protected final long awaitEnablePeriod = 1000;
-
-    protected final List<Runnable> runnables = new ArrayList<>();
-    protected final List<Behaviour> behaviours = new ArrayList<>();
 
     public final void subscribeSensor(AID aid, String sensorType) {
         subscribedSensors.computeIfAbsent(sensorType, k -> new ArrayList<>()).add(aid);

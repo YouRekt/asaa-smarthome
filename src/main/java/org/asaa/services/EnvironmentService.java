@@ -3,8 +3,6 @@ package org.asaa.services;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.asaa.dto.AreaDTO;
-import org.asaa.dto.EnvironmentDTO;
 import org.asaa.environment.Area;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,13 +1,11 @@
 package org.asaa.behaviours.coordinator;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 
 public class ReliefNegotiationBehaviour extends TickerBehaviour {
     private final CoordinatorAgent coordinatorAgent;

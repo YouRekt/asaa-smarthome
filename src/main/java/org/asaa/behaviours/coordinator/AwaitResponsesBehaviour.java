@@ -3,7 +3,6 @@ package org.asaa.behaviours.coordinator;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.CoordinatorAgent;
-import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
 
 public class AwaitResponsesBehaviour extends TickerBehaviour {
     private final CoordinatorAgent coordinatorAgent;

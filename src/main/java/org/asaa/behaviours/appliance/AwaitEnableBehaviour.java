@@ -3,7 +3,6 @@ package org.asaa.behaviours.appliance;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
