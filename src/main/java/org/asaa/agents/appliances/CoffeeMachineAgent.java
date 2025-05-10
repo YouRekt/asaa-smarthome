@@ -12,11 +12,11 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 5;
         activeDraw = 120;
         priority = 10;
+
+        super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override

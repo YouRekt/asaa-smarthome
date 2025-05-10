@@ -17,11 +17,11 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 200; // We assume that the fridge is always fully on or off
         activeDraw = 0;
         priority = 999;
+
+        super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override

@@ -28,7 +28,7 @@ public class EnvironmentService {
     private final Random rand = new Random();
 
     // Power
-    private final int MAX_POWER_CAPACITY = 350;
+    private final int MAX_POWER_CAPACITY = 400;
     private int currentPowerConsumption = 0;
 
     // Money
@@ -45,7 +45,7 @@ public class EnvironmentService {
     public void startSimulation() {
         if (future != null && future.isDone()) return;
 
-        simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 50));
+        simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
         Area kitchen = new Area("kitchen");
         kitchen.setAttribute("temperature", 20.0);
         kitchen.setAttribute("human", false);
@@ -77,12 +77,11 @@ public class EnvironmentService {
     public synchronized void modifyPowerConsumption(int powerConsumption) {
         currentPowerConsumption += powerConsumption;
         if (currentPowerConsumption > MAX_POWER_CAPACITY) {
-            logger.error("We went over MAX_POWER_CAPACITY, something had to go wrong!!!");
-            currentPowerConsumption = MAX_POWER_CAPACITY;
+            logger.error("We went over MAX_POWER_CAPACITY, something had to go wrong!!! {}", currentPowerConsumption);
         } else if (currentPowerConsumption < 0) {
-            logger.error("We went into negative power consumption, something had to go wrong!!!");
-            currentPowerConsumption = 0;
+            logger.error("We went into negative power consumption, something had to go wrong!!! {}", currentPowerConsumption);
         }
+        logger.info("Current power consumption is {}", currentPowerConsumption);
     }
 
     public synchronized int getCredits() {

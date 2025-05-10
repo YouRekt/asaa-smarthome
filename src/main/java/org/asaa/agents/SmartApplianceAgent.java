@@ -24,8 +24,10 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected boolean isWorking = false;
     @Setter
     @Getter
-    protected int priority = 0;
+    protected boolean isInterruptible = true;
+    @Getter
     protected int idleDraw = 0;
+    @Getter
     protected int activeDraw = 0;
 
     public final void subscribeSensor(AID aid, String sensorType) {

@@ -26,11 +26,11 @@ public final class ACAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 10;
         activeDraw = 190;
         priority = 50;
+
+        super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override

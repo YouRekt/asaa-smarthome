@@ -17,6 +17,7 @@ public abstract class BaseMessageHandler extends CyclicBehaviour {
 
     public void processMsg(ACLMessage msg) {
         switch (msg.getPerformative()) {
+            case ACLMessage.ACCEPT_PROPOSAL -> handleAcceptProposal(msg);
             case ACLMessage.AGREE -> handleAgree(msg);
             case ACLMessage.CANCEL -> handleCancel(msg);
             case ACLMessage.CFP -> handleCfp(msg);
@@ -41,6 +42,9 @@ public abstract class BaseMessageHandler extends CyclicBehaviour {
             case ACLMessage.UNKNOWN -> handleUnknown(msg);
             default -> block();
         }
+    }
+
+    protected void handleAcceptProposal(ACLMessage msg) {
     }
 
     protected void handleAgree(ACLMessage msg) {
