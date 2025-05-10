@@ -86,6 +86,7 @@ public class JadeService {
         if (container != null) {
             try {
                 container.kill();
+                container = null;
             } catch (StaleProxyException e) {
                 logger.error(e.getMessage());
                 throw new RuntimeException(e);

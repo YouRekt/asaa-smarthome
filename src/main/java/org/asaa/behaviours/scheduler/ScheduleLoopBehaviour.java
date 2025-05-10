@@ -76,6 +76,11 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         // TODO: Check if the day has ended and call resetSchedulesStatus()
     }
 
+    private double computeTemp(int hour, double avg, double amp, int peakHour) {
+        double radians = 2 * Math.PI * (hour - peakHour) / 24.0;
+        return avg + amp * Math.sin(radians);
+    }
+
     private void startMorningSchedule() {
         // CRITICAL: Think about how we are going to filter different messages:
         // Currently we use performatives, but that means we need to include all info (so what to do)

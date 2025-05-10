@@ -1,5 +1,6 @@
 package org.asaa.controllers;
 
+import org.asaa.dto.DeltaRequest;
 import org.asaa.services.EnvironmentService;
 import org.asaa.services.JadeService;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +36,8 @@ public class ApplicationController {
     }
 
     @PostMapping("/delta")
-    public ResponseEntity<Void> setTime(@RequestParam("delta") int delta) {
-        environmentService.setDelta(delta);
+    public ResponseEntity<Void> setTime(@RequestBody DeltaRequest delta) {
+        environmentService.setDelta(delta.getDelta());
         return ResponseEntity.ok().build();
     }
 }

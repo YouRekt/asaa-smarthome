@@ -14,7 +14,6 @@ import org.asaa.behaviours.appliance.AwaitEnableBehaviour;
 import org.asaa.behaviours.appliance.HandleMessageBehaviour;
 import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
 import org.asaa.behaviours.appliance.RequestPowerBehaviour;
-import org.asaa.environment.Environment;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -29,8 +28,8 @@ public final class ACAgent extends SmartApplianceAgent {
     protected void setup() {
         super.setup();
 
-        activeDraw = 2000 - idleDraw;
         idleDraw = 10;
+        activeDraw = 1990;
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
@@ -50,8 +49,8 @@ public final class ACAgent extends SmartApplianceAgent {
                 } else {
                     if (isWorking) {
                         logger.info("Finished cooling");
+                        addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
                     }
-                    addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
                     isWorking = false;
                 }
             }

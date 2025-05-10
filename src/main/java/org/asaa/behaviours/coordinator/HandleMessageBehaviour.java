@@ -3,15 +3,17 @@ package org.asaa.behaviours.coordinator;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 import org.asaa.behaviours.BaseMessageHandler;
-import org.asaa.environment.Environment;
+import org.asaa.services.EnvironmentService;
 
 public class HandleMessageBehaviour extends BaseMessageHandler {
     protected final CoordinatorAgent coordinatorAgent;
+    protected final EnvironmentService environmentService;
 
     public HandleMessageBehaviour(CoordinatorAgent coordinatorAgent) {
         super(coordinatorAgent);
 
         this.coordinatorAgent = coordinatorAgent;
+        this.environmentService = coordinatorAgent.environmentService;
     }
 
     @Override
@@ -31,13 +33,13 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleCfp(ACLMessage msg) {
-        var availablePower = Environment.getInstance().getPowerAvailability();
+        var availablePower = environmentService.getPowerAvailability();
         int requiredPower;
         switch (msg.getConversationId()) {
             case "enable-passive":
                 requiredPower = Integer.parseInt(msg.getContent());
                 if (availablePower >= requiredPower) {
-                    Environment.getInstance().modifyPowerConsumption(requiredPower);
+                    environmentService.modifyPowerConsumption(requiredPower);
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
                     reply.setContent("Enable passive approved - " + requiredPower + "W");
@@ -52,7 +54,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "enable-active":
                 requiredPower = Integer.parseInt(msg.getContent());
                 if (availablePower >= requiredPower) {
-                    Environment.getInstance().modifyPowerConsumption(requiredPower);
+                    environmentService.modifyPowerConsumption(requiredPower);
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
                     reply.setContent("Enable active approved - " + requiredPower + "W");
@@ -74,7 +76,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         switch (msg.getConversationId()) {
             case "disable-active":
                 var returnedPower = Integer.parseInt(msg.getContent());
-                Environment.getInstance().modifyPowerConsumption(-returnedPower);
+                environmentService.modifyPowerConsumption(-returnedPower);
                 break;
             default:
                 break;
