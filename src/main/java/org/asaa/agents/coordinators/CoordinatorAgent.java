@@ -84,7 +84,6 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         msg.addReceiver(fridgeAgent);
         msg.setConversationId("get-missing-items");
-        msg.setReplyByDate(new Date(System.currentTimeMillis() + 5000));
         send(msg);
     }
 }

@@ -52,7 +52,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                     }
                 }
 
-                CoordinatorAgent.getLogger().info("Found {} agents in {}:\n {}", agents.size(), area, agents);
+                CoordinatorAgent.getLogger().debug("Found {} agents in {}:\n {}", agents.size(), area, agents);
                 coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);

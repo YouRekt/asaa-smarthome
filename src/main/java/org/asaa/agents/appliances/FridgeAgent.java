@@ -38,8 +38,9 @@ public final class FridgeAgent extends SmartApplianceAgent {
                                 return info;
                             });
 
-                            logger.info(responseDefaultMsgContent());
                         }
+
+                        logger.info(responseDefaultMsgContent());
                     default:
                         break;
                 }
@@ -49,6 +50,7 @@ public final class FridgeAgent extends SmartApplianceAgent {
             protected void handleRequest(ACLMessage msg) {
                 switch (msg.getConversationId()) {
                     case "get-missing-items":
+                        logger.info("[UPDATED] - {}", responseDefaultMsgContent());
                         List<String> missing = new ArrayList<>();
                         for (Map.Entry<String, ItemInfo> entry : fridgeItems.entrySet()) {
                             if (entry.getValue().getCount() == 0) {
@@ -58,7 +60,11 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.INFORM);
-                        reply.setContent(String.join(",", missing));
+                        if (!missing.isEmpty()) {
+                            reply.setContent(String.join(",", missing));
+                        } else {
+                            reply.setContent("");
+                        }
                         send(reply);
                         break;
                     default:

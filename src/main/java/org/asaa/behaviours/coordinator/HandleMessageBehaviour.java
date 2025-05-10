@@ -28,10 +28,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
         if (msg != null) {
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
-            switch (msg.getConversationId()) {
-                case "routine-morning" -> coordinatorAgent.performMorningRoutine();
-                default -> super.processMsg(msg);
-            }
+            super.processMsg(msg);
         } else {
             block();
         }
@@ -89,6 +86,10 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 environmentService.modifyPowerConsumption(-returnedPower);
                 break;
             case "get-missing-items":
+                if (msg.getContent().isEmpty()) {
+                    logger.info("No missing items in fridge to buy");
+                    return;
+                }
                 List<ItemRequest> missingItems = new ArrayList<>();
 
                 for (String part : parts) {
@@ -119,6 +120,10 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     updateMsg.setContent(purchased.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining(",")));
                     coordinatorAgent.send(updateMsg);
                 }
+                break;
+            case "routine-morning":
+                    coordinatorAgent.performMorningRoutine();
+                    break;
             default:
                 break;
         }

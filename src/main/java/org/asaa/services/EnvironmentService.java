@@ -5,9 +5,12 @@ import lombok.Setter;
 import org.asaa.environment.Area;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
@@ -42,7 +45,7 @@ public class EnvironmentService {
     public void startSimulation() {
         if (future != null && future.isDone()) return;
 
-        simulationTime = LocalDateTime.now();
+        simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 40));
         Area kitchen = new Area("kitchen");
         kitchen.setAttribute("temperature", 20.0);
         kitchen.setAttribute("human", false);

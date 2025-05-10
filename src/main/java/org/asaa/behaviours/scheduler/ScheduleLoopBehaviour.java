@@ -70,13 +70,9 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
         // At 8AM perform Morning Schedule
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
-            try {
-                TimeUnit.SECONDS.sleep(7);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
             oneShotSchedules.put("routine-morning", true);
-            startMorningSchedule();
+            logger.info("Morning schedule started, message sent to coordinator");
+            Util.SendMessage(myAgent, "", schedulerAgent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
         }
 
         // TODO: Check if the day has ended and call resetSchedulesStatus()
@@ -85,14 +81,5 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
     private double computeTemp(int hour, double avg, double amp, int peakHour) {
         double radians = 2 * Math.PI * (hour - peakHour) / 24.0;
         return avg + amp * Math.sin(radians);
-    }
-
-    private void startMorningSchedule() {
-        // CRITICAL: Think about how we are going to filter different messages:
-        // Currently we use performatives, but that means we need to include all info (so what to do)
-        // in the message content, which includes annoying parsing every single time
-        // Would be better to use ConversationIds? Then we use separate functions for everything -> much simpler
-        Util.SendMessage(myAgent, "", schedulerAgent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
-        logger.info("Morning schedule started, message sent to coordinator");
     }
 }
