@@ -8,11 +8,11 @@ import org.asaa.dto.EnvironmentDTO;
 import org.asaa.environment.Area;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
@@ -40,7 +40,7 @@ public class EnvironmentService {
     // Power
     @Getter
     @Setter
-    private int MAX_POWER_CAPACITY = 2000;
+    private int MAX_POWER_CAPACITY = 400;
     @Getter
     private int currentPowerConsumption = 0;
     // Money
@@ -61,7 +61,7 @@ public class EnvironmentService {
     public void startSimulation() {
         if (future != null && future.isDone()) return;
         if (!configProvided) {
-            simulationTime = LocalDateTime.now();
+            simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
             Area kitchen = new Area("kitchen");
             kitchen.setAttribute("temperature", 20.0);
             kitchen.setAttribute("human", false);
@@ -82,10 +82,6 @@ public class EnvironmentService {
 
     private void tick() {
         simulationTime = simulationTime.plusMinutes(timeDelta);
-
-//        EnvironmentDTO dto = new EnvironmentDTO(getSimulationTimeString(), getCredits(), getTimeDelta(),getMAX_POWER_CAPACITY(),getCurrentPowerConsumption(), getAllAreaNames().stream().map(name -> AreaDTO.from(getArea(name))).toList());
-//        logger.info(dto.toString());
-//        messagingTemplate.convertAndSend("/topic/environment", dto);
     }
 
     public String getSimulationTimeString() {
@@ -99,12 +95,11 @@ public class EnvironmentService {
     public synchronized void modifyPowerConsumption(int powerConsumption) {
         currentPowerConsumption += powerConsumption;
         if (currentPowerConsumption > MAX_POWER_CAPACITY) {
-            logger.error("We went over MAX_POWER_CAPACITY, something had to go wrong!!!");
-            currentPowerConsumption = MAX_POWER_CAPACITY;
+            logger.error("We went over MAX_POWER_CAPACITY, something had to go wrong!!! {}", currentPowerConsumption);
         } else if (currentPowerConsumption < 0) {
-            logger.error("We went into negative power consumption, something had to go wrong!!!");
-            currentPowerConsumption = 0;
+            logger.error("We went into negative power consumption, something had to go wrong!!! {}", currentPowerConsumption);
         }
+        logger.info("Current power consumption is {}", currentPowerConsumption);
     }
 
 //    public synchronized int getCredits() {

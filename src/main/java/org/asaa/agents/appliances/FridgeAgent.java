@@ -17,10 +17,11 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 200; // We assume that the fridge is always fully on or off
         activeDraw = 0;
+        priority = 999;
+
+        super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
@@ -38,8 +39,9 @@ public final class FridgeAgent extends SmartApplianceAgent {
                                 return info;
                             });
 
-                            logger.info(responseDefaultMsgContent());
                         }
+
+                        logger.info("[UPDATED] - {}", responseDefaultMsgContent());
                     default:
                         break;
                 }
@@ -49,6 +51,8 @@ public final class FridgeAgent extends SmartApplianceAgent {
             protected void handleRequest(ACLMessage msg) {
                 switch (msg.getConversationId()) {
                     case "get-missing-items":
+                    case "action-morning":
+                        logger.info("Get missing items called - {}", responseDefaultMsgContent());
                         List<String> missing = new ArrayList<>();
                         for (Map.Entry<String, ItemInfo> entry : fridgeItems.entrySet()) {
                             if (entry.getValue().getCount() == 0) {
@@ -58,7 +62,11 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.INFORM);
-                        reply.setContent(String.join(",", missing));
+                        if (!missing.isEmpty()) {
+                            reply.setContent(String.join(",", missing));
+                        } else {
+                            reply.setContent("");
+                        }
                         send(reply);
                         break;
                     default:
@@ -79,11 +87,6 @@ public final class FridgeAgent extends SmartApplianceAgent {
         fridgeItems.put("Cheese", new ItemInfo(0, 4));
         fridgeItems.put("Yogurt", new ItemInfo(3, 2));
         fridgeItems.put("Juice", new ItemInfo(0, 1));
-    }
-
-    @Override
-    protected void handleTrigger() {
-
     }
 
     @Override

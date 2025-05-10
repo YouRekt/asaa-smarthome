@@ -28,6 +28,11 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
         inform.setContent(Integer.toString(amount));
         smartApplianceAgent.send(inform);
         logger.info("Sent INFORM for {}W, convId={}", amount, convId);
-        smartApplianceAgent.setWorking(false);
+        if (convId.equals("disable-active") || convId.equals("disable-active-cfp"))
+            smartApplianceAgent.setWorking(false);
+        else if (convId.equals("disable-passive") || convId.equals("disable-passive-cfp"))
+            smartApplianceAgent.setEnabled(false);
+        else
+            logger.warn("Invalid convId {}", convId);
     }
 }

@@ -26,10 +26,11 @@ public final class ACAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        super.setup();
-
         idleDraw = 10;
         activeDraw = 190;
+        priority = 50;
+
+        super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
@@ -111,17 +112,6 @@ public final class ACAgent extends SmartApplianceAgent {
                 requestTemperature();
             }
         });
-        isWorking = true;
-    }
-
-    @Override
-    protected void handleTrigger() {
-        logger.warn("I have been triggered without a purpose! {}", (isWorking ? "active -> idle" : "idle -> active"));
-        if (isWorking) {
-            addBehaviour(new RelinquishPowerBehaviour(this, activeDraw, "disable-active"));
-        } else {
-            addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", ""));
-        }
     }
 
     @Override

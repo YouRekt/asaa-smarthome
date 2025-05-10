@@ -49,10 +49,23 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                         String type = service.getType();
 
                         agents.computeIfAbsent(type, k -> new ArrayList<>()).add(desc.getName());
+
+                        jade.util.leap.Iterator propIt = service.getAllProperties();
+                        while (propIt.hasNext()) {
+                            Property prop = (Property) propIt.next();
+                            if ("agentPriority".equals(prop.getName())) {
+                                try {
+                                    int priority = Integer.parseInt(prop.getValue().toString());
+                                    coordinatorAgent.registerAgentPriority(desc.getName(), priority);
+                                } catch (NumberFormatException e) {
+                                    CoordinatorAgent.getLogger().warn("Invalid priority for {}: {}", desc.getName(), prop.getValue());
+                                }
+                            }
+                        }
                     }
                 }
 
-                CoordinatorAgent.getLogger().info("Found {} agents in {}:\n {}", agents.size(), area, agents);
+                CoordinatorAgent.getLogger().debug("Found {} agents in {}:\n {}", agents.size(), area, agents);
                 coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);
