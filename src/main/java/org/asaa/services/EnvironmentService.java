@@ -97,7 +97,7 @@ public class EnvironmentService {
         } else if (currentPowerConsumption < 0) {
             logger.error("We went into negative power consumption, something had to go wrong!!! {}", currentPowerConsumption);
         }
-        logger.info("Current power consumption is {}", currentPowerConsumption);
+        logger.info("Current power consumption is {}W", currentPowerConsumption);
     }
 
 //    public synchronized int getCredits() {

@@ -1,42 +1,39 @@
 package org.asaa.behaviours.coordinator;
 
 import jade.core.AID;
+import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
-import lombok.Getter;
-import lombok.Setter;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 import org.asaa.behaviours.BaseMessageHandler;
 import org.asaa.services.EnvironmentService;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+// TODO: Make sure CFP's are handled one-by-one to avoid overriding variables
 public class HandleMessageBehaviour extends BaseMessageHandler {
     protected final CoordinatorAgent coordinatorAgent;
     protected final EnvironmentService environmentService;
 
-    @Getter
-    private boolean cfpPassive;
-    @Getter
-    private int cfpResponses;
-    @Getter
-    private int cfpInformResponses;
-    @Getter
-    @Setter
-    private int cfpSentProposals;
-    @Getter
-    private int cfpSent;
-    @Getter
+    private final long cfpResponseTimeout = 5000;
     private int cfpShortage;
-    @Getter
-    private long cfpStartTime;
-    @Getter
-    @Setter
-    private long cfpInformStartTime;
-    @Getter
+    private int cfpRequiredPower;
+    private int cfpReceivedResponses;
+    private int cfpSentProposals;
+    private int cfpRelievedPower;
+    private boolean cfpProposalsProcessed;
     private ACLMessage cfpMessage;
-    @Getter
+    private final WakerBehaviour cfpTimeoutBehaviour = new WakerBehaviour(myAgent, cfpResponseTimeout) {
+        @Override
+        protected void onWake() {
+            logger.warn("Reply-by for cfp expired, received {} responses, sent {}", cfpReceivedResponses, cfpSentProposals);
+            if (cfpProposalsProcessed)
+                cfpRespondToSender();
+            else
+                cfpProcessProposals();
+        }
+    };
     private final Map<AID, Integer> cfpProposals = new HashMap<>();
+
 
     public HandleMessageBehaviour(CoordinatorAgent coordinatorAgent) {
         super(coordinatorAgent);
@@ -56,77 +53,50 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         }
     }
 
-    // TODO: Add negotiations
     @Override
     protected void handleCfp(ACLMessage msg) {
         int availablePower = environmentService.getPowerAvailability(), requiredPower, priority;
-        String[] parts = msg.getContent().split(",");
-        switch (msg.getConversationId()) {
+        String convId = msg.getConversationId();
+
+        switch (convId) {
             case "enable-passive":
-                requiredPower = Integer.parseInt(parts[0]);
-                priority = Integer.parseInt(parts[1]);
+            case "enable-active":
+                requiredPower = Integer.parseInt(msg.getContent());
                 if (availablePower >= requiredPower) {
-                    environmentService.modifyPowerConsumption(requiredPower);
+                    environmentService.modifyPowerConsumption(+requiredPower);
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
-                    reply.setContent("Enable passive approved - " + requiredPower + "W");
+                    reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
                     coordinatorAgent.send(reply);
                 } else {
-                    cfpPassive = true;
-                    cfpResponses = 0;
-                    cfpInformResponses = 0;
-                    cfpSentProposals = 0;
                     cfpShortage = requiredPower - availablePower;
-                    cfpStartTime = System.currentTimeMillis();
-                    cfpSent = (int)coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(msg.getSender())).count();
+                    cfpRequiredPower = requiredPower;
+                    cfpReceivedResponses = 0;
+                    cfpSentProposals = (int)coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(msg.getSender())).count();
+                    cfpProposalsProcessed = false;
                     cfpMessage = msg;
-                    cfpProposals.clear();
-
                     ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
                     cfp.setConversationId("power-relief");
                     cfp.setContent(Integer.toString(cfpShortage));
-                    coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream().filter(entry -> !entry.getKey().contains("Sensor")).flatMap(entry -> entry.getValue().stream())).filter(aid -> !aid.equals(msg.getSender())).forEach(cfp::addReceiver);                    coordinatorAgent.send(cfp);
+                    cfp.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
+                    coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream().filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream())).filter(a -> !a.equals(msg.getSender())).forEach(cfp::addReceiver);
                     coordinatorAgent.send(cfp);
 
-                    coordinatorAgent.addBehaviour(new ReliefNegotiationBehaviour(coordinatorAgent, 250, this));
-//                    ACLMessage reply = msg.createReply();
-//                    reply.setPerformative(ACLMessage.REFUSE);
-//                    reply.setContent("Enable active refused - " + requiredPower + "W");
-//                    coordinatorAgent.send(reply);
+                    coordinatorAgent.addBehaviour(cfpTimeoutBehaviour);
                 }
                 break;
-            case "enable-active":
-                requiredPower = Integer.parseInt(parts[0]);
-                priority = Integer.parseInt(parts[1]);
-                if (availablePower >= requiredPower) {
-                    environmentService.modifyPowerConsumption(requiredPower);
-                    ACLMessage reply = msg.createReply();
-                    reply.setPerformative(ACLMessage.AGREE);
-                    reply.setContent("Enable active approved - " + requiredPower + "W");
-                    coordinatorAgent.send(reply);
-                } else {
-                    cfpPassive = false;
-                    cfpResponses = 0;
-                    cfpInformResponses = 0;
-                    cfpSentProposals = 0;
-                    cfpShortage = requiredPower - availablePower;
-                    cfpStartTime = System.currentTimeMillis();
-                    //cfpSent = coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.values().stream().flatMap(List::stream)).filter(a -> !a.equals(msg.getSender())).toList().size();
-                    cfpSent = (int)coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(msg.getSender())).count();
-                    cfpMessage = msg;
-                    cfpProposals.clear();
-                    ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-                    cfp.setConversationId("power-relief");
-                    cfp.setContent(Integer.toString(cfpShortage));
-                    //coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.values().stream().flatMap(List::stream)).filter(aid -> !aid.equals(msg.getSender())).forEach(cfp::addReceiver);
-                    coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream().filter(entry -> !entry.getKey().contains("Sensor")).flatMap(entry -> entry.getValue().stream())).filter(aid -> !aid.equals(msg.getSender())).forEach(cfp::addReceiver);                    coordinatorAgent.send(cfp);
+            default:
+                break;
+        }
+    }
 
-                    coordinatorAgent.addBehaviour(new ReliefNegotiationBehaviour(coordinatorAgent, 250, this));
-
-//                    ACLMessage reply = msg.createReply();
-//                    reply.setPerformative(ACLMessage.REFUSE);
-//                    reply.setContent("Enable active refused - " + requiredPower + "W");
-//                    coordinatorAgent.send(reply);
+    @Override
+    protected void handleRefuse(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "power-relief":
+                cfpReceivedResponses++;
+                if (cfpReceivedResponses >= cfpSentProposals && !cfpProposalsProcessed) {
+                    cfpProcessProposals();
                 }
                 break;
             default:
@@ -138,19 +108,11 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handlePropose(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "power-relief":
+                cfpReceivedResponses++;
                 cfpProposals.put(msg.getSender(), Integer.parseInt(msg.getContent()));
-                cfpResponses++;
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    protected void handleRefuse(ACLMessage msg) {
-        switch (msg.getConversationId()) {
-            case "power-relief":
-                cfpResponses++;
+                if (cfpReceivedResponses >= cfpSentProposals && !cfpProposalsProcessed) {
+                    cfpProcessProposals();
+                }
                 break;
             default:
                 break;
@@ -159,19 +121,21 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleInform(ACLMessage msg) {
-        String[] parts = msg.getContent().split(",");
         int returnedPower;
         switch (msg.getConversationId()) {
             case "disable-passive":
             case "disable-active":
-                returnedPower = Integer.parseInt(parts[0]);
+                returnedPower = Integer.parseInt(msg.getContent());
                 environmentService.modifyPowerConsumption(-returnedPower);
                 break;
             case "disable-passive-cfp":
             case "disable-active-cfp":
-                returnedPower = Integer.parseInt(parts[0]);
+                cfpReceivedResponses++;
+                returnedPower = Integer.parseInt(msg.getContent());
                 environmentService.modifyPowerConsumption(-returnedPower);
-                cfpInformResponses++;
+                if (cfpReceivedResponses >= cfpSentProposals) {
+                    cfpRespondToSender();
+                }
                 break;
             case "get-missing-items":
             case "action-morning":
@@ -180,6 +144,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     return;
                 }
                 List<ItemRequest> missingItems = new ArrayList<>();
+                String[] parts = msg.getContent().split(",");
 
                 for (String part : parts) {
                     String[] item = part.split(":");
@@ -211,11 +176,56 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 }
                 break;
             case "routine-morning":
-                    coordinatorAgent.performMorningRoutine();
-                    break;
+                coordinatorAgent.performMorningRoutine();
+                break;
             default:
                 break;
         }
+    }
+
+    private void cfpProcessProposals() {
+        cfpProposalsProcessed = true;
+        coordinatorAgent.removeBehaviour(cfpTimeoutBehaviour);
+        cfpReceivedResponses = 0;
+        cfpSentProposals = 0;
+        List<Map.Entry<AID, Integer>> sortedProposals = new ArrayList<>(cfpProposals.entrySet());
+        sortedProposals.sort(Comparator.comparing(e -> coordinatorAgent.getPriority(e.getKey())));
+        cfpRelievedPower = 0;
+        Set<AID> accepted = new HashSet<>();
+        for (var proposal : sortedProposals) {
+            if (cfpRelievedPower >= cfpShortage)
+                break;
+            cfpRelievedPower += proposal.getValue();
+            accepted.add(proposal.getKey());
+        }
+
+        if (cfpRelievedPower < cfpShortage) {
+            ACLMessage reply = cfpMessage.createReply();
+            reply.setPerformative(ACLMessage.REFUSE);
+            reply.setContent("Enable " + (cfpMessage.getConversationId().equals("enable-passive") ? "passive" : "active") + " refused even after proposed relief - " + cfpRequiredPower + "W");
+            coordinatorAgent.send(reply);
+        } else {
+            for (var proposal : cfpProposals.entrySet()) {
+                ACLMessage proposalReply = new ACLMessage(accepted.contains(proposal.getKey()) ? ACLMessage.ACCEPT_PROPOSAL : ACLMessage.REJECT_PROPOSAL);
+                proposalReply.addReceiver(proposal.getKey());
+                proposalReply.setConversationId("power-relief");
+                proposalReply.setContent(Integer.toString(proposal.getValue()));
+                proposalReply.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
+                coordinatorAgent.send(proposalReply);
+                cfpSentProposals += accepted.contains(proposal.getKey()) ? 1 : 0;
+
+                coordinatorAgent.addBehaviour(cfpTimeoutBehaviour);
+            }
+        }
+    }
+
+    private void cfpRespondToSender() {
+        coordinatorAgent.removeBehaviour(cfpTimeoutBehaviour);
+        environmentService.modifyPowerConsumption(+cfpRequiredPower);
+        ACLMessage reply = cfpMessage.createReply();
+        reply.setPerformative(ACLMessage.AGREE);
+        reply.setContent("Enable " + (cfpMessage.getConversationId().equals("enable-passive") ? "passive" : "active") + " accepted after relief - " + cfpRequiredPower + "W (shortage: " + cfpShortage + "W, relief " + cfpRelievedPower + "W)");
+        coordinatorAgent.send(reply);
     }
 
     private static class ItemRequest {
@@ -228,4 +238,3 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         }
     }
 }
-

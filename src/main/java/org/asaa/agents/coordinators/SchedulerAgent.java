@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 public final class SchedulerAgent extends SpringAwareAgent {
     @Getter
@@ -24,12 +23,6 @@ public final class SchedulerAgent extends SpringAwareAgent {
     protected void setup() {
         super.setup();
         logger.info("Initialized");
-
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
         final ServiceDescription sd = new ServiceDescription();
         sd.setType("CoordinatorAgent");
