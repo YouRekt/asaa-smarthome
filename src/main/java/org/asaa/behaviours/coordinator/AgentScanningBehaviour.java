@@ -52,19 +52,6 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                         String type = service.getType();
 
                         agents.computeIfAbsent(type, k -> new ArrayList<>()).add(desc.getName());
-
-                        jade.util.leap.Iterator propIt = service.getAllProperties();
-                        while (propIt.hasNext()) {
-                            Property prop = (Property) propIt.next();
-                            if ("agentPriority".equals(prop.getName())) {
-                                try {
-                                    int priority = Integer.parseInt(prop.getValue().toString());
-                                    coordinatorAgent.registerAgentPriority(desc.getName(), priority);
-                                } catch (NumberFormatException e) {
-                                    CoordinatorAgent.getLogger().warn("Invalid priority for {}: {}", desc.getName(), prop.getValue());
-                                }
-                            }
-                        }
                     }
                 }
 

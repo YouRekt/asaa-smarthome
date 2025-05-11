@@ -43,16 +43,11 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         p.setName("areaName");
         p.setValue(areaName);
 
-        final Property p2 = new Property();
-        p2.setName("agentPriority");
-        p2.setValue(priority);
-
         final ServiceDescription sd = new ServiceDescription();
         sd.setType(getClass().getSimpleName());
         sd.setName(getLocalName());
         sd.setOwnership(getName());
         sd.addProperties(p);
-        sd.addProperties(p2);
 
         try {
             final DFAgentDescription dfd = new DFAgentDescription();

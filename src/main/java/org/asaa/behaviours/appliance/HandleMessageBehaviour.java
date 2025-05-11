@@ -90,10 +90,10 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     canFree = smartApplianceAgent.getIdleDraw();
                 }
 
-                logger.info("Power relief CFP: {} canFree={}, isWorking={}, prio={}", smartApplianceAgent.getLocalName(), canFree, (smartApplianceAgent.isWorking() ? "yes" : "no"), smartApplianceAgent.getPriority());
+                logger.info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", smartApplianceAgent.getLocalName(), canFree, smartApplianceAgent.getPriority(), (smartApplianceAgent.isWorking() ? "yes" : "no"));
                 ACLMessage propose = msg.createReply();
                 propose.setPerformative(ACLMessage.PROPOSE);
-                propose.setContent(Integer.toString(canFree));
+                propose.setContent(canFree + "," + smartApplianceAgent.getPriority());
                 smartApplianceAgent.send(propose);
                 break;
             default:

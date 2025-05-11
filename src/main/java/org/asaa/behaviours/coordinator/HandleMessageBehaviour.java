@@ -39,11 +39,12 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleCfp(ACLMessage msg) {
         int availablePower = environmentService.getPowerAvailability(), requiredPower, priority;
         String convId = msg.getConversationId();
-
+        String[] msgParts = msg.getContent().split(",");
         switch (convId) {
             case "enable-passive":
             case "enable-active":
-                requiredPower = Integer.parseInt(msg.getContent());
+                requiredPower = Integer.parseInt(msgParts[0]);
+                priority = Integer.parseInt(msgParts[1]);
                 if (availablePower >= requiredPower) {
                     environmentService.modifyPowerConsumption(+requiredPower);
                     ACLMessage reply = msg.createReply();
@@ -51,7 +52,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
                     coordinatorAgent.send(reply);
                 } else {
-                    coordinatorAgent.addBehaviour(new PowerNegotiationBehaviour(coordinatorAgent, msg, requiredPower - availablePower, Integer.parseInt(msg.getContent())));
+                    coordinatorAgent.addBehaviour(new PowerNegotiationBehaviour(coordinatorAgent, msg, requiredPower - availablePower, requiredPower, priority));
                 }
                 break;
             default:
