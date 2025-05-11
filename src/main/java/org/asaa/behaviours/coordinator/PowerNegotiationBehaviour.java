@@ -11,7 +11,6 @@ import org.asaa.agents.coordinators.CoordinatorAgent;
 import java.util.*;
 
 public class PowerNegotiationBehaviour extends CyclicBehaviour {
-    //private final MessageTemplate messageTemplate = MessageTemplate.MatchConversationId("power=relief");
     private final CoordinatorAgent coordinatorAgent;
     private final ACLMessage cfpMessage;
     private final long cfpResponseTimeout = 5000;
@@ -57,7 +56,6 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
 
     @Override
     public void action() {
-        //MessageTemplate messageTemplate = MessageTemplate.or(MessageTemplate.MatchConversationId("power-relief"), MessageTemplate.or(MessageTemplate.MatchConversationId("disable-passive-cfp"), MessageTemplate.MatchConversationId("disable-active-cfp")));
         MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null &&
                 msg.getConversationId().equals("power-relief") ||
                 msg.getConversationId().equals("disable-passive-cfp") ||

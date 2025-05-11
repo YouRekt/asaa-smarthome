@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 public class HandleMessageBehaviour extends BaseMessageHandler {
     protected final CoordinatorAgent coordinatorAgent;
     protected final EnvironmentService environmentService;
-    //private final MessageTemplate messageTemplate = MessageTemplate.not(MessageTemplate.MatchConversationId("power-relief"));
 
     public HandleMessageBehaviour(CoordinatorAgent coordinatorAgent) {
         super(coordinatorAgent);
@@ -22,7 +21,6 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     public void action() {
-        //MessageTemplate messageTemplate = MessageTemplate.and(MessageTemplate.not(MessageTemplate.MatchConversationId("power-relief")), MessageTemplate.and(MessageTemplate.not(MessageTemplate.MatchConversationId("disable-passive-cfp")), MessageTemplate.not(MessageTemplate.MatchConversationId("disable-active-cfp"))));
         MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null &&
                 !msg.getConversationId().equals("power-relief") &&
                 !msg.getConversationId().equals("disable-passive-cfp") &&
