@@ -3,8 +3,6 @@ package org.asaa.services;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.asaa.dto.AreaDTO;
-import org.asaa.dto.EnvironmentDTO;
 import org.asaa.environment.Area;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +97,7 @@ public class EnvironmentService {
         } else if (currentPowerConsumption < 0) {
             logger.error("We went into negative power consumption, something had to go wrong!!! {}", currentPowerConsumption);
         }
-        logger.info("Current power consumption is {}", currentPowerConsumption);
+        logger.info("Current power consumption is {}W", currentPowerConsumption);
     }
 
 //    public synchronized int getCredits() {

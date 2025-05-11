@@ -8,7 +8,6 @@ import org.asaa.behaviours.sensor.HandleMessageBehaviour;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: Add failure handling
 @Getter
 public abstract class SensorAgent extends PhysicalAgent {
     protected List<AID> subscribers = new ArrayList<>();

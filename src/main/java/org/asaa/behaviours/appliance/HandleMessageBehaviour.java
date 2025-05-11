@@ -49,7 +49,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 }
                 break;
             default:
-                super.handleAgree(msg);
+                break;
         }
     }
 
@@ -68,7 +68,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 }
                 break;
             default:
-                super.handleAgree(msg);
+                break;
         }
     }
 
@@ -90,7 +90,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     canFree = smartApplianceAgent.getIdleDraw();
                 }
 
-                logger.info("APPLIANCE CFP: {} canFree={}", myAgent.getLocalName(), canFree);
+                logger.info("Power relief CFP: {} canFree={}, isWorking={}, prio={}", smartApplianceAgent.getLocalName(), canFree, (smartApplianceAgent.isWorking() ? "yes" : "no"), smartApplianceAgent.getPriority());
                 ACLMessage propose = msg.createReply();
                 propose.setPerformative(ACLMessage.PROPOSE);
                 propose.setContent(Integer.toString(canFree));
