@@ -27,7 +27,7 @@ public final class SchedulerAgent extends SpringAwareAgent {
         super.setup();
 
         MDC.put("agent", "Scheduler");
-        MDC.put("area", "");
+        MDC.put("area", "----------");
 
         logger.info("Initialized");
 
