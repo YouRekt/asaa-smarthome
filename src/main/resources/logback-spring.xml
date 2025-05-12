@@ -4,7 +4,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%simTime][%highlight(%-5level)] [%-15.15X{agent}] [%-10.10X{area}] - %msg%n</pattern>
+            <pattern>[%simTime] [%highlight(%-5level)] --- [%-15.15X{agent}] [%-10.10X{area}] - %msg%n</pattern>
         </encoder>
     </appender>
 
