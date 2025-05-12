@@ -7,6 +7,7 @@ import org.asaa.services.EnvironmentService;
 import org.asaa.util.AgentCommunicationController;
 import org.asaa.util.AgentPresenceController;
 import org.asaa.util.SpringContext;
+import org.asaa.util.Util;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Spliterator;
@@ -37,9 +38,9 @@ public abstract class SpringAwareAgent extends Agent {
         send(msg);
         agentCommunicationController.sendMessage(getName(), String.format("[%s] -> [%s <%s>] -> [%s]%s",
                 getLocalName(),
-                msg.getPerformative(),
+                Util.ConvertACLPerformativeToString(msg.getPerformative()),
                 msg.getConversationId(),
                 StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
-                msg.getContent().isEmpty() ? "" : String.format(" :%s", msg.getContent())));
+                msg.getContent() == null ? "" : String.format(" :%s", msg.getContent())));
     }
 }
