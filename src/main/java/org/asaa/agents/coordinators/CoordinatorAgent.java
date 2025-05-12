@@ -32,7 +32,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         super.setup();
 
         MDC.put("agent", "Coordinator");
-        MDC.put("area", "");
+        MDC.put("area", "----------");
 
         logger.info("Initialized");
 
