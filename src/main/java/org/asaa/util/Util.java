@@ -59,12 +59,13 @@ public class Util {
             case "QUERY_IF" -> ACLMessage.QUERY_IF;
             case "QUERY_REF" -> ACLMessage.QUERY_REF;
             case "REFUSE" -> ACLMessage.REFUSE;
+            case "REJECT_PROPOSAL" -> ACLMessage.REJECT_PROPOSAL;
+            case "REQUEST" -> ACLMessage.REQUEST;
             case "REQUEST_WHEN" -> ACLMessage.REQUEST_WHEN;
             case "REQUEST_WHENEVER" -> ACLMessage.REQUEST_WHENEVER;
             case "SUBSCRIBE" -> ACLMessage.SUBSCRIBE;
             case "PROXY" -> ACLMessage.PROXY;
             case "PROPAGATE" -> ACLMessage.PROPAGATE;
-            case "UNKNOWN" -> ACLMessage.UNKNOWN;
             default -> ACLMessage.UNKNOWN;
         };
     }
