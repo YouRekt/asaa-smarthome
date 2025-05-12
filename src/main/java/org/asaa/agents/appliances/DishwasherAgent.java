@@ -23,6 +23,18 @@ public final class DishwasherAgent extends SmartApplianceAgent {
 
         super.setup();
 
+        runnables.add(() -> {
+            this.addBehaviour(new WakerBehaviour(this, 5000) {
+                @Override
+                protected void onWake() {
+                    remainingWashTime = fullWashTime;
+                    String replyWith = "req-" + System.currentTimeMillis();
+                    ((SmartApplianceAgent)myAgent).onPowerGrantedCallbacks.put(replyWith, () -> performWash(false));
+                    addBehaviour(new RequestPowerBehaviour((SmartApplianceAgent) myAgent, activeDraw, priority, "enable-active", replyWith));
+                }
+            });
+        });
+
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
@@ -30,7 +42,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
                     case "enable-callback":
                         if (washBehaviour == null && remainingWashTime > 0) {
                             String replyWith = "req-" + System.currentTimeMillis();
-                            smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> beginWash());
+                            smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performWash(true));
                             addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
                         }
                         break;
@@ -45,7 +57,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
                 if (!isWorking) {
                     remainingWashTime = fullWashTime;
                     String replyWith = "req-" + System.currentTimeMillis();
-                    smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> beginWash());
+                    smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performWash(false));
                     addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
                 }
             }
@@ -76,7 +88,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
-    private void beginWash() {
+    private void performWash(boolean isResumed) {
         if (remainingWashTime <= 0) {
             logger.info("Nothing to do: no remaining time");
             return;
@@ -92,7 +104,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
             }
         };
         this.addBehaviour(washBehaviour);
-        logger.info("Wash started/resumed for {}ms", remainingWashTime);
+        logger.info("Wash {} for {}ms", (isResumed ? "resumed" : "started"), remainingWashTime);
     }
 
     @Override
