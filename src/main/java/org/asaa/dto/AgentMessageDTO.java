@@ -1,4 +1,8 @@
 package org.asaa.dto;
 
-public record AgentMessageDTO(String agentName, String location, String message) {
+public record AgentMessageDTO(
+        String aid,
+        String timestamp,
+        String message
+) {
 }

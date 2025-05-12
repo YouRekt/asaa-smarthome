@@ -24,6 +24,7 @@ public abstract class SensorAgent extends PhysicalAgent {
 
             @Override
             protected void handleRequest(ACLMessage msg) {
+                agentCommunicationController.sendMessage(getName(), String.format("Responding to %s's request", msg.getSender().getLocalName()));
                 logger.info("Responding to {}'s request", msg.getSender().getLocalName());
                 respond(msg);
             }
