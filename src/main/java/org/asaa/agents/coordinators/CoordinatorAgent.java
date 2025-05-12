@@ -110,7 +110,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         receivers.forEach(msg::addReceiver);
         msg.setConversationId("action-morning");
-        send(msg);
+        sendMessage(msg,false);
     }
 }
 

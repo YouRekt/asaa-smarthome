@@ -23,6 +23,6 @@ public final class TemperatureSensorAgent extends SensorAgent {
         final ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setContent(getTemperatureString());
         subscribers.forEach(msg::addReceiver);
-        send(msg);
+        sendMessage(msg,false);
     }
 }

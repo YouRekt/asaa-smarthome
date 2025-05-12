@@ -71,7 +71,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
             oneShotSchedules.put("routine-morning", true);
             SchedulerAgent.getLogger().info("Morning schedule started, message sent to coordinator");
-            Util.SendMessage(myAgent, "", schedulerAgent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
+            Util.SendMessage(schedulerAgent, "", schedulerAgent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
         }
 
         // TODO: Check if the day has ended and call resetSchedulesStatus()

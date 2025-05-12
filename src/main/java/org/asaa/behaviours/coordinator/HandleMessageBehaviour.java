@@ -50,7 +50,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
                     reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
-                    coordinatorAgent.send(reply);
+                    coordinatorAgent.sendMessage(reply,true);
                 } else {
                     coordinatorAgent.addBehaviour(new PowerNegotiationBehaviour(coordinatorAgent, msg, requiredPower - availablePower, requiredPower, priority));
                 }
@@ -74,13 +74,13 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     callback.setContent(msg.getSender().getName());
                     coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
                     CoordinatorAgent.getLogger().info("Sending out {} callbacks after {} returned power", coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
-                    coordinatorAgent.send(callback);
+                    coordinatorAgent.sendMessage(callback,false);
                     coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
                 }
                 ACLMessage reply = msg.createReply();
                 reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setContent(msg.getContent());
-                coordinatorAgent.send(reply);
+                coordinatorAgent.sendMessage(reply,false);
                 break;
             case "get-missing-items":
             case "action-morning":
@@ -117,7 +117,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     updateMsg.addReceiver(msg.getSender());
                     updateMsg.setConversationId("stock-update");
                     updateMsg.setContent(purchased.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining(",")));
-                    coordinatorAgent.send(updateMsg);
+                    coordinatorAgent.sendMessage(updateMsg,true);
                 }
                 break;
             case "routine-morning":

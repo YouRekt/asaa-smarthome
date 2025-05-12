@@ -25,7 +25,7 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
         inform.setConversationId(convId);
         inform.setContent(Integer.toString(amount));
         smartApplianceAgent.logger.info("Sent INFORM for {}W, convId={}", amount, convId);
-        smartApplianceAgent.send(inform);
+        smartApplianceAgent.sendMessage(inform,false);
         if (convId.equals("disable-active") || convId.equals("disable-active-cfp"))
             smartApplianceAgent.setWorking(false);
         else if (convId.equals("disable-passive") || convId.equals("disable-passive-cfp"))

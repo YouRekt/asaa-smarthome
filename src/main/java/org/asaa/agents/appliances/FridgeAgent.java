@@ -69,10 +69,11 @@ public final class FridgeAgent extends SmartApplianceAgent {
                         reply.setPerformative(ACLMessage.INFORM);
                         if (!missing.isEmpty()) {
                             reply.setContent(String.join(",", missing));
+                            sendMessage(reply, true);
                         } else {
                             reply.setContent("");
+                            sendMessage(reply, false);
                         }
-                        send(reply);
                         break;
                     default:
                         break;
