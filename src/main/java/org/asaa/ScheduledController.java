@@ -20,7 +20,7 @@ public class ScheduledController {
         this.environmentService = environmentService;
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 500)
     public void sendPeriodicMessages() {
         if (environmentService.getFuture() == null || environmentService.getFuture().isDone()) return;
         EnvironmentDTO dto = new EnvironmentDTO(environmentService.getSimulationTimeString(), environmentService.getCredits(), environmentService.getTimeDelta(), environmentService.getMAX_POWER_CAPACITY(), environmentService.getCurrentPowerConsumption(), environmentService.getAllAreaNames().stream().map(name -> AreaDTO.from(environmentService.getArea(name))).toList());

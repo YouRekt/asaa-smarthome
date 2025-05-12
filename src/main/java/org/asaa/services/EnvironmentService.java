@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +55,7 @@ public class EnvironmentService {
     private LocalDateTime simulationTime;
     @Getter
     private ScheduledFuture<?> future;
+    private ScheduledExecutorService executor;
     @Setter
     private boolean configProvided = false;
 
@@ -67,16 +69,23 @@ public class EnvironmentService {
             addArea("kitchen", kitchen);
             initializePriceMaps();
         }
-        future = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
+        executor = Executors.newSingleThreadScheduledExecutor();
+        future = executor.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
     }
 
     public void stopSimulation() {
-        if (future != null) {
+        if (future != null && !future.isCancelled()) {
             future.cancel(true);
-            future = null;
-            areas.clear();
-            currentPowerConsumption = 0;
         }
+
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdownNow();
+        }
+
+        future = null;
+        executor = null;
+        areas.clear();
+        currentPowerConsumption = 0;
     }
 
     private void tick() {
