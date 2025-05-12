@@ -73,7 +73,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     callback.setConversationId("enable-callback");
                     callback.setContent(msg.getSender().getName());
                     coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
-                    logger.info("Sending out {} callbacks after {} returned power", coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
+                    CoordinatorAgent.getLogger().info("Sending out {} callbacks after {} returned power", coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
                     coordinatorAgent.send(callback);
                     coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
                 }
@@ -85,7 +85,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "get-missing-items":
             case "action-morning":
                 if (msg.getContent().isEmpty()) {
-                    logger.info("No missing items in fridge to buy");
+                    CoordinatorAgent.getLogger().info("No missing items in fridge to buy");
                     return;
                 }
                 List<ItemRequest> missingItems = new ArrayList<>();
@@ -106,11 +106,11 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     if (bought > 0) {
                         purchased.merge(item.name, bought, Integer::sum);
                     } else {
-                        logger.warn("Item {} could not be bought", item.name);
+                        CoordinatorAgent.getLogger().warn("Item {} could not be bought", item.name);
                     }
                 }
 
-                logger.info("Bought items: {}", purchased);
+                CoordinatorAgent.getLogger().info("Bought items: {}", purchased);
 
                 if (!purchased.isEmpty()) {
                     ACLMessage updateMsg = new ACLMessage(ACLMessage.INFORM);

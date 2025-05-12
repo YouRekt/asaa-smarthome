@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import org.asaa.environment.Area;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -84,6 +85,10 @@ public class EnvironmentService {
 
     public String getSimulationTimeString() {
         return simulationTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT));
+    }
+
+    public String getFormattedSimulationTime() {
+        return simulationTime != null ? simulationTime.toString() : "SIM_TIME_UNSET";
     }
 
     public synchronized int getPowerAvailability() {

@@ -12,8 +12,10 @@ import org.asaa.behaviours.coordinator.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.asaa.services.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.*;
 
@@ -28,12 +30,22 @@ public final class CoordinatorAgent extends SpringAwareAgent {
     @Override
     protected void setup() {
         super.setup();
+
+        MDC.put("agent", "Coordinator");
+        MDC.put("area", "");
+
         logger.info("Initialized");
 
         registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
         addBehaviour(new HandleMessageBehaviour(this));
+    }
+
+    @Override
+    protected void takeDown() {
+        MDC.clear();
+        super.takeDown();
     }
 
     private void registerCoordinatorAgent() {

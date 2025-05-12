@@ -11,26 +11,31 @@ import lombok.Getter;
 import lombok.Setter;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.asaa.services.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 import java.util.Arrays;
 
 public abstract class PhysicalAgent extends SpringAwareAgent {
-    protected String areaName;
-    protected Logger logger;
+    public Logger logger;
     public AID coordinatorAgent;
     /* Priority sheet:
     0   <= p < 100 - awaits callback upon being turned off while working
+    100 <= p < 200 - default priority sorting (lower - lower priority - turns off first)
     200 <= p < 300 - isEnabled but not working, lowest prio turn off (low energy save anyway)
      */
     @Getter
     @Setter
     protected int priority = 0;
+    @Getter
+    protected String areaName;
 
     @Override
     protected void setup() {
         super.setup();
-        logger = LoggerFactory.getLogger(getLocalName());
+
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
             this.areaName = (String) args[0];
@@ -38,10 +43,20 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
             this.areaName = "default-area";
         }
 
+        MDC.put("agent", this.getLocalName());
+        MDC.put("area", areaName);
+
+        logger = LoggerFactory.getLogger(getLocalName());
         logger.info("Initialized in area: {}", areaName);
 
         registerBaseAgent();
         findCoordinatorAgent();
+    }
+
+    @Override
+    protected void takeDown() {
+        MDC.clear();
+        super.takeDown();
     }
 
     private void registerBaseAgent() {

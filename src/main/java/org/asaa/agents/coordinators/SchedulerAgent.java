@@ -9,19 +9,26 @@ import lombok.Getter;
 import org.asaa.agents.SpringAwareAgent;
 import org.asaa.behaviours.scheduler.ScheduleLoopBehaviour;
 import org.asaa.exceptions.InvalidServiceSpecification;
+import org.asaa.services.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.Arrays;
 
 public final class SchedulerAgent extends SpringAwareAgent {
     @Getter
     private AID coordinatorAgent;
+    @Getter
     private final static Logger logger = LoggerFactory.getLogger("Scheduler");
 
     @Override
     protected void setup() {
         super.setup();
+
+        MDC.put("agent", "Scheduler");
+        MDC.put("area", "");
+
         logger.info("Initialized");
 
         final ServiceDescription sd = new ServiceDescription();
@@ -37,5 +44,11 @@ public final class SchedulerAgent extends SpringAwareAgent {
         }
 
         addBehaviour(new ScheduleLoopBehaviour(this, 500));
+    }
+
+    @Override
+    protected void takeDown() {
+        MDC.clear();
+        super.takeDown();
     }
 }

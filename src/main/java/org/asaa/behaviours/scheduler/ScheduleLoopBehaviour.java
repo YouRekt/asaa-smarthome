@@ -21,13 +21,11 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
     private final Map<String, Boolean> oneShotSchedules = new HashMap<>();
     private final Map<String, LocalDateTime> cyclicSchedules = new HashMap<>();
     private final SchedulerAgent schedulerAgent;
-    private final Logger logger;
 
     public ScheduleLoopBehaviour(SchedulerAgent schedulerAgent, long period) {
         super(schedulerAgent, period);
         env = schedulerAgent.environmentService;
         this.schedulerAgent = schedulerAgent;
-        logger = LoggerFactory.getLogger(getBehaviourName());
         initSchedulesStatus();
     }
 
@@ -66,13 +64,13 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
             cyclicSchedules.put("kitchen-temp", currentTime);
             double newTemp = 21 + rand.nextDouble() * 2;
             env.getArea("kitchen").setAttribute("temperature", newTemp);
-            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
+            SchedulerAgent.getLogger().info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
         }
 
         // At 8AM perform Morning Schedule
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
             oneShotSchedules.put("routine-morning", true);
-            logger.info("Morning schedule started, message sent to coordinator");
+            SchedulerAgent.getLogger().info("Morning schedule started, message sent to coordinator");
             Util.SendMessage(myAgent, "", schedulerAgent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
         }
 
