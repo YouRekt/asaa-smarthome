@@ -1,5 +1,6 @@
 package org.asaa.behaviours.appliance;
 
+import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.BaseMessageHandler;
@@ -87,6 +88,12 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleCfp(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "power-relief":
+                if (smartApplianceAgent.isCfpInProgress()) {
+                    smartApplianceAgent.getPendingCfpQueue().add(msg);
+                    smartApplianceAgent.logger.warn("Deferring power relief CFP from {} because another is in progress", msg.getSender().getLocalName());
+                    return;
+                }
+                smartApplianceAgent.setCfpInProgress(true);
                 int canFree = 0, prio = smartApplianceAgent.getPriority();
                 if (smartApplianceAgent.isWorking()) {
                     if (smartApplianceAgent.isInterruptible()) {
@@ -98,6 +105,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.REFUSE);
                         smartApplianceAgent.send(reply);
+                        allowNextCfp();
                         return;
                     }
                 } else if (smartApplianceAgent.isEnabled()) {
@@ -126,9 +134,34 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 } else {
                     smartApplianceAgent.addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, freed, "disable-passive-cfp"));
                 }
+                allowNextCfp();
                 break;
             default:
                 break;
+        }
+    }
+
+    @Override
+    protected void handleRejectProposal(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "power-relief":
+                allowNextCfp();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void allowNextCfp() {
+        smartApplianceAgent.setCfpInProgress(false);
+        if (!smartApplianceAgent.getPendingCfpQueue().isEmpty()) {
+            ACLMessage nextCfp = smartApplianceAgent.getPendingCfpQueue().poll();
+            smartApplianceAgent.addBehaviour(new OneShotBehaviour() {
+                @Override
+                public void action() {
+                    handleCfp(nextCfp);
+                }
+            });
         }
     }
 }
