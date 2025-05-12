@@ -33,8 +33,13 @@ public abstract class SpringAwareAgent extends Agent {
         }
     }
 
-    public final void sendMessage(ACLMessage msg, boolean hasContent) {
+    public final void sendMessage(ACLMessage msg) {
         send(msg);
-        agentCommunicationController.sendMessage(getName(), hasContent ? msg.getContent() : String.format("%s -> [%s - %s] -> %s", getLocalName(), msg.getPerformative(), msg.getConversationId(), StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", "))));
+        agentCommunicationController.sendMessage(getName(), String.format("[%s] -> [%s <%s>] -> [%s]%s",
+                getLocalName(),
+                msg.getPerformative(),
+                msg.getConversationId(),
+                StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
+                msg.getContent().isEmpty() ? "" : String.format(" :%s", msg.getContent())));
     }
 }

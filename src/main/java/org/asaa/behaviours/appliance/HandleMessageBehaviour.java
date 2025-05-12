@@ -104,7 +104,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     } else {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.REFUSE);
-                        smartApplianceAgent.sendMessage(reply,false);
+                        smartApplianceAgent.sendMessage(reply);
                         allowNextCfp();
                         return;
                     }
@@ -117,7 +117,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 ACLMessage propose = msg.createReply();
                 propose.setPerformative(ACLMessage.PROPOSE);
                 propose.setContent(canFree + "," + prio);
-                smartApplianceAgent.sendMessage(propose,false);
+                smartApplianceAgent.sendMessage(propose);
                 break;
             default:
                 break;

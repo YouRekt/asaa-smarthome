@@ -42,6 +42,6 @@ public final class MotionSensorAgent extends SensorAgent {
         final ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setContent(getHumanPresenceString());
         subscribers.forEach(msg::addReceiver);
-        sendMessage(msg,false);
+        sendMessage(msg);
     }
 }

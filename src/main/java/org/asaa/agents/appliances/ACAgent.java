@@ -103,7 +103,7 @@ public final class ACAgent extends SmartApplianceAgent {
             ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
             request.addReceiver(tempSensor);
             request.setReplyByDate(new Date(System.currentTimeMillis() + 9000));
-            sendMessage(request,false);
+            sendMessage(request);
         }
     }
 

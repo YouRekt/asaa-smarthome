@@ -12,7 +12,6 @@ import org.asaa.behaviours.coordinator.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
-import org.asaa.services.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -110,7 +109,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         receivers.forEach(msg::addReceiver);
         msg.setConversationId("action-morning");
-        sendMessage(msg,false);
+        sendMessage(msg);
     }
 }
 

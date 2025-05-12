@@ -2,8 +2,6 @@ package org.asaa.behaviours.appliance;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.asaa.agents.SmartApplianceAgent;
 
 public class RequestPowerBehaviour extends OneShotBehaviour {
@@ -30,6 +28,6 @@ public class RequestPowerBehaviour extends OneShotBehaviour {
         cfp.setContent(amount + "," + priority);
         cfp.setReplyWith(replyWith);
         smartApplianceAgent.logger.info("Sent CFP for {}W, prio={}, convId={}", amount, priority, convId);
-        smartApplianceAgent.sendMessage(cfp,false);
+        smartApplianceAgent.sendMessage(cfp);
     }
 }

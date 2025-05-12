@@ -32,7 +32,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
         msg.setContent("cancelled");
-        sensorAgent.sendMessage(reply,false);
+        sensorAgent.sendMessage(reply);
     }
 
     @Override
@@ -42,6 +42,6 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.AGREE);
         msg.setContent("subscribed");
-        sensorAgent.sendMessage(reply,false);
+        sensorAgent.sendMessage(reply);
     }
 }

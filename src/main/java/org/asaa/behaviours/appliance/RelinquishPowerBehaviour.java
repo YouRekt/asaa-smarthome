@@ -2,8 +2,6 @@ package org.asaa.behaviours.appliance;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.asaa.agents.SmartApplianceAgent;
 
 public class RelinquishPowerBehaviour extends OneShotBehaviour {
@@ -25,7 +23,7 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
         inform.setConversationId(convId);
         inform.setContent(Integer.toString(amount));
         smartApplianceAgent.logger.info("Sent INFORM for {}W, convId={}", amount, convId);
-        smartApplianceAgent.sendMessage(inform,false);
+        smartApplianceAgent.sendMessage(inform);
         if (convId.equals("disable-active") || convId.equals("disable-active-cfp"))
             smartApplianceAgent.setWorking(false);
         else if (convId.equals("disable-passive") || convId.equals("disable-passive-cfp"))

@@ -10,6 +10,6 @@ public class Util {
         msg.addReceiver(receiver);
         msg.setContent(content);
         msg.setConversationId(conversationId);
-        agent.sendMessage(msg, false);
+        agent.sendMessage(msg);
     }
 }

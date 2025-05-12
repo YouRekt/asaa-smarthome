@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
-import org.asaa.services.EnvironmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -110,7 +109,7 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
         reply.setContent(responseDefaultMsgContent());
-        sendMessage(reply,false);
+        sendMessage(reply);
     }
 
     protected abstract String responseDefaultMsgContent();
