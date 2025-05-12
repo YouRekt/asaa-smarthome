@@ -11,12 +11,10 @@ import java.util.stream.Collectors;
 
 public class HandleMessageBehaviour extends BaseMessageHandler {
     protected final CoordinatorAgent coordinatorAgent;
-    protected final EnvironmentService environmentService;
 
     public HandleMessageBehaviour(CoordinatorAgent coordinatorAgent) {
         super(coordinatorAgent);
         this.coordinatorAgent = coordinatorAgent;
-        this.environmentService = coordinatorAgent.environmentService;
     }
 
     @Override
@@ -37,7 +35,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleCfp(ACLMessage msg) {
-        int availablePower = environmentService.getPowerAvailability(), requiredPower, priority;
+        int availablePower = coordinatorAgent.environmentService.getPowerAvailability(), requiredPower, priority;
         String convId = msg.getConversationId();
         String[] msgParts = msg.getContent().split(",");
         switch (convId) {
@@ -46,7 +44,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 requiredPower = Integer.parseInt(msgParts[0]);
                 priority = Integer.parseInt(msgParts[1]);
                 if (availablePower >= requiredPower) {
-                    environmentService.modifyPowerConsumption(+requiredPower);
+                    coordinatorAgent.environmentService.modifyPowerConsumption(+requiredPower);
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
                     reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
@@ -67,7 +65,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "disable-passive":
             case "disable-active":
                 returnedPower = Integer.parseInt(msg.getContent());
-                environmentService.modifyPowerConsumption(-returnedPower);
+                coordinatorAgent.environmentService.modifyPowerConsumption(-returnedPower);
                 if (!coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
                     ACLMessage callback = new ACLMessage(ACLMessage.INFORM);
                     callback.setConversationId("enable-callback");
@@ -102,7 +100,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
                 Map<String, Integer> purchased = new HashMap<>();
                 for (ItemRequest item : missingItems) {
-                    int bought = environmentService.buyBatch(item.name);
+                    int bought = coordinatorAgent.environmentService.buyBatch(item.name);
                     if (bought > 0) {
                         purchased.merge(item.name, bought, Integer::sum);
                     } else {
