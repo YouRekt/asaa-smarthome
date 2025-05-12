@@ -59,6 +59,8 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
     }
 
     private void registerBaseAgent() {
+        if (getLocalName().equals("Human"))
+            return;
         final Property p = new Property();
         p.setName("areaName");
         p.setValue(areaName);
