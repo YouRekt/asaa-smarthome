@@ -19,6 +19,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
     protected final List<Runnable> runnables = new ArrayList<>();
     protected final List<Behaviour> behaviours = new ArrayList<>();
+
     @Setter
     @Getter
     protected boolean isEnabled = false;
@@ -28,10 +29,14 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     @Setter
     @Getter
     protected boolean isInterruptible = true;
+    @Setter
+    @Getter
+    protected boolean isFreezable = false;
     @Getter
     protected int idleDraw = 0;
     @Getter
     protected int activeDraw = 0;
+
     protected final long awaitEnablePeriod = 1000;
 
     public final void subscribeSensor(AID aid, String sensorType) {

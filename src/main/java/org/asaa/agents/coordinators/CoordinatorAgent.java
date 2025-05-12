@@ -20,7 +20,8 @@ import java.util.*;
 @Getter
 public final class CoordinatorAgent extends SpringAwareAgent {
     private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
-    private final Map<AID, Integer> agentPriorities = new HashMap<>();
+    @Getter
+    private final Map<AID, List<AID>> appliancesAwaitingCallback = new HashMap<>();
     @Getter
     private final static Logger logger = LoggerFactory.getLogger("Coordinator");
 
@@ -98,14 +99,6 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         receivers.forEach(msg::addReceiver);
         msg.setConversationId("action-morning");
         send(msg);
-    }
-
-    public void registerAgentPriority(AID aid, int priority) {
-        agentPriorities.put(aid, priority);
-    }
-
-    public int getPriority(AID aid) {
-        return agentPriorities.getOrDefault(aid, 0);
     }
 }
 

@@ -10,7 +10,7 @@ public final class SmartLightbulbAgent extends SmartApplianceAgent {
     protected void setup() {
         idleDraw = 5;
         activeDraw = 0;
-        priority = 15;
+        priority = 100;
 
         super.setup();
 

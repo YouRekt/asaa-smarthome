@@ -39,11 +39,12 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleCfp(ACLMessage msg) {
         int availablePower = environmentService.getPowerAvailability(), requiredPower, priority;
         String convId = msg.getConversationId();
-
+        String[] msgParts = msg.getContent().split(",");
         switch (convId) {
             case "enable-passive":
             case "enable-active":
-                requiredPower = Integer.parseInt(msg.getContent());
+                requiredPower = Integer.parseInt(msgParts[0]);
+                priority = Integer.parseInt(msgParts[1]);
                 if (availablePower >= requiredPower) {
                     environmentService.modifyPowerConsumption(+requiredPower);
                     ACLMessage reply = msg.createReply();
@@ -51,7 +52,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
                     coordinatorAgent.send(reply);
                 } else {
-                    coordinatorAgent.addBehaviour(new PowerNegotiationBehaviour(coordinatorAgent, msg, requiredPower - availablePower, Integer.parseInt(msg.getContent())));
+                    coordinatorAgent.addBehaviour(new PowerNegotiationBehaviour(coordinatorAgent, msg, requiredPower - availablePower, requiredPower, priority));
                 }
                 break;
             default:
@@ -67,6 +68,19 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "disable-active":
                 returnedPower = Integer.parseInt(msg.getContent());
                 environmentService.modifyPowerConsumption(-returnedPower);
+                if (!coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
+                    ACLMessage callback = new ACLMessage(ACLMessage.INFORM);
+                    callback.setConversationId("enable-callback");
+                    callback.setContent(msg.getSender().getName());
+                    coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
+                    logger.info("Sending out {} callbacks after {} returned power", coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
+                    coordinatorAgent.send(callback);
+                    coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
+                }
+                ACLMessage reply = msg.createReply();
+                reply.setPerformative(ACLMessage.CONFIRM);
+                reply.setContent(msg.getContent());
+                coordinatorAgent.send(reply);
                 break;
             case "get-missing-items":
             case "action-morning":

@@ -29,7 +29,7 @@ public class RequestPowerBehaviour extends OneShotBehaviour {
         ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
         cfp.addReceiver(smartApplianceAgent.coordinatorAgent);
         cfp.setConversationId(convId);
-        cfp.setContent(Integer.toString(amount));
+        cfp.setContent(amount + "," + priority);
         cfp.setReplyWith(replyWith);
         logger.info("Sent CFP for {}W, prio={}, convId={}", amount, priority, convId);
         smartApplianceAgent.send(cfp);
