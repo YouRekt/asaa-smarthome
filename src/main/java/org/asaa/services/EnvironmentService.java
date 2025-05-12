@@ -38,7 +38,7 @@ public class EnvironmentService {
     // Power
     @Getter
     @Setter
-    private int MAX_POWER_CAPACITY = 400;
+    private int MAX_POWER_CAPACITY = 500;
     @Getter
     private int currentPowerConsumption = 0;
     // Money

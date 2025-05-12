@@ -45,9 +45,11 @@ public final class FridgeAgent extends SmartApplianceAgent {
                         }
 
                         logger.info("[UPDATED] - {}", responseDefaultMsgContent());
+                        break;
                     default:
                         break;
                 }
+                super.handleInform(msg);
             }
 
             @Override

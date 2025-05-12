@@ -8,7 +8,7 @@ import org.asaa.behaviours.appliance.HandleMessageBehaviour;
 import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
 import org.asaa.behaviours.appliance.RequestPowerBehaviour;
 
-public class DishwasherAgent extends SmartApplianceAgent {
+public final class DishwasherAgent extends SmartApplianceAgent {
     private final long fullWashTime = 30000;
     private long remainingWashTime = fullWashTime;
     private long washStartTime;
@@ -17,13 +17,29 @@ public class DishwasherAgent extends SmartApplianceAgent {
     @Override
     protected void setup() {
         idleDraw = 5;
-        activeDraw = 280;
-        priority = 60;
+        activeDraw = 275;
+        priority = 150;
         isFreezable = true;
 
         super.setup();
 
         addBehaviour(new HandleMessageBehaviour(this) {
+            @Override
+            protected void handleInform(ACLMessage msg) {
+                switch (msg.getConversationId()) {
+                    case "enable-callback":
+                        if (washBehaviour == null && remainingWashTime > 0) {
+                            String replyWith = "req-" + System.currentTimeMillis();
+                            smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> beginWash());
+                            addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                super.handleInform(msg);
+            }
+
             @Override
             protected void handleRequest(ACLMessage msg) {
                 if (!isWorking) {

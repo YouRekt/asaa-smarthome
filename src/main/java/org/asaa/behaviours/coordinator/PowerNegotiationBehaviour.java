@@ -112,6 +112,10 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
                 cfpReceivedResponses++;
                 returnedPower = Integer.parseInt(msg.getContent());
                 coordinatorAgent.environmentService.modifyPowerConsumption(-returnedPower);
+                ACLMessage reply = msg.createReply();
+                reply.setPerformative(ACLMessage.CONFIRM);
+                reply.setContent(msg.getContent());
+                coordinatorAgent.send(reply);
                 if (cfpReceivedResponses >= cfpSentProposals) {
                     cfpRespondToSender();
                 }
@@ -130,6 +134,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         sortedProposals.sort(Comparator.comparingInt(e -> e.getValue().getPriority()));
         cfpRelievedPower = 0;
         Set<AID> accepted = new HashSet<>();
+        List<AID> awaitingCallback = new ArrayList<>();
         for (var proposal : sortedProposals) {
             if (cfpRelievedPower >= cfpShortage)
                 break;
@@ -139,7 +144,10 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
             }
             cfpRelievedPower += proposal.getValue().getCanFree();
             accepted.add(proposal.getKey());
+            if (proposal.getValue().getPriority() < 100)
+                awaitingCallback.add(proposal.getKey());
         }
+        coordinatorAgent.getAppliancesAwaitingCallback().put(cfpMessage.getSender(), awaitingCallback);
 
         if (cfpRelievedPower < cfpShortage) {
             ACLMessage reply = cfpMessage.createReply();

@@ -39,6 +39,7 @@ public class JadeService {
         runAgent(container, "AC", "appliances", "ACAgent", new Object[]{"kitchen"});
         runAgent(container, "Fridge", "appliances", "FridgeAgent", new Object[]{"kitchen"});
         runAgent(container, "Coffee", "appliances", "CoffeeMachineAgent", new Object[]{"kitchen"});
+        runAgent(container, "Dishwasher", "appliances", "DishwasherAgent", new Object[]{"kitchen"});
     }
 
     public static void runGUI(final ContainerController mainContainer) {

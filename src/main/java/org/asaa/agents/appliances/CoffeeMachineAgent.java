@@ -14,7 +14,7 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
     protected void setup() {
         idleDraw = 5;
         activeDraw = 120;
-        priority = 10;
+        priority = 100;
 
         super.setup();
 

@@ -32,6 +32,17 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     }
 
     @Override
+    protected void handleInform(ACLMessage msg) {
+        switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
+            case "enable-callback":
+                logger.info("Received enable-callback message");
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     protected void handleAgree(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "enable-passive":
@@ -76,10 +87,13 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleCfp(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "power-relief":
-                int canFree = 0;
+                int canFree = 0, prio = smartApplianceAgent.getPriority();
                 if (smartApplianceAgent.isWorking()) {
                     if (smartApplianceAgent.isInterruptible()) {
                         canFree = smartApplianceAgent.getActiveDraw();
+                        if (smartApplianceAgent.isFreezable()) {
+                            prio = smartApplianceAgent.getPriority() % 100;
+                        }
                     } else {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.REFUSE);
@@ -88,12 +102,13 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     }
                 } else if (smartApplianceAgent.isEnabled()) {
                     canFree = smartApplianceAgent.getIdleDraw();
+                    prio = smartApplianceAgent.getPriority() % 100 + 200;
                 }
 
-                logger.info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", smartApplianceAgent.getLocalName(), canFree, smartApplianceAgent.getPriority(), (smartApplianceAgent.isWorking() ? "yes" : "no"));
+                logger.info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", smartApplianceAgent.getLocalName(), canFree, prio, (smartApplianceAgent.isWorking() ? "yes" : "no"));
                 ACLMessage propose = msg.createReply();
                 propose.setPerformative(ACLMessage.PROPOSE);
-                propose.setContent(canFree + "," + smartApplianceAgent.getPriority());
+                propose.setContent(canFree + "," + prio);
                 smartApplianceAgent.send(propose);
                 break;
             default:

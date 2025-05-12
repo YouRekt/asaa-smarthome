@@ -68,6 +68,18 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "disable-active":
                 returnedPower = Integer.parseInt(msg.getContent());
                 environmentService.modifyPowerConsumption(-returnedPower);
+                if (!coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
+                    ACLMessage callback = new ACLMessage(ACLMessage.INFORM);
+                    callback.setConversationId("enable-callback");
+                    callback.setContent(msg.getSender().getName());
+                    coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
+                    logger.info("Sending out {} callbacks after {} returned power", coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
+                    coordinatorAgent.send(callback);
+                }
+                ACLMessage reply = msg.createReply();
+                reply.setPerformative(ACLMessage.CONFIRM);
+                reply.setContent(msg.getContent());
+                coordinatorAgent.send(reply);
                 break;
             case "get-missing-items":
             case "action-morning":

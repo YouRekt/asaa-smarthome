@@ -28,7 +28,7 @@ public final class ACAgent extends SmartApplianceAgent {
     protected void setup() {
         idleDraw = 10;
         activeDraw = 190;
-        priority = 50;
+        priority = 120;
 
         super.setup();
 
@@ -62,6 +62,7 @@ public final class ACAgent extends SmartApplianceAgent {
                     }
                     isWorking = false;
                 }
+                super.handleInform(msg);
             }
         });
 

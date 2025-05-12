@@ -21,6 +21,8 @@ import java.util.*;
 public final class CoordinatorAgent extends SpringAwareAgent {
     private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
     @Getter
+    private final Map<AID, List<AID>> appliancesAwaitingCallback = new HashMap<>();
+    @Getter
     private final static Logger logger = LoggerFactory.getLogger("Coordinator");
 
     @Override
