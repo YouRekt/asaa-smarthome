@@ -96,7 +96,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         AID fridgeAgent = (!fridgeAgents.isEmpty()) ? fridgeAgents.getFirst() : null;
         if (fridgeAgent == null) {
             logger.warn("Morning Routine | Fridge agent not found in kitchen");
-            agentCommunicationController.sendError(getLocalName(), "Fridge agent not found in kitchen");
+            agentCommunicationController.sendError(getName(), "Fridge agent not found in kitchen");
         }
         receivers.add(fridgeAgent);
 
@@ -104,7 +104,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         AID coffeeAgent = (!coffeeAgents.isEmpty()) ? coffeeAgents.getFirst() : null;
         if (coffeeAgent == null) {
             logger.warn("Morning Routine | Coffee agent not found in kitchen");
-            agentCommunicationController.sendError(getLocalName(), "Coffee agent not found in kitchen");
+            agentCommunicationController.sendError(getName(), "Coffee agent not found in kitchen");
         }
         receivers.add(coffeeAgent);
 

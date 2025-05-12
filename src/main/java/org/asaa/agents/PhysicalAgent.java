@@ -90,7 +90,7 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
             coordinatorAgent = Arrays.stream(DFService.search(this, dfd)).map(DFAgentDescription::getName).toList().getFirst();
             if (!coordinatorAgent.getLocalName().equals("Coordinator")) {
                 logger.error("Coordinator agent was not of the expected type!!! Found: {}", coordinatorAgent.getLocalName());
-                agentCommunicationController.sendError(getLocalName(), "Fatal: Coordinator agent was not of expected type");
+                agentCommunicationController.sendError(getName(), "Fatal: Coordinator agent was not of expected type");
             }
             logger.info("Found coordinator agent");
         } catch (FIPAException e) {
