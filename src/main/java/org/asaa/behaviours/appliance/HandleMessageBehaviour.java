@@ -23,6 +23,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     (msg.getConversationId() == null ||
                             !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief")))) {
                 smartApplianceAgent.logger.warn("{} is not enabled. Ignoring message {} {}", smartApplianceAgent.getLocalName(), msg.getConversationId(), msg.getContent());
+                smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getLocalName(), "Message sent to a disabled agent");
                 return;
             }
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
@@ -70,13 +71,16 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         switch (msg.getConversationId()) {
             case "enable-passive":
                 smartApplianceAgent.logger.warn("Coordinator REFUSED: convId=enable-passive");
+                smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getLocalName(), "Passive power on refused");
                 break;
             case "enable-active":
                 smartApplianceAgent.logger.warn("Coordinator REFUSED: convId=enable-active");
+                smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getLocalName(), "Active power on refused");
                 String replyWith = msg.getInReplyTo();
                 Runnable callback = smartApplianceAgent.onPowerGrantedCallbacks.remove(replyWith);
                 if (callback != null) {
-                    smartApplianceAgent.logger.debug("Callback cancelled tied with request {}", replyWith);
+                    smartApplianceAgent.logger.warn("Callback cancelled tied with request {}", replyWith);
+                    smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getLocalName(), "Callback action was cancelled: request " + replyWith);
                 }
                 break;
             default:

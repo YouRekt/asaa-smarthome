@@ -45,6 +45,6 @@ public abstract class SpringAwareAgent extends Agent {
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),
                 msg.getConversationId(),
                 StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
-                msg.getContent() == null ? "" : String.format(" :%s", msg.getContent())));
+                msg.getContent() == null ? "" : String.format(": %s", msg.getContent())));
     }
 }

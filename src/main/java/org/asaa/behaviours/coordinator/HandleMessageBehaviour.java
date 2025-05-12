@@ -105,6 +105,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                         purchased.merge(item.name, bought, Integer::sum);
                     } else {
                         CoordinatorAgent.getLogger().warn("Item {} could not be bought", item.name);
+                        coordinatorAgent.agentCommunicationController.sendError(coordinatorAgent.getLocalName(), "Item " + item.name + " could not be bought");
                     }
                 }
 

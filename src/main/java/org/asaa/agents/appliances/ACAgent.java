@@ -88,6 +88,7 @@ public final class ACAgent extends SmartApplianceAgent {
                 subscribeSensor(sensor.get(), "TemperatureSensorAgent");
             } else {
                 logger.warn("No TemperatureSensorAgent found");
+                agentCommunicationController.sendError(getLocalName(), "No TemperatureSensorAgent found");
                 return false;
             }
         } catch (FIPAException e) {

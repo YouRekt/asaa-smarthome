@@ -27,6 +27,7 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
                     addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
                 } else {
                     logger.warn("Currently making coffee, can not respond to request");
+                    agentCommunicationController.sendMessage(getLocalName(), "Currently making coffee, can not respond to request");
                 }
             }
         });
