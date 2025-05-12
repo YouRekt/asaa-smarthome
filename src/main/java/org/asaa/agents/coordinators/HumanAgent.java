@@ -11,6 +11,8 @@ public final class HumanAgent extends PhysicalAgent {
         addBehaviour(new HandleMessageBehaviour(this));
     }
 
+    private void sendFrontendMessage();
+
     @Override
     protected void handleTrigger() {
 
