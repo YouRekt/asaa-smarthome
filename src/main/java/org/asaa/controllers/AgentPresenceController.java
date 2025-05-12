@@ -1,10 +1,10 @@
-package org.asaa.util;
+package org.asaa.controllers;
 
 import org.asaa.dto.AgentDTO;
 import org.springframework.messaging.core.MessageSendingOperations;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
-@Component
+@Controller
 public class AgentPresenceController {
     private final MessageSendingOperations<String> messageSendingOperations;
 

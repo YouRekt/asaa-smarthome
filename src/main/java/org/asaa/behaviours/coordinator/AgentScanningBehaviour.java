@@ -10,7 +10,7 @@ import jade.domain.FIPAException;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.asaa.services.EnvironmentService;
-import org.asaa.util.AgentPresenceController;
+import org.asaa.controllers.AgentPresenceController;
 
 import java.util.*;
 
