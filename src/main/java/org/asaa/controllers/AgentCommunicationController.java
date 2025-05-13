@@ -47,6 +47,6 @@ public class AgentCommunicationController {
 
     @MessageMapping("/human-location")
     public void updateHumanLocation(@Payload HumanLocationDTO dto) {
-
+        environmentService.setHumanLocation(environmentService.getArea(dto.area()));
     }
 }

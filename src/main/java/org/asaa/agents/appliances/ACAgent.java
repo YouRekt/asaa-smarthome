@@ -109,10 +109,10 @@ public final class ACAgent extends SmartApplianceAgent {
     }
 
     private void performCooling(double temperature) {
+        environmentService.getArea(areaName).setAttribute("temperature", temperature - coolingRate);
         addBehaviour(new WakerBehaviour(this, 1000) {
             @Override
             protected void onWake() {
-                environmentService.getArea(areaName).setAttribute("temperature", temperature - coolingRate);
                 requestTemperature();
             }
         });

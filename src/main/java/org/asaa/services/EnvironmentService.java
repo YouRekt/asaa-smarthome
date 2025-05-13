@@ -4,11 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.asaa.environment.Area;
+import org.asaa.environment.TemperatureSimulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,7 +29,11 @@ import java.util.concurrent.TimeUnit;
 @Accessors(chain = true)
 public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
+    private final Map<String, LocalDateTime> cyclicEvents = new HashMap<>();
     private final Random rand = new Random();
+    @Getter
+    @Setter
+    private Area humanLocation;
     @Getter
     @Setter
     private Map<String, Area> areas = new HashMap<>();
@@ -64,10 +70,29 @@ public class EnvironmentService {
         if (!configProvided) {
             simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
             Area kitchen = new Area("kitchen");
-            kitchen.setAttribute("temperature", 20.0);
-            kitchen.setAttribute("human", false);
+            kitchen.setAttribute("temperature", 21.0);
             addArea("kitchen", kitchen);
+            Area bathroom = new Area("bathroom");
+            bathroom.setAttribute("temperature", 21.0);
+            addArea("bathroom", bathroom);
+            Area bedroom1 = new Area("bedroom 1");
+            bedroom1.setAttribute("temperature", 2137.0);
+            addArea("bedroom 1", bedroom1);
+            Area bedroom2 = new Area("bedroom 2");
+            bedroom2.setAttribute("temperature", 21.0);
+            addArea("bedroom 2", bedroom2);
+            Area bedroom3 = new Area("bedroom 3");
+            bedroom3.setAttribute("temperature", 21.0);
+            addArea("bedroom 3", bedroom3);
+            Area livingRoom = new Area("living room");
+            livingRoom.setAttribute("temperature", 21.0);
+            addArea("living room", livingRoom);
+            Area beforeRoom = new Area("before room");
+            beforeRoom.setAttribute("temperature", 19.0);
+            addArea("before room", beforeRoom);
+            humanLocation = kitchen;
             initializePriceMaps();
+            initializeCyclicEvents();
         }
         executor = Executors.newSingleThreadScheduledExecutor();
         future = executor.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
@@ -90,6 +115,22 @@ public class EnvironmentService {
 
     private void tick() {
         simulationTime = simulationTime.plusMinutes(timeDelta);
+
+        // Every 30 minutes, change the Kitchen temperature
+        /*
+        REVISIT: Possible (example) changes
+        - If all windows in the kitchen area are closed, the temperature shall not vary much (~0.1 degrees)
+        - Running an oven might slowly increase kitchen temperature by a small amount (log function to have
+          some ceiling, diminishing returns)
+        - After planning out our home schema, open doors with rooms with substantial temperature differences
+          can affect the temperature of the kitchen
+         */
+        if (Duration.between(cyclicEvents.get("kitchen-temp"), simulationTime).toMinutes() >= 30) {
+            cyclicEvents.put("kitchen-temp", simulationTime);
+            double newTemp = TemperatureSimulator.simulateRoomTemperature((double)getArea("kitchen").getAttribute("temperature"), simulationTime.getHour(), 14, 21.0, 25.0);
+            getArea("kitchen").setAttribute("temperature", newTemp);
+            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
+        }
     }
 
     public String getSimulationTimeString() {
@@ -158,7 +199,7 @@ public class EnvironmentService {
         }
     }
 
-    public void initializePriceMaps() {
+    private void initializePriceMaps() {
         unitPrice.put("Milk", 2);
         unitPrice.put("Eggs", 3);
         unitPrice.put("Butter", 5);
@@ -172,6 +213,10 @@ public class EnvironmentService {
         batchSize.put("Cheese", 1);
         batchSize.put("Yogurt", 1);
         batchSize.put("Juice", 1);
+    }
+
+    private void initializeCyclicEvents() {
+        cyclicEvents.put("kitchen-temp", LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45)));
     }
 
     public void addArea(String name, Area area) {

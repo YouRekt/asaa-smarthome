@@ -25,7 +25,7 @@ public final class MotionSensorAgent extends SensorAgent {
     }
 
     private boolean getHumanPresence() {
-        return (boolean) getArea().getAttribute("human");
+        return environmentService.getHumanLocation() == getArea();
     }
 
     private String getHumanPresenceString() {
