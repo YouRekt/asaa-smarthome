@@ -35,7 +35,7 @@ public class AgentCommunicationController {
         messageSendingOperations.convertAndSend("/topic/agent-error", dto);
     }
 
-    @MessageMapping("/agent-message") // mapped to /app/env
+    @MessageMapping("/agent-message")
     public void readAgentMessage(@Payload ACLMessageDTO dto) {
         humanCommunicationService.receiveMessage(dto);
     }

@@ -19,9 +19,10 @@ public class HumanCommunicationService {
 
     public void receiveMessage(ACLMessageDTO aclMessageDTO) {
         ACLMessage msg = new ACLMessage(ConvertStringToACLPerformative(aclMessageDTO.performative()));
-        msg.addReceiver(new AID(aclMessageDTO.aid(), true));
+        AID receivedAID = new AID(aclMessageDTO.aid(), true);
+        msg.addReceiver(receivedAID);
+        msg.setConversationId(aclMessageDTO.conversationId());
         msg.setContent(aclMessageDTO.message());
-
         receivedMessages.add(msg);
     }
 }
