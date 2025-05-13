@@ -66,7 +66,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         if (isEnabled) {
             if (isWorking) {
                 logger.warn("Forced shutdown while performing an active task!!!");
-                agentCommunicationController.sendError(getLocalName(), "Forced shutdown while performing an active task");
+                agentCommunicationController.sendError(getName(), "Forced shutdown while performing an active task");
                 addBehaviour(new RelinquishPowerBehaviour(this, activeDraw, "disable-active"));
             }
             addBehaviour(new RelinquishPowerBehaviour(this, idleDraw, "disable-passive"));
