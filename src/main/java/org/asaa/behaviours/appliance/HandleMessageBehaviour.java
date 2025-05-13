@@ -4,6 +4,7 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.BaseMessageHandler;
+import org.asaa.util.Util;
 
 public class HandleMessageBehaviour extends BaseMessageHandler {
     protected final SmartApplianceAgent smartApplianceAgent;
@@ -21,8 +22,13 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         if (msg != null) {
             if (!smartApplianceAgent.isEnabled() &&
                     (msg.getConversationId() == null ||
-                            !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief")))) {
-                smartApplianceAgent.logger.warn("{} is not enabled. Ignoring message {} {}", smartApplianceAgent.getLocalName(), msg.getConversationId(), msg.getContent());
+                            !(msg.getConversationId().equals("enable-passive") ||
+                                    msg.getConversationId().equals("enable-active") ||
+                                    msg.getConversationId().equals("power-relief") ||
+                                    msg.getConversationId().equals("toggle") ||
+                                    msg.getConversationId().equals("disable-passive") ||
+                                    msg.getConversationId().equals("disable-active")))) {
+                smartApplianceAgent.logger.warn("{} is not enabled. Ignoring message perf={} convId={} content={}", smartApplianceAgent.getLocalName(), Util.ConvertACLPerformativeToString(msg.getPerformative()), msg.getConversationId(), msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Message sent to a disabled agent");
                 return;
             }
@@ -42,6 +48,8 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "trigger":
                 smartApplianceAgent.trigger();
                 break;
+            case "toggle":
+                smartApplianceAgent.toggle();
             default:
                 break;
         }

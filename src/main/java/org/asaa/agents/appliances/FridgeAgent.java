@@ -45,6 +45,7 @@ public final class FridgeAgent extends SmartApplianceAgent {
                         }
 
                         logger.info("[UPDATED] - {}", responseDefaultMsgContent());
+                        environmentService.addPerformedTask();
                         break;
                     default:
                         break;

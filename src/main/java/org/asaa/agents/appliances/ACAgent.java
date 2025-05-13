@@ -32,9 +32,11 @@ public final class ACAgent extends SmartApplianceAgent {
 
         super.setup();
 
-        runnables.add(() -> {while (!findTemperatureSensor()) {
-            logger.info("Looking for temperature sensor");
-        }});
+        runnables.add(() -> {
+            while (!findTemperatureSensor()) {
+                logger.info("Looking for temperature sensor");
+            }
+        });
 
         behaviours.add(new TickerBehaviour(this, 10000) {
             @Override
@@ -48,21 +50,28 @@ public final class ACAgent extends SmartApplianceAgent {
         addBehaviour(new HandleMessageBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
-                double temperature = Double.parseDouble(msg.getContent());
-                if (temperature > targetTemperature) {
-                    if (!isWorking) {
-                        String replyWith = "req-" + System.currentTimeMillis();
-                        smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
-                        addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
-                    } else performCooling(temperature);
-                } else {
-                    if (isWorking) {
-                        logger.info("Finished cooling");
-                        addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
-                    }
-                    isWorking = false;
+                switch (msg.getConversationId()) {
+                    case "def-reply":
+                        double temperature = Double.parseDouble(msg.getContent());
+                        if (temperature > targetTemperature) {
+                            if (!isWorking) {
+                                String replyWith = "req-" + System.currentTimeMillis();
+                                smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
+                                addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
+                            } else performCooling(temperature);
+                        } else {
+                            if (isWorking) {
+                                logger.info("Finished cooling");
+                                environmentService.addPerformedTask();
+                                addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
+                            }
+                            isWorking = false;
+                        }
+                        break;
+                    default:
+                        super.handleInform(msg);
+                        break;
                 }
-                super.handleInform(msg);
             }
         });
 

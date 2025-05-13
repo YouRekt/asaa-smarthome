@@ -40,7 +40,7 @@ public abstract class SpringAwareAgent extends Agent {
         if (msg.getContent() == null)
             msg.setContent("");
         send(msg);
-        agentCommunicationController.sendMessage(getName(), String.format("[%s] -> [%s <%s>] -> [%s]%s",
+        agentCommunicationController.sendMessage(getName(), String.format("[Out] [%s] -> [%s <%s>] -> [%s]%s",
                 getLocalName(),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),
                 msg.getConversationId(),

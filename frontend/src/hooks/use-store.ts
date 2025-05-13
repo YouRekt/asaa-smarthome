@@ -8,6 +8,8 @@ export type Environment = {
 	maxPowerCapacity: number;
 	currentPowerConsumption: number;
 	humanLocation: string;
+	performedTasks: number;
+	errorTasks: number;
 	areas: {
 		name: string;
 		attributes: Record<string, string | number | boolean>;

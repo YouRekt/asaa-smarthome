@@ -30,6 +30,7 @@ public class AgentCommunicationController {
     }
 
     public void sendError(String agentName, String message) {
+        environmentService.addPerformedTaskError();
         AgentMessageDTO dto = new AgentMessageDTO(agentName, environmentService.getSimulationTimeString(), message);
 
         messageSendingOperations.convertAndSend("/topic/agent-error", dto);

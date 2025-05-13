@@ -103,7 +103,6 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
     }
 
     public void trigger() {
-        logger.info("I have been triggered!");
         handleTrigger();
     }
 
@@ -113,6 +112,7 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
         reply.setContent(responseDefaultMsgContent());
+        reply.setConversationId("def-reply");
         sendMessage(reply);
     }
 

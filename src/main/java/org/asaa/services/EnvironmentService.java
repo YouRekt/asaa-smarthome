@@ -54,6 +54,10 @@ public class EnvironmentService {
     @Setter
     private int credits = 9999;
     @Getter
+    private int performedTasks = 0;
+    @Getter
+    private int performedTasksErrors = 0;
+    @Getter
     @Setter
     private int timeDelta = 1;
     @Getter
@@ -231,4 +235,11 @@ public class EnvironmentService {
         return areas.keySet();
     }
 
+    public void addPerformedTask() {
+        performedTasks++;
+    }
+
+    public void addPerformedTaskError() {
+        performedTasksErrors++;
+    }
 }
