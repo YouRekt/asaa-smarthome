@@ -7,8 +7,8 @@ import useStore from "@/hooks/use-store";
 import useStomp from "@/hooks/use-stomp";
 import { Client } from "@stomp/stompjs";
 import { Errors } from "@/components/errors";
-import Agents from "@/components/agents";
 import { Messages } from "@/components/messages";
+import { Agents } from "@/components/agents";
 
 export default function App() {
 	const {

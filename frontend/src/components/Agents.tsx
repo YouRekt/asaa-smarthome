@@ -1,6 +1,7 @@
 import { Agent } from "@/components/agent";
 import useStore from "@/hooks/use-store";
-const Agents = () => {
+
+export const Agents = () => {
 	const { agents } = useStore();
 
 	return (
@@ -10,5 +11,3 @@ const Agents = () => {
 		</div>
 	);
 };
-
-export default Agents;

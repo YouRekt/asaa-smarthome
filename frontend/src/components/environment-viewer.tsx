@@ -17,7 +17,14 @@ const EnvironmentViewer = () => {
 			<p>
 				<strong>Delta:</strong> {environment.timeDelta}
 			</p>
-
+			<p>
+				<strong>Max Power Capacity:</strong>{" "}
+				{environment.maxPowerCapacity}
+			</p>
+			<p>
+				<strong>Current Power Consumption:</strong>{" "}
+				{environment.currentPowerConsumption}
+			</p>
 			{selectedRoom && (
 				<>
 					<h3>Area Status</h3>
