@@ -1,4 +1,10 @@
-export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
+export const FloorPlan = ({
+	onClick,
+	humanLocation,
+}: {
+	onClick: (id: string) => void;
+	humanLocation: string;
+}) => {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -848,7 +854,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="266.03125"
 				height="400"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "bathroom"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="translate(6.636719 6)"
@@ -857,7 +867,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="400.050781"
 				height="399.539062"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "bedroom 1"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="translate(939.785157 6)"
@@ -866,7 +880,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="398.769532"
 				height="399.335938"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "bedroom 2"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="translate(407.507812 538.937499)"
@@ -875,7 +893,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="400.066406"
 				height="396.395387"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "bedroom 3"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="translate(939.785155 938.273438)"
@@ -884,7 +906,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="396.148437"
 				height="524.550781"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "living room"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="translate(941.796875 406.000001)"
@@ -893,7 +919,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="401.608517"
 				height="403.550781"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "before room"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="translate(405.899295 938.664063)"
@@ -902,7 +932,11 @@ export const FloorPlan = ({ onClick }: { onClick: (id: string) => void }) => {
 			<rect
 				width="401.608517"
 				height="403.550781"
-				fill="rgba(0,136,255,0.07)"
+				fill={
+					humanLocation === "kitchen"
+						? "rgba(255,0,0,0.07)"
+						: "rgba(0,136,255,0.07)"
+				}
 				rx="0"
 				ry="0"
 				transform="matrix(1.638447 0 0 1 276.282566 3.994141)"

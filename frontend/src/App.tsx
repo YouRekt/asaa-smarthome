@@ -27,9 +27,10 @@ export default function App() {
 		setShowErrors,
 		errors,
 		setAgentStatus,
+		environment,
 	} = useStore();
 
-	const { setClient } = useStomp();
+	const { setClient, sendMessage } = useStomp();
 
 	useEffect(() => {
 		const stompClient = new Client({
@@ -77,6 +78,7 @@ export default function App() {
 
 	const handleRoomClick = (id: string) => {
 		setSelectedRoom(id);
+		sendMessage("/app/human-location", { area: id });
 	};
 
 	const handleStart = async () => {
@@ -130,7 +132,10 @@ export default function App() {
 				</Button>
 			</nav>
 			<div className="h-[calc(100dvh-4rem)] flex relative">
-				<FloorPlan onClick={handleRoomClick} />
+				<FloorPlan
+					onClick={handleRoomClick}
+					humanLocation={environment?.humanLocation || "kitchen"}
+				/>
 				<div className="border-l p-4 flex flex-col gap-4">
 					<h2 className="text-xl font-semibold mb-2">
 						{selectedRoom ? `${selectedRoom}` : "Select a room"}

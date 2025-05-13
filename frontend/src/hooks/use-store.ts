@@ -7,6 +7,7 @@ export type Environment = {
 	timeDelta: number;
 	maxPowerCapacity: number;
 	currentPowerConsumption: number;
+	humanLocation: string;
 	areas: {
 		name: string;
 		attributes: Record<string, string | number | boolean>;

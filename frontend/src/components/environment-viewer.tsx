@@ -18,6 +18,9 @@ const EnvironmentViewer = () => {
 				<strong>Delta:</strong> {environment.timeDelta}
 			</p>
 			<p>
+				<strong>Human Location:</strong> {environment.humanLocation}
+			</p>
+			<p>
 				<strong>Max Power Capacity:</strong>{" "}
 				{environment.maxPowerCapacity}
 			</p>
