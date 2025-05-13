@@ -116,11 +116,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
             this.removeBehaviour(washBehaviour);
             washBehaviour = null;
             logger.info("Wash paused, {}ms left", remainingWashTime);
-            super.handleToggle();
-        } else {
-            super.handleToggle();
         }
-
         super.handleToggle();
     }
 
