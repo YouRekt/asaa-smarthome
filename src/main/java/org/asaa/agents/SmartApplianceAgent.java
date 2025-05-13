@@ -2,15 +2,13 @@ package org.asaa.agents;
 
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
+import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
 import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
 import org.asaa.behaviours.appliance.RequestPowerBehaviour;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class SmartApplianceAgent extends PhysicalAgent {
@@ -19,6 +17,12 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
     protected final List<Runnable> runnables = new ArrayList<>();
     protected final List<Behaviour> behaviours = new ArrayList<>();
+    @Getter
+    private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
+
+    @Setter
+    @Getter
+    private boolean cfpInProgress = false;
 
     @Setter
     @Getter
@@ -51,5 +55,10 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         } else {
             addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", ""));
         }
+    }
+
+    public void updateStatus()
+    {
+        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking,isInterruptible,isFreezable,activeDraw,idleDraw,priority);
     }
 }

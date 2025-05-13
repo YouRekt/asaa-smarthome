@@ -32,6 +32,7 @@ public class JadeService {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        runAgent(container, "Human", "coordinators", "HumanAgent", new Object[]{"kitchen"});
         runAgent(container, "Scheduler", "coordinators", "SchedulerAgent");
         runAgent(container, "Temperature Sensor", "sensors", "TemperatureSensorAgent", new Object[]{"kitchen"});
         runAgent(container, "Motion Sensor", "sensors", "MotionSensorAgent", new Object[]{"kitchen"});

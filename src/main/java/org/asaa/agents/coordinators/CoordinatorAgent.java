@@ -14,6 +14,7 @@ import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.*;
 
@@ -28,12 +29,22 @@ public final class CoordinatorAgent extends SpringAwareAgent {
     @Override
     protected void setup() {
         super.setup();
+
+        MDC.put("agent", "Coordinator");
+        MDC.put("area", "----------");
+
         logger.info("Initialized");
 
         registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
         addBehaviour(new HandleMessageBehaviour(this));
+    }
+
+    @Override
+    protected void takeDown() {
+        MDC.clear();
+        super.takeDown();
     }
 
     private void registerCoordinatorAgent() {
@@ -85,6 +96,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         AID fridgeAgent = (!fridgeAgents.isEmpty()) ? fridgeAgents.getFirst() : null;
         if (fridgeAgent == null) {
             logger.warn("Morning Routine | Fridge agent not found in kitchen");
+            agentCommunicationController.sendError(getName(), "Fridge agent not found in kitchen");
         }
         receivers.add(fridgeAgent);
 
@@ -92,13 +104,14 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         AID coffeeAgent = (!coffeeAgents.isEmpty()) ? coffeeAgents.getFirst() : null;
         if (coffeeAgent == null) {
             logger.warn("Morning Routine | Coffee agent not found in kitchen");
+            agentCommunicationController.sendError(getName(), "Coffee agent not found in kitchen");
         }
         receivers.add(coffeeAgent);
 
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         receivers.forEach(msg::addReceiver);
         msg.setConversationId("action-morning");
-        send(msg);
+        sendMessage(msg);
     }
 }
 

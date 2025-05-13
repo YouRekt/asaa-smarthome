@@ -5,7 +5,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.tools.sniffer.Message;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 
 import java.util.*;
@@ -17,22 +16,11 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
     private final int cfpShortage;
     private final int cfpRequiredPower;
     private final int cfpSenderPriority;
+    private final Map<AID, ProposalData> cfpProposals = new HashMap<>();
     private int cfpReceivedResponses = 0;
     private int cfpSentProposals = 0;
     private int cfpRelievedPower = 0;
     private boolean cfpProposalsProcessed = false;
-    private final Map<AID, ProposalData> cfpProposals = new HashMap<>();
-    private final WakerBehaviour cfpTimeoutBehaviour = new WakerBehaviour(myAgent, cfpResponseTimeout) {
-        @Override
-        protected void onWake() {
-            CoordinatorAgent.getLogger().warn("Reply-by for cfp expired, received {} responses, sent {}", cfpReceivedResponses, cfpSentProposals);
-            if (cfpProposalsProcessed)
-                cfpRespondToSender();
-            else
-                cfpProcessProposals();
-        }
-    };
-
     public PowerNegotiationBehaviour(CoordinatorAgent coordinatorAgent, ACLMessage cfpMessage, int cfpShortage, int cfpRequiredPower, int cfpSenderPriority) {
         super(coordinatorAgent);
 
@@ -41,7 +29,14 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         this.cfpShortage = cfpShortage;
         this.cfpRequiredPower = cfpRequiredPower;
         this.cfpSenderPriority = cfpSenderPriority;
-    }
+    }    private final WakerBehaviour cfpTimeoutBehaviour = new WakerBehaviour(myAgent, cfpResponseTimeout) {
+        @Override
+        protected void onWake() {
+            CoordinatorAgent.getLogger().warn("Reply-by for cfp expired, received {} responses, sent {}", cfpReceivedResponses, cfpSentProposals);
+            if (cfpProposalsProcessed) cfpRespondToSender();
+            else cfpProcessProposals();
+        }
+    };
 
     @Override
     public void onStart() {
@@ -49,7 +44,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         cfp.setConversationId("power-relief");
         cfp.setContent(Integer.toString(cfpShortage));
         cfp.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
-        cfpSentProposals = (int)coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(cfpMessage.getSender())).count();
+        cfpSentProposals = (int) coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(cfpMessage.getSender())).count();
         coordinatorAgent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream().filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream())).filter(a -> !a.equals(cfpMessage.getSender())).forEach(cfp::addReceiver);
         coordinatorAgent.send(cfp);
 
@@ -58,10 +53,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
 
     @Override
     public void action() {
-        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null &&
-                msg.getConversationId().equals("power-relief") ||
-                msg.getConversationId().equals("disable-passive-cfp") ||
-                msg.getConversationId().equals("disable-active-cfp"));
+        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null && msg.getConversationId().equals("power-relief") || msg.getConversationId().equals("disable-passive-cfp") || msg.getConversationId().equals("disable-active-cfp"));
 
         final ACLMessage msg = coordinatorAgent.receive(mt);
 
@@ -136,37 +128,35 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         Set<AID> accepted = new HashSet<>();
         List<AID> awaitingCallback = new ArrayList<>();
         for (var proposal : sortedProposals) {
-            if (cfpRelievedPower >= cfpShortage)
-                break;
+            if (cfpRelievedPower >= cfpShortage) break;
             if (proposal.getValue().getPriority() > cfpSenderPriority) {
                 CoordinatorAgent.getLogger().warn("Proposal of {} is higher prio ({}) than {} ({}), skipping", proposal.getKey().getLocalName(), proposal.getValue().getPriority(), cfpMessage.getSender().getLocalName(), cfpSenderPriority);
                 break;
             }
             cfpRelievedPower += proposal.getValue().getCanFree();
             accepted.add(proposal.getKey());
-            if (proposal.getValue().getPriority() < 100)
-                awaitingCallback.add(proposal.getKey());
+            if (proposal.getValue().getPriority() < 100) awaitingCallback.add(proposal.getKey());
         }
         coordinatorAgent.getAppliancesAwaitingCallback().put(cfpMessage.getSender(), awaitingCallback);
 
+        for (var proposal : cfpProposals.entrySet()) {
+            ACLMessage proposalReply = new ACLMessage(cfpRelievedPower >= cfpShortage ? (accepted.contains(proposal.getKey()) ? ACLMessage.ACCEPT_PROPOSAL : ACLMessage.REJECT_PROPOSAL) : ACLMessage.REJECT_PROPOSAL);
+            proposalReply.addReceiver(proposal.getKey());
+            proposalReply.setConversationId("power-relief");
+            proposalReply.setContent(Integer.toString(proposal.getValue().getCanFree()));
+            proposalReply.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
+            coordinatorAgent.send(proposalReply);
+            cfpSentProposals += accepted.contains(proposal.getKey()) ? 1 : 0;
+
+        }
         if (cfpRelievedPower < cfpShortage) {
             ACLMessage reply = cfpMessage.createReply();
             reply.setPerformative(ACLMessage.REFUSE);
             reply.setContent("Enable " + (cfpMessage.getConversationId().equals("enable-passive") ? "passive" : "active") + " refused even after proposed relief - " + cfpRequiredPower + "W");
             coordinatorAgent.send(reply);
-        } else {
-            for (var proposal : cfpProposals.entrySet()) {
-                ACLMessage proposalReply = new ACLMessage(accepted.contains(proposal.getKey()) ? ACLMessage.ACCEPT_PROPOSAL : ACLMessage.REJECT_PROPOSAL);
-                proposalReply.addReceiver(proposal.getKey());
-                proposalReply.setConversationId("power-relief");
-                proposalReply.setContent(Integer.toString(proposal.getValue().getCanFree()));
-                proposalReply.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
-                coordinatorAgent.send(proposalReply);
-                cfpSentProposals += accepted.contains(proposal.getKey()) ? 1 : 0;
-
-                coordinatorAgent.addBehaviour(cfpTimeoutBehaviour);
-            }
-        }
+            coordinatorAgent.removeBehaviour(this);
+        } else
+            coordinatorAgent.addBehaviour(cfpTimeoutBehaviour);
     }
 
     private void cfpRespondToSender() {
@@ -196,4 +186,6 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
             return priority;
         }
     }
+
+
 }

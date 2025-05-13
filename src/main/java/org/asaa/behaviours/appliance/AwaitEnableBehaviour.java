@@ -13,7 +13,6 @@ public class AwaitEnableBehaviour extends TickerBehaviour {
     private final SmartApplianceAgent smartApplianceAgent;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<Behaviour> behaviours = new ArrayList<>();
-    private final Logger logger;
     private boolean previouslyEnabled = false;
 
     public AwaitEnableBehaviour(SmartApplianceAgent smartApplianceAgent, long period, List<Runnable> runnables, List<Behaviour> behaviours) {
@@ -21,22 +20,22 @@ public class AwaitEnableBehaviour extends TickerBehaviour {
         this.smartApplianceAgent = smartApplianceAgent;
         this.runnables.addAll(runnables);
         this.behaviours.addAll(behaviours);
-        this.logger = LoggerFactory.getLogger(smartApplianceAgent.getLocalName());
     }
 
     @Override
     public void onTick() {
         if (smartApplianceAgent.isEnabled() && !previouslyEnabled) {
             previouslyEnabled = true;
-            logger.info("{} enabled, starting runnables & behaviours", smartApplianceAgent.getLocalName());
+            smartApplianceAgent.logger.info("{} enabled, starting runnables & behaviours", smartApplianceAgent.getLocalName());
 
             runnables.forEach(Runnable::run);
             behaviours.forEach(smartApplianceAgent::addBehaviour);
         } else if (!smartApplianceAgent.isEnabled() && previouslyEnabled) {
             previouslyEnabled = false;
-            logger.info("{} disabled, stopping runnables & behaviours", smartApplianceAgent.getLocalName());
+            smartApplianceAgent.logger.info("{} disabled, stopping runnables & behaviours", smartApplianceAgent.getLocalName());
 
             behaviours.forEach(smartApplianceAgent::removeBehaviour);
         }
+        smartApplianceAgent.updateStatus();
     }
 }

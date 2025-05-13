@@ -1,0 +1,15 @@
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <conversionRule conversionWord="simTime"
+                    converterClass="org.asaa.logging.SimulationTimeConverter"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr([%simTime]){cyan} [%clr(%-5level){FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=cyan, TRACE=magenta}] [%-15.15X{agent}] [%-10.10X{area}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

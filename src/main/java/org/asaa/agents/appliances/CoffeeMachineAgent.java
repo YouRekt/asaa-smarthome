@@ -9,12 +9,14 @@ import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
 import org.asaa.behaviours.appliance.RequestPowerBehaviour;
 
 public final class CoffeeMachineAgent extends SmartApplianceAgent {
+    private WakerBehaviour makingCoffeeBehaviour = null;
 
     @Override
     protected void setup() {
         idleDraw = 5;
         activeDraw = 120;
         priority = 100;
+        isInterruptible = false;
 
         super.setup();
 
@@ -27,6 +29,7 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
                     addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
                 } else {
                     logger.warn("Currently making coffee, can not respond to request");
+                    agentCommunicationController.sendError(getName(), "Currently making coffee, can not respond to request");
                 }
             }
         });
@@ -38,13 +41,14 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
 
     private void makeCoffee() {
         logger.info("Making coffee");
-        addBehaviour(new WakerBehaviour(this, 10000) {
+        makingCoffeeBehaviour = new WakerBehaviour(this, 10000) {
             @Override
             protected void onWake() {
                 logger.info("Coffee made! Enjoy");
                 addBehaviour(new RelinquishPowerBehaviour((SmartApplianceAgent) myAgent, activeDraw, "disable-active"));
             }
-        });
+        };
+        addBehaviour(makingCoffeeBehaviour);
     }
 
     @Override

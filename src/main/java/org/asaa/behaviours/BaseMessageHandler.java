@@ -3,16 +3,11 @@ package org.asaa.behaviours;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class BaseMessageHandler extends CyclicBehaviour {
-    protected final Logger logger;
 
     public BaseMessageHandler(Agent agent) {
         super(agent);
-
-        logger = LoggerFactory.getLogger(agent.getLocalName());
     }
 
     public void processMsg(ACLMessage msg) {

@@ -27,21 +27,21 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleCancel(ACLMessage msg) {
-        logger.info("Cancelled {}'s subscription", msg.getSender().getLocalName());
+        sensorAgent.logger.info("Cancelled {}'s subscription", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().remove(msg.getSender());
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
         msg.setContent("cancelled");
-        myAgent.send(reply);
+        sensorAgent.sendMessage(reply);
     }
 
     @Override
     protected void handleSubscribe(ACLMessage msg) {
-        logger.info("{} has subscribed", msg.getSender().getLocalName());
+        sensorAgent.logger.info("{} has subscribed", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().add(msg.getSender());
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.AGREE);
         msg.setContent("subscribed");
-        myAgent.send(reply);
+        sensorAgent.sendMessage(reply);
     }
 }

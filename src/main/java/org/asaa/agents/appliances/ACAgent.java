@@ -88,6 +88,7 @@ public final class ACAgent extends SmartApplianceAgent {
                 subscribeSensor(sensor.get(), "TemperatureSensorAgent");
             } else {
                 logger.warn("No TemperatureSensorAgent found");
+                agentCommunicationController.sendError(getName(), "No TemperatureSensorAgent found");
                 return false;
             }
         } catch (FIPAException e) {
@@ -103,15 +104,15 @@ public final class ACAgent extends SmartApplianceAgent {
             ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
             request.addReceiver(tempSensor);
             request.setReplyByDate(new Date(System.currentTimeMillis() + 9000));
-            send(request);
+            sendMessage(request);
         }
     }
 
     private void performCooling(double temperature) {
+        environmentService.getArea(areaName).setAttribute("temperature", temperature - coolingRate);
         addBehaviour(new WakerBehaviour(this, 1000) {
             @Override
             protected void onWake() {
-                environmentService.getArea(areaName).setAttribute("temperature", temperature - coolingRate);
                 requestTemperature();
             }
         });
