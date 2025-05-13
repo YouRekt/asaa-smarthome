@@ -34,11 +34,11 @@ const EnvironmentViewer = () => {
 			</p>
 			<p>
 				<strong>Max Power Capacity:</strong>{" "}
-				{environment.maxPowerCapacity}
+				{environment.maxPowerCapacity} W
 			</p>
 			<p>
 				<strong>Current Power Consumption:</strong>{" "}
-				{environment.currentPowerConsumption}
+				{environment.currentPowerConsumption} W
 			</p>
 			{selectedRoom && (
 				<>
