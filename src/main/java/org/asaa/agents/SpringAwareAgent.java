@@ -36,9 +36,9 @@ public abstract class SpringAwareAgent extends Agent {
 
     public final void sendMessage(ACLMessage msg) {
         if (msg.getConversationId() == null)
-            msg.setConversationId("NO_CONV_ID");
+            msg.setConversationId("");
         if (msg.getContent() == null)
-            msg.setContent("NO_CONTENT");
+            msg.setContent("");
         send(msg);
         agentCommunicationController.sendMessage(getName(), String.format("[%s] -> [%s <%s>] -> [%s]%s",
                 getLocalName(),
