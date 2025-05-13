@@ -69,13 +69,16 @@ const FormSchema = z.object({
 
 export const Agent = ({ agent }: { agent: AgentType }) => {
 	const {
-		agentMessages,
 		setSelectedAgent,
 		selectedAgent,
 		setModalOpen,
 		modalOpen,
 		showErrors,
 		agentStatus,
+		agentMessages,
+		currentMessages,
+		showNextMessage,
+		messageQueues,
 	} = useStore();
 	const { sendMessage } = useStomp();
 	const [open, setOpen] = useState(false);
@@ -83,6 +86,8 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 
 	const myMessages = agentMessages[agent.aid];
 	const myStatus = agentStatus[agent.aid];
+	const currentMessage = currentMessages[agent.aid];
+	const myQueue = messageQueues[agent.aid];
 
 	const isSensor = agent.name.includes("Sensor");
 
@@ -127,17 +132,23 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 
 	useEffect(() => {
 		if (myMessages && myMessages.length > 0) {
-			setOpen(true);
+			if (currentMessage) {
+				setOpen(true);
+			}
 
 			// Clear any existing timeout
 			if (timeoutRef.current) {
 				clearTimeout(timeoutRef.current);
 			}
 
-			// Set new timeout
+			// Set new timeout to show next message
 			timeoutRef.current = setTimeout(() => {
-				setOpen(false);
-			}, 3000);
+				showNextMessage(agent.aid);
+				// Only close the tooltip if there are no more messages in the queue
+				if (!myQueue?.length) {
+					setOpen(false);
+				}
+			}, 1000);
 		}
 
 		return () => {
@@ -145,11 +156,19 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 				clearTimeout(timeoutRef.current);
 			}
 		};
-	}, [myMessages]);
+	}, [agent.aid, currentMessage, myMessages, myQueue, showNextMessage]);
 
 	return (
 		<TooltipProvider>
-			<Tooltip open={open && !selectedAgent && !modalOpen && !showErrors}>
+			<Tooltip
+				open={
+					open &&
+					!selectedAgent &&
+					!modalOpen &&
+					!showErrors &&
+					currentMessage !== null
+				}
+			>
 				<Dialog
 					open={modalOpen === agent.aid}
 					onOpenChange={() => setModalOpen(null)}
@@ -338,16 +357,10 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 							: "fill-gray-800"
 					)}
 				>
-					{myMessages?.length ? (
-						<div className="flex flex-col gap-1">
-							{myMessages
-								.slice(-3)
-								.reverse()
-								.map((msg, i) => (
-									<div key={i} className="text-sm">
-										[{msg.timestamp}] : {msg.message}
-									</div>
-								))}
+					{currentMessage ? (
+						<div className="text-sm">
+							[{currentMessage.timestamp}] :{" "}
+							{currentMessage.message}
 						</div>
 					) : (
 						"No messages yet"

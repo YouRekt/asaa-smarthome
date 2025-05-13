@@ -49,6 +49,20 @@ type State = {
 			timestamp: string;
 		}>
 	>;
+	messageQueues: Record<
+		string,
+		Array<{
+			message: string;
+			timestamp: string;
+		}>
+	>;
+	currentMessages: Record<
+		string,
+		{
+			message: string;
+			timestamp: string;
+		} | null
+	>;
 	errors: Record<
 		string,
 		Array<{
@@ -77,6 +91,13 @@ type Actions = {
 	setShowErrors: (showErrors: boolean) => void;
 	setModalOpen: (modalOwner: string | null) => void;
 	setAgentStatus: (status: AgentStatus) => void;
+	setLatestMessage: (
+		agentId: string,
+		timestamp: string,
+		message: string
+	) => void;
+	showNextMessage: (agentId: string) => void;
+	clearMessageQueue: (agentId: string) => void;
 	clearAll: () => void;
 };
 
@@ -86,6 +107,8 @@ const useStore = create<State & Actions>((set) => ({
 	selectedRoom: null,
 	isRunning: false,
 	agentMessages: {},
+	messageQueues: {},
+	currentMessages: {},
 	errors: {},
 	showErrors: false,
 	modalOpen: null,
@@ -134,12 +157,66 @@ const useStore = create<State & Actions>((set) => ({
 			selectedRoom: null,
 			isRunning: false,
 			agentMessages: {},
+			messageQueues: {},
+			currentMessages: {},
 			errors: {},
 			showErrors: false,
 			modalOpen: null,
 			selectedAgent: null,
 			agentStatus: {},
 		}),
+	setLatestMessage: (agentId: string, timestamp: string, message: string) =>
+		set((state) => ({
+			agentMessages: {
+				...state.agentMessages,
+				[agentId]: [
+					...(state.agentMessages[agentId] || []),
+					{ message, timestamp },
+				],
+			},
+			messageQueues: {
+				...state.messageQueues,
+				[agentId]: [
+					...(state.messageQueues[agentId] || []),
+					{ message, timestamp },
+				],
+			},
+		})),
+	showNextMessage: (agentId: string) =>
+		set((state) => {
+			const queue = state.messageQueues[agentId] || [];
+			if (queue.length === 0) {
+				return {
+					currentMessages: {
+						...state.currentMessages,
+						[agentId]: null,
+					},
+				};
+			}
+
+			const [nextMessage, ...remainingQueue] = queue;
+			return {
+				currentMessages: {
+					...state.currentMessages,
+					[agentId]: nextMessage,
+				},
+				messageQueues: {
+					...state.messageQueues,
+					[agentId]: remainingQueue,
+				},
+			};
+		}),
+	clearMessageQueue: (agentId: string) =>
+		set((state) => ({
+			messageQueues: {
+				...state.messageQueues,
+				[agentId]: [],
+			},
+			currentMessages: {
+				...state.currentMessages,
+				[agentId]: null,
+			},
+		})),
 }));
 
 export default useStore;
