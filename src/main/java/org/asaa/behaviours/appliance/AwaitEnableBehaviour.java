@@ -36,5 +36,6 @@ public class AwaitEnableBehaviour extends TickerBehaviour {
 
             behaviours.forEach(smartApplianceAgent::removeBehaviour);
         }
+        smartApplianceAgent.updateStatus();
     }
 }

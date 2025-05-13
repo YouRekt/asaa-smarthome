@@ -56,4 +56,9 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
             addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", ""));
         }
     }
+
+    public void updateStatus()
+    {
+        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking,isInterruptible,isFreezable,activeDraw,idleDraw,priority);
+    }
 }
