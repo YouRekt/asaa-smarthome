@@ -12,10 +12,22 @@ const EnvironmentViewer = () => {
 				<strong>Time:</strong> {environment.time}
 			</p>
 			<p>
-				<strong>credits:</strong> {environment.credits}
+				<strong>Error rate:</strong>{" "}
+				{(
+					(Number.isNaN(
+						environment.errorTasks / environment.performedTasks
+					)
+						? 0
+						: environment.errorTasks / environment.performedTasks) *
+					100
+				).toFixed(2)}
+				%
 			</p>
 			<p>
-				<strong>Delta:</strong> {environment.timeDelta}
+				<strong>Credits:</strong> {environment.credits}
+			</p>
+			<p>
+				<strong>Time Delta:</strong> {environment.timeDelta}
 			</p>
 			<p>
 				<strong>Human Location:</strong> {environment.humanLocation}
