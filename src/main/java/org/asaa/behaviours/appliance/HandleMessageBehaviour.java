@@ -70,11 +70,11 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleRefuse(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "enable-passive":
-                smartApplianceAgent.logger.warn("Coordinator REFUSED: convId=enable-passive");
+                smartApplianceAgent.logger.warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Passive power on refused");
                 break;
             case "enable-active":
-                smartApplianceAgent.logger.warn("Coordinator REFUSED: convId=enable-active");
+                smartApplianceAgent.logger.warn("Coordinator REFUSED enable-active:{}", msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Active power on refused");
                 String replyWith = msg.getInReplyTo();
                 Runnable callback = smartApplianceAgent.onPowerGrantedCallbacks.remove(replyWith);
