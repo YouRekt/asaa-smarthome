@@ -105,6 +105,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                         if (smartApplianceAgent.isFreezable()) {
                             prio = smartApplianceAgent.getPriority() % 100;
                         }
+                        smartApplianceAgent.logger.warn("Power relief CFP: Currently working and interruptible, will interrupt my current action on accept-proposal");
                     } else {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.REFUSE);
