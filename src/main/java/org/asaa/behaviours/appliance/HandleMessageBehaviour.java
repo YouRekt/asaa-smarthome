@@ -21,7 +21,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
         if (msg != null) {
             if (!smartApplianceAgent.isEnabled() &&
                     (msg.getConversationId() == null ||
-                            !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief")))) {
+                            !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief") || msg.getConversationId().equals("toggle")))) {
                 smartApplianceAgent.logger.warn("{} is not enabled. Ignoring message {} {}", smartApplianceAgent.getLocalName(), msg.getConversationId(), msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Message sent to a disabled agent");
                 return;
@@ -42,8 +42,8 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "trigger":
                 smartApplianceAgent.trigger();
                 break;
-            case "disable":
-                smartApplianceAgent.disable();
+            case "toggle":
+                smartApplianceAgent.toggle();
             default:
                 break;
         }

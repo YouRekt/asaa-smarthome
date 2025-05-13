@@ -57,11 +57,11 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         }
     }
 
-    public void disable() {
-        handleDisable();
+    public void toggle() {
+        handleToggle();
     }
 
-    protected void handleDisable() {
+    protected void handleToggle() {
         logger.warn("I have been {} externally: {}", (isEnabled ? "disabled" : "enabled"), (isWorking ? "active -> disabled" : "idle -> disabled"));
         if (isEnabled) {
             if (isWorking) {
