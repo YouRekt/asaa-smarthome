@@ -1,8 +1,16 @@
 package org.asaa.behaviours;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
+import org.asaa.agents.SpringAwareAgent;
+import org.asaa.util.Util;
+
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public abstract class BaseMessageHandler extends CyclicBehaviour {
 
@@ -11,6 +19,13 @@ public abstract class BaseMessageHandler extends CyclicBehaviour {
     }
 
     public void processMsg(ACLMessage msg) {
+        ((SpringAwareAgent)myAgent).agentCommunicationController.sendMessage(myAgent.getName(), String.format("[O] [%s] -> [%s <%s>] -> [%s]%s",
+                msg.getSender().getLocalName(),
+                Util.ConvertACLPerformativeToString(msg.getPerformative()),
+                msg.getConversationId(),
+                StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
+                msg.getContent() == null ? "" : String.format(": %s", msg.getContent())));
+
         switch (msg.getPerformative()) {
             case ACLMessage.ACCEPT_PROPOSAL -> handleAcceptProposal(msg);
             case ACLMessage.AGREE -> handleAgree(msg);
