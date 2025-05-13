@@ -3,6 +3,7 @@ package org.asaa.controllers;
 import org.asaa.dto.ACLMessageDTO;
 import org.asaa.dto.AgentMessageDTO;
 import org.asaa.dto.AgentStatusDTO;
+import org.asaa.dto.HumanLocationDTO;
 import org.asaa.services.EnvironmentService;
 import org.asaa.services.HumanCommunicationService;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -42,5 +43,10 @@ public class AgentCommunicationController {
     @MessageMapping("/agent-message")
     public void readAgentMessage(@Payload ACLMessageDTO dto) {
         humanCommunicationService.receiveMessage(dto);
+    }
+
+    @MessageMapping("/human-location")
+    public void updateHumanLocation(@Payload HumanLocationDTO dto) {
+
     }
 }
