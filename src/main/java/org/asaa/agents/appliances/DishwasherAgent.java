@@ -109,6 +109,22 @@ public final class DishwasherAgent extends SmartApplianceAgent {
     }
 
     @Override
+    protected void handleToggle() {
+        if (washBehaviour != null) {
+            long elapsed = System.currentTimeMillis() - washStartTime;
+            remainingWashTime = Math.max(0, remainingWashTime - elapsed);
+            this.removeBehaviour(washBehaviour);
+            washBehaviour = null;
+            logger.info("Wash paused, {}ms left", remainingWashTime);
+            super.handleToggle();
+        } else {
+            super.handleToggle();
+        }
+
+        super.handleToggle();
+    }
+
+    @Override
     protected String responseDefaultMsgContent() {
         return String.valueOf(isWorking);
     }
