@@ -19,8 +19,22 @@ export type Agent = {
 	area: string;
 };
 
+export type AgentStatus = {
+	aid: string;
+	isEnabled: boolean;
+	isWorking: boolean;
+	isInterruptible: boolean;
+	isFreezable: boolean;
+	activeDraw: number;
+	idleDraw: number;
+	priority: number;
+};
+
+export type StoredAgentStatus = Omit<AgentStatus, "aid">;
+
 type State = {
 	agents: Agent[];
+	agentStatus: Record<string, StoredAgentStatus>;
 	environment: Environment | null;
 	selectedRoom: string | null;
 	selectedAgent: string | null;
@@ -59,6 +73,8 @@ type Actions = {
 	deselectAgent: () => void;
 	setShowErrors: (showErrors: boolean) => void;
 	setModalOpen: (modalOwner: string | null) => void;
+	setAgentStatus: (status: AgentStatus) => void;
+	clearAll: () => void;
 };
 
 const useStore = create<State & Actions>((set) => ({
@@ -71,6 +87,7 @@ const useStore = create<State & Actions>((set) => ({
 	showErrors: false,
 	modalOpen: null,
 	selectedAgent: null,
+	agentStatus: {},
 	setAgents: (agents) => set({ agents }),
 	addAgent: (agent) => set((state) => ({ agents: [...state.agents, agent] })),
 	setEnvironment: (environment) => set({ environment }),
@@ -97,6 +114,29 @@ const useStore = create<State & Actions>((set) => ({
 	deselectAgent: () => set({ selectedAgent: null }),
 	setShowErrors: (showErrors) => set({ showErrors }),
 	setModalOpen: (modalOwner) => set({ modalOpen: modalOwner }),
+	setAgentStatus: (status: AgentStatus) =>
+		set((state) => {
+			const { aid, ...statusWithoutAid } = status;
+			return {
+				agentStatus: {
+					...state.agentStatus,
+					[aid]: statusWithoutAid,
+				},
+			};
+		}),
+	clearAll: () =>
+		set({
+			agents: [],
+			environment: null,
+			selectedRoom: null,
+			isRunning: false,
+			agentMessages: {},
+			errors: {},
+			showErrors: false,
+			modalOpen: null,
+			selectedAgent: null,
+			agentStatus: {},
+		}),
 }));
 
 export default useStore;

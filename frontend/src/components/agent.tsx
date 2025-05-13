@@ -9,7 +9,10 @@ import {
 import useStore from "@/hooks/use-store";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ContextMenuTrigger } from "@/components/ui/context-menu";
+import {
+	ContextMenuSeparator,
+	ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { ContextMenu, ContextMenuItem } from "@/components/ui/context-menu";
 import { ContextMenuContent } from "@/components/ui/context-menu";
 import { DialogFooter, DialogTrigger } from "@/components/ui/dialog";
@@ -72,14 +75,38 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 		setModalOpen,
 		modalOpen,
 		showErrors,
+		agentStatus,
 	} = useStore();
 	const { sendMessage } = useStomp();
 	const [open, setOpen] = useState(false);
 	const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
 	const myMessages = agentMessages[agent.aid];
+	const myStatus = agentStatus[agent.aid];
 
 	const isSensor = agent.name.includes("Sensor");
+
+	const color = isSensor
+		? "bg-zinc-600"
+		: myStatus?.isEnabled
+		? myStatus?.isWorking || myStatus?.activeDraw === 0
+			? "bg-green-800"
+			: "bg-blue-800"
+		: "bg-gray-800";
+
+	const hoverColor = isSensor
+		? "hover:bg-zinc-700"
+		: myStatus?.isEnabled
+		? myStatus?.isWorking || myStatus?.activeDraw === 0
+			? "hover:bg-green-900"
+			: "hover:bg-blue-900"
+		: "hover:bg-gray-900";
+
+	const totalDraw = myStatus?.isEnabled
+		? myStatus?.isWorking
+			? myStatus?.activeDraw + myStatus?.idleDraw
+			: myStatus?.idleDraw
+		: 0;
 
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
@@ -133,20 +160,61 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 								<Button
 									className={clsx(
 										"flex flex-col gap-2 h-fit p-2 rounded-md text-white w-full",
-										isSensor
-											? "bg-zinc-600 hover:bg-zinc-700"
-											: "bg-blue-800 hover:bg-blue-900"
+										color,
+										hoverColor
 									)}
 									onClick={() => setSelectedAgent(agent.aid)}
 								>
 									<h1 className="text-2xl font-bold">
 										{agent.name}
 									</h1>
-									<p className="text-sm">{agent.area}</p>
+									<p className="text-sm">{totalDraw} W</p>
 								</Button>
 							</TooltipTrigger>
 						</ContextMenuTrigger>
 						<ContextMenuContent>
+							{!isSensor && (
+								<>
+									<ContextMenuItem>
+										Location: {agent.area}
+									</ContextMenuItem>
+
+									<ContextMenuItem>
+										Status:{" "}
+										{myStatus?.isEnabled
+											? "Enabled"
+											: "Disabled"}
+									</ContextMenuItem>
+									<ContextMenuItem>
+										Status:{" "}
+										{myStatus?.isWorking
+											? "Working"
+											: "Idle"}
+									</ContextMenuItem>
+									<ContextMenuItem>
+										Status:{" "}
+										{myStatus?.isInterruptible
+											? "Interruptible"
+											: "Non-interruptible"}
+									</ContextMenuItem>
+									<ContextMenuItem>
+										Status:{" "}
+										{myStatus?.isFreezable
+											? "Freezable"
+											: "Non-freezable"}
+									</ContextMenuItem>
+									<ContextMenuItem>
+										Active Draw: {myStatus?.activeDraw}
+									</ContextMenuItem>
+									<ContextMenuItem>
+										Idle Draw: {myStatus?.idleDraw}
+									</ContextMenuItem>
+									<ContextMenuItem>
+										Priority: {myStatus?.priority}
+									</ContextMenuItem>
+									<ContextMenuSeparator />
+								</>
+							)}
 							<DialogTrigger asChild>
 								<ContextMenuItem
 									onSelect={() => setModalOpen(agent.aid)}
@@ -258,14 +326,16 @@ export const Agent = ({ agent }: { agent: AgentType }) => {
 				</Dialog>
 				<TooltipContent
 					side="right"
-					className={clsx(
-						"relative",
-						isSensor ? "bg-zinc-600" : "bg-blue-800"
-					)}
+					className={clsx("relative", color)}
 					arrowClassName={clsx(
+						color,
 						isSensor
-							? "bg-zinc-600 fill-zinc-600"
-							: "bg-blue-800 fill-blue-800"
+							? "fill-zinc-600"
+							: myStatus?.isEnabled
+							? myStatus?.isWorking || myStatus?.activeDraw === 0
+								? "fill-green-800"
+								: "fill-blue-800"
+							: "fill-gray-800"
 					)}
 				>
 					{myMessages?.length ? (

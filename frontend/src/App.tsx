@@ -13,19 +13,20 @@ import { Agents } from "@/components/agents";
 export default function App() {
 	const {
 		setEnvironment,
-		setAgents,
 		setSelectedRoom,
 		setIsRunning,
 		isRunning,
 		selectedRoom,
-		setAgentMessage,
 		addAgent,
 		setError,
 		selectedAgent,
+		setAgentMessage,
 		deselectAgent,
+		clearAll,
 		showErrors,
 		setShowErrors,
 		errors,
+		setAgentStatus,
 	} = useStore();
 
 	const { setClient } = useStomp();
@@ -49,8 +50,12 @@ export default function App() {
 				});
 				stompClient.subscribe("/topic/agent-error", (message) => {
 					const data = JSON.parse(message.body);
-					console.log(data);
 					setError(data.aid, data.timestamp, data.message);
+				});
+				stompClient.subscribe("/topic/agent-status", (message) => {
+					const data = JSON.parse(message.body);
+					console.log(data);
+					setAgentStatus(data);
 				});
 			},
 		});
@@ -61,7 +66,14 @@ export default function App() {
 		return () => {
 			stompClient.deactivate();
 		};
-	}, [addAgent, setAgentMessage, setEnvironment, setError, setClient]);
+	}, [
+		addAgent,
+		setAgentMessage,
+		setAgentStatus,
+		setClient,
+		setEnvironment,
+		setError,
+	]);
 
 	const handleRoomClick = (id: string) => {
 		setSelectedRoom(id);
@@ -87,8 +99,8 @@ export default function App() {
 			toast.error("Failed to stop the system");
 			return;
 		}
-		setIsRunning(false);
-		setAgents([]);
+		clearAll();
+
 		toast.success("System stopped");
 	};
 
