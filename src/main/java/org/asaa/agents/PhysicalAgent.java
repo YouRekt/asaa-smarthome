@@ -112,6 +112,7 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
         reply.setContent(responseDefaultMsgContent());
+        reply.setConversationId("def-reply");
         sendMessage(reply);
     }
 

@@ -51,7 +51,7 @@ public final class ACAgent extends SmartApplianceAgent {
             @Override
             protected void handleInform(ACLMessage msg) {
                 switch (msg.getConversationId()) {
-                    case "":
+                    case "def-reply":
                         double temperature = Double.parseDouble(msg.getContent());
                         if (temperature > targetTemperature) {
                             if (!isWorking) {
@@ -70,6 +70,7 @@ public final class ACAgent extends SmartApplianceAgent {
                         break;
                     default:
                         super.handleInform(msg);
+                        break;
                 }
             }
         });
