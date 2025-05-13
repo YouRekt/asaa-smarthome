@@ -39,6 +39,9 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "enable-callback":
                 smartApplianceAgent.logger.info("Received enable-callback message");
                 break;
+            case "trigger":
+                smartApplianceAgent.trigger();
+                break;
             default:
                 break;
         }
