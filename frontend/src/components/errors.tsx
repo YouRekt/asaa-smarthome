@@ -10,7 +10,10 @@ export const Errors = () => {
 				<div key={aid}>
 					<h3>{aid}</h3>
 					{messages.map((message) => (
-						<p className="text-red-600" key={message.timestamp}>
+						<p
+							className="text-red-600"
+							key={aid + message.timestamp}
+						>
 							{message.message}
 						</p>
 					))}
