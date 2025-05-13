@@ -39,6 +39,7 @@ export default function App() {
 			onConnect: () => {
 				stompClient.subscribe("/topic/environment", (message) => {
 					const data = JSON.parse(message.body);
+					console.log(data);
 					setEnvironment(data);
 				});
 				stompClient.subscribe("/topic/agent", (message) => {
@@ -55,7 +56,6 @@ export default function App() {
 				});
 				stompClient.subscribe("/topic/agent-status", (message) => {
 					const data = JSON.parse(message.body);
-					console.log(data);
 					setAgentStatus(data);
 				});
 			},

@@ -8,6 +8,8 @@ public record EnvironmentDTO(
         int timeDelta,
         int maxPowerCapacity,
         int currentPowerConsumption,
+        int performedTasks,
+        int errorTasks,
         String humanLocation,
-        List<AreaDTO> areas
-) {}
+        List<AreaDTO> areas)
+{}
