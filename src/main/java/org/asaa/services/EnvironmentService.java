@@ -53,7 +53,9 @@ public class EnvironmentService {
     @Getter
     @Setter
     private int credits = 9999;
+    @Getter
     private int performedTasks = 0;
+    @Getter
     private int performedTasksErrors = 0;
     @Getter
     @Setter
