@@ -58,6 +58,7 @@ public final class ACAgent extends SmartApplianceAgent {
                 } else {
                     if (isWorking) {
                         logger.info("Finished cooling");
+                        environmentService.addPerformedTask();
                         addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
                     }
                     isWorking = false;

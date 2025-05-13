@@ -42,6 +42,8 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "trigger":
                 smartApplianceAgent.trigger();
                 break;
+            case "disable":
+                smartApplianceAgent.disable();
             default:
                 break;
         }

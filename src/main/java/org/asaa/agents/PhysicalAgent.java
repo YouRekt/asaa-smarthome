@@ -103,7 +103,6 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
     }
 
     public void trigger() {
-        logger.info("I have been triggered!");
         handleTrigger();
     }
 

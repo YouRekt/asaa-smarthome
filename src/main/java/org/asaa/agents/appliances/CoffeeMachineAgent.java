@@ -45,6 +45,7 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
             @Override
             protected void onWake() {
                 logger.info("Coffee made! Enjoy");
+                environmentService.addPerformedTask();
                 addBehaviour(new RelinquishPowerBehaviour((SmartApplianceAgent) myAgent, activeDraw, "disable-active"));
             }
         };

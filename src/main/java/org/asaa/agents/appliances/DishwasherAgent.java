@@ -98,9 +98,10 @@ public final class DishwasherAgent extends SmartApplianceAgent {
         washBehaviour = new WakerBehaviour(this, remainingWashTime) {
             @Override
             protected void onWake() {
-                myAgent.addBehaviour(new RelinquishPowerBehaviour((SmartApplianceAgent) myAgent, activeDraw, "disable-active"));
                 remainingWashTime = 0;
                 logger.info("Wash complete!");
+                environmentService.addPerformedTask();
+                myAgent.addBehaviour(new RelinquishPowerBehaviour((SmartApplianceAgent) myAgent, activeDraw, "disable-active"));
             }
         };
         this.addBehaviour(washBehaviour);

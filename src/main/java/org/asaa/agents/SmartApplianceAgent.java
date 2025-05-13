@@ -49,7 +49,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
 
     @Override
     protected void handleTrigger() {
-        logger.warn("I have been triggered without a purpose! {}", (isWorking ? "active -> idle" : "idle -> active"));
+        logger.warn("I have been triggered externally: {}", (isWorking ? "active -> idle" : "idle -> active"));
         if (isWorking) {
             addBehaviour(new RelinquishPowerBehaviour(this, activeDraw, "disable-active"));
         } else {
@@ -57,8 +57,25 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         }
     }
 
+    public void disable() {
+        handleDisable();
+    }
+
+    protected void handleDisable() {
+        logger.warn("I have been {} externally: {}", (isEnabled ? "disabled" : "enabled"), (isWorking ? "active -> disabled" : "idle -> disabled"));
+        if (isEnabled) {
+            if (isWorking) {
+                addBehaviour(new RelinquishPowerBehaviour(this, activeDraw, "disable-active"));
+            }
+            addBehaviour(new RelinquishPowerBehaviour(this, idleDraw, "disable-passive"));
+        } else {
+            addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+        }
+    }
+
     public void updateStatus()
     {
         agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking,isInterruptible,isFreezable,activeDraw,idleDraw,priority);
     }
+
 }

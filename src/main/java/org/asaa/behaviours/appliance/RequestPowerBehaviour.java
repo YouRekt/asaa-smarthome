@@ -28,6 +28,7 @@ public class RequestPowerBehaviour extends OneShotBehaviour {
         cfp.setContent(amount + "," + priority);
         cfp.setReplyWith(replyWith);
         smartApplianceAgent.logger.info("Sent CFP for {}W, prio={}, convId={}", amount, priority, convId);
+        smartApplianceAgent.environmentService.addPerformedTask();
         smartApplianceAgent.sendMessage(cfp);
     }
 }
