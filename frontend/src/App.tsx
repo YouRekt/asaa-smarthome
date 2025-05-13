@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { FloorPlan } from "@/components/floor-plan";
 import useStore from "@/hooks/use-store";
-
-import Agents from "@/components/agents";
+import useStomp from "@/hooks/use-stomp";
 import { Client } from "@stomp/stompjs";
 import { Errors } from "@/components/errors";
+import Agents from "@/components/agents";
+import { Messages } from "@/components/messages";
+
 export default function App() {
 	const {
 		setEnvironment,
@@ -19,7 +21,14 @@ export default function App() {
 		setAgentMessage,
 		addAgent,
 		setError,
+		selectedAgent,
+		deselectAgent,
+		showErrors,
+		setShowErrors,
+		errors,
 	} = useStore();
+
+	const { setClient } = useStomp();
 
 	useEffect(() => {
 		const stompClient = new Client({
@@ -40,17 +49,19 @@ export default function App() {
 				});
 				stompClient.subscribe("/topic/agent-error", (message) => {
 					const data = JSON.parse(message.body);
+					console.log(data);
 					setError(data.aid, data.timestamp, data.message);
 				});
 			},
 		});
 
+		setClient(stompClient);
 		stompClient.activate();
 
 		return () => {
 			stompClient.deactivate();
 		};
-	}, [addAgent, setAgentMessage, setEnvironment, setError]);
+	}, [addAgent, setAgentMessage, setEnvironment, setError, setClient]);
 
 	const handleRoomClick = (id: string) => {
 		setSelectedRoom(id);
@@ -99,6 +110,12 @@ export default function App() {
 				>
 					Stop
 				</Button>
+				<Button
+					disabled={Object.keys(errors).length === 0}
+					onClick={() => setShowErrors(!showErrors)}
+				>
+					{showErrors ? "Hide Errors" : "Show Errors"}
+				</Button>
 			</nav>
 			<div className="h-[calc(100dvh-4rem)] flex relative">
 				<FloorPlan onClick={handleRoomClick} />
@@ -109,9 +126,13 @@ export default function App() {
 					<EnvironmentViewer />
 					<Agents />
 				</div>
-				<div>
-					<Errors />
-				</div>
+				{selectedAgent && (
+					<div className="flex flex-col gap-4">
+						<Button onClick={() => deselectAgent()}>Hide</Button>
+						<Messages />
+					</div>
+				)}
+				{showErrors && <Errors />}
 			</div>
 		</div>
 	);
