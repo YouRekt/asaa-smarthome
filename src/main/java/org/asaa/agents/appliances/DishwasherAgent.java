@@ -3,10 +3,10 @@ package org.asaa.agents.appliances;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.appliance.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliance.HandleMessageBehaviour;
-import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
-import org.asaa.behaviours.appliance.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
+import org.asaa.behaviours.appliances.MessageHandlerBehaviour;
+import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 
 public final class DishwasherAgent extends SmartApplianceAgent {
     private final long fullWashTime = 30000;
@@ -35,7 +35,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
             });
         });
 
-        addBehaviour(new HandleMessageBehaviour(this) {
+        addBehaviour(new MessageHandlerBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
                 switch (msg.getConversationId()) {

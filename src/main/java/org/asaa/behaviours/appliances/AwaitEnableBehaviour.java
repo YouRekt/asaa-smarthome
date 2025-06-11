@@ -1,10 +1,8 @@
-package org.asaa.behaviours.appliance;
+package org.asaa.behaviours.appliances;
 
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.SmartApplianceAgent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +24,13 @@ public class AwaitEnableBehaviour extends TickerBehaviour {
     public void onTick() {
         if (smartApplianceAgent.isEnabled() && !previouslyEnabled) {
             previouslyEnabled = true;
-            smartApplianceAgent.logger.info("{} enabled, starting runnables & behaviours", smartApplianceAgent.getLocalName());
+            smartApplianceAgent.getLogger().info("{} enabled, starting runnables & behaviours", smartApplianceAgent.getLocalName());
 
             runnables.forEach(Runnable::run);
             behaviours.forEach(smartApplianceAgent::addBehaviour);
         } else if (!smartApplianceAgent.isEnabled() && previouslyEnabled) {
             previouslyEnabled = false;
-            smartApplianceAgent.logger.info("{} disabled, stopping runnables & behaviours", smartApplianceAgent.getLocalName());
+            smartApplianceAgent.getLogger().info("{} disabled, stopping runnables & behaviours", smartApplianceAgent.getLocalName());
 
             behaviours.forEach(smartApplianceAgent::removeBehaviour);
         }

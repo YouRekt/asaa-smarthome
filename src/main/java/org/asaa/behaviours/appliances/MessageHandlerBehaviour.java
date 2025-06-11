@@ -1,15 +1,15 @@
-package org.asaa.behaviours.appliance;
+package org.asaa.behaviours.appliances;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.BaseMessageHandler;
+import org.asaa.behaviours.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
 
-public class HandleMessageBehaviour extends BaseMessageHandler {
+public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected final SmartApplianceAgent smartApplianceAgent;
 
-    public HandleMessageBehaviour(SmartApplianceAgent smartApplianceAgent) {
+    public MessageHandlerBehaviour(SmartApplianceAgent smartApplianceAgent) {
         super(smartApplianceAgent);
 
         this.smartApplianceAgent = smartApplianceAgent;
@@ -28,7 +28,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                                     msg.getConversationId().equals("toggle") ||
                                     msg.getConversationId().equals("disable-passive") ||
                                     msg.getConversationId().equals("disable-active")))) {
-                smartApplianceAgent.logger.warn("{} is not enabled. Ignoring message perf={} convId={} content={}", smartApplianceAgent.getLocalName(), Util.ConvertACLPerformativeToString(msg.getPerformative()), msg.getConversationId(), msg.getContent());
+                smartApplianceAgent.getLogger().warn("{} is not enabled. Ignoring message perf={} convId={} content={}", smartApplianceAgent.getLocalName(), Util.ConvertACLPerformativeToString(msg.getPerformative()), msg.getConversationId(), msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Message sent to a disabled agent");
                 return;
             }
@@ -43,7 +43,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleInform(ACLMessage msg) {
         switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
             case "enable-callback":
-                smartApplianceAgent.logger.info("Received enable-callback message");
+                smartApplianceAgent.getLogger().info("Received enable-callback message");
                 break;
             case "trigger":
                 smartApplianceAgent.trigger();
@@ -59,16 +59,16 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleAgree(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "enable-passive":
-                smartApplianceAgent.logger.info("Coordinator AGREED: {}", msg.getContent());
+                smartApplianceAgent.getLogger().info("Coordinator AGREED: {}", msg.getContent());
                 smartApplianceAgent.setEnabled(true);
                 break;
             case "enable-active":
-                smartApplianceAgent.logger.info("Coordinator AGREED: {}", msg.getContent());
+                smartApplianceAgent.getLogger().info("Coordinator AGREED: {}", msg.getContent());
                 smartApplianceAgent.setWorking(true);
                 String replyWith = msg.getInReplyTo();
                 Runnable callback = smartApplianceAgent.onPowerGrantedCallbacks.remove(replyWith);
                 if (callback != null) {
-                    smartApplianceAgent.logger.debug("Callback triggered: {}", callback);
+                    smartApplianceAgent.getLogger().debug("Callback triggered: {}", callback);
                     callback.run();
                 }
                 break;
@@ -81,16 +81,16 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
     protected void handleRefuse(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "enable-passive":
-                smartApplianceAgent.logger.warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
+                smartApplianceAgent.getLogger().warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Passive power on refused");
                 break;
             case "enable-active":
-                smartApplianceAgent.logger.warn("Coordinator REFUSED enable-active:{}", msg.getContent());
+                smartApplianceAgent.getLogger().warn("Coordinator REFUSED enable-active:{}", msg.getContent());
                 smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Active power on refused");
                 String replyWith = msg.getInReplyTo();
                 Runnable callback = smartApplianceAgent.onPowerGrantedCallbacks.remove(replyWith);
                 if (callback != null) {
-                    smartApplianceAgent.logger.warn("Callback cancelled tied with request {}", replyWith);
+                    smartApplianceAgent.getLogger().warn("Callback cancelled tied with request {}", replyWith);
                     smartApplianceAgent.agentCommunicationController.sendError(smartApplianceAgent.getName(), "Callback action was cancelled: request " + replyWith);
                 }
                 break;
@@ -105,7 +105,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "power-relief":
                 if (smartApplianceAgent.isCfpInProgress()) {
                     smartApplianceAgent.getPendingCfpQueue().add(msg);
-                    smartApplianceAgent.logger.warn("Deferring power relief CFP from {} because another is in progress", msg.getSender().getLocalName());
+                    smartApplianceAgent.getLogger().warn("Deferring power relief CFP from {} because another is in progress", msg.getSender().getLocalName());
                     return;
                 }
                 smartApplianceAgent.setCfpInProgress(true);
@@ -116,7 +116,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                         if (smartApplianceAgent.isFreezable()) {
                             prio = smartApplianceAgent.getPriority() % 100;
                         }
-                        smartApplianceAgent.logger.warn("Power relief CFP: Currently working and interruptible, will interrupt my current action on accept-proposal");
+                        smartApplianceAgent.getLogger().warn("Power relief CFP: Currently working and interruptible, will interrupt my current action on accept-proposal");
                     } else {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.REFUSE);
@@ -129,7 +129,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                     prio = smartApplianceAgent.getPriority() % 100 + 200;
                 }
 
-                smartApplianceAgent.logger.info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", smartApplianceAgent.getLocalName(), canFree, prio, (smartApplianceAgent.isWorking() ? "yes" : "no"));
+                smartApplianceAgent.getLogger().info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", smartApplianceAgent.getLocalName(), canFree, prio, (smartApplianceAgent.isWorking() ? "yes" : "no"));
                 ACLMessage propose = msg.createReply();
                 propose.setPerformative(ACLMessage.PROPOSE);
                 propose.setContent(canFree + "," + prio);

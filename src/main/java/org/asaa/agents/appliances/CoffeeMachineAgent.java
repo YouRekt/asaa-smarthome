@@ -3,10 +3,10 @@ package org.asaa.agents.appliances;
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.appliance.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliance.HandleMessageBehaviour;
-import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
-import org.asaa.behaviours.appliance.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
+import org.asaa.behaviours.appliances.MessageHandlerBehaviour;
+import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 
 public final class CoffeeMachineAgent extends SmartApplianceAgent {
     private WakerBehaviour makingCoffeeBehaviour = null;
@@ -20,7 +20,7 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
 
         super.setup();
 
-        addBehaviour(new HandleMessageBehaviour(this) {
+        addBehaviour(new MessageHandlerBehaviour(this) {
             @Override
             protected void handleRequest(ACLMessage msg) {
                 if (!isWorking) {

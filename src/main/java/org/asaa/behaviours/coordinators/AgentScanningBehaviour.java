@@ -1,4 +1,4 @@
-package org.asaa.behaviours.coordinator;
+package org.asaa.behaviours.coordinators;
 
 import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;

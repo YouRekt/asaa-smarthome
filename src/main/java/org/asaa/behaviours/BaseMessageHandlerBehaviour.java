@@ -12,9 +12,9 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public abstract class BaseMessageHandler extends CyclicBehaviour {
+public abstract class BaseMessageHandlerBehaviour extends CyclicBehaviour {
 
-    public BaseMessageHandler(Agent agent) {
+    public BaseMessageHandlerBehaviour(Agent agent) {
         super(agent);
     }
 

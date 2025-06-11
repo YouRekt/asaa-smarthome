@@ -1,4 +1,4 @@
-package org.asaa.behaviours.appliance;
+package org.asaa.behaviours.appliances;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -19,10 +19,10 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         ACLMessage inform = new ACLMessage(ACLMessage.INFORM);
-        inform.addReceiver(smartApplianceAgent.coordinatorAgent);
+        inform.addReceiver(smartApplianceAgent.getCoordinatorAgent());
         inform.setConversationId(convId);
         inform.setContent(Integer.toString(amount));
-        smartApplianceAgent.logger.info("Sent INFORM for {}W, convId={}", amount, convId);
+        smartApplianceAgent.getLogger().info("Sent INFORM for {}W, convId={}", amount, convId);
         smartApplianceAgent.environmentService.addPerformedTask();
         smartApplianceAgent.sendMessage(inform);
         if (convId.equals("disable-active") || convId.equals("disable-active-cfp"))
@@ -30,6 +30,6 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
         else if (convId.equals("disable-passive") || convId.equals("disable-passive-cfp"))
             smartApplianceAgent.setEnabled(false);
         else
-            smartApplianceAgent.logger.warn("Invalid convId {}", convId);
+            smartApplianceAgent.getLogger().warn("Invalid convId {}", convId);
     }
 }

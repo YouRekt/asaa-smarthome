@@ -2,9 +2,9 @@ package org.asaa.agents.appliances;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.appliance.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliance.HandleMessageBehaviour;
-import org.asaa.behaviours.appliance.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
+import org.asaa.behaviours.appliances.MessageHandlerBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 import org.asaa.util.ItemInfo;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
         runnables.add(this::initializeFridgeItems);
 
-        addBehaviour(new HandleMessageBehaviour(this) {
+        addBehaviour(new MessageHandlerBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
                 switch (msg.getConversationId()) {

@@ -18,8 +18,10 @@ import org.slf4j.MDC;
 import java.util.Arrays;
 
 public abstract class PhysicalAgent extends SpringAwareAgent {
-    public Logger logger;
-    public AID coordinatorAgent;
+    @Getter
+    protected Logger logger;
+    @Getter
+    protected AID coordinatorAgent;
     /* Priority sheet:
     0   <= p < 100 - awaits callback upon being turned off while working
     100 <= p < 200 - default priority sorting (lower - lower priority - turns off first)

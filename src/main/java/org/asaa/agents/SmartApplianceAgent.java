@@ -5,8 +5,9 @@ import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
-import org.asaa.behaviours.appliance.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
+import org.asaa.tasks.Task;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +20,9 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected final List<Behaviour> behaviours = new ArrayList<>();
     @Getter
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
+    @Setter
+    @Getter
+    protected Task currentTask = null;
 
     @Setter
     @Getter
@@ -78,6 +82,12 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     public void updateStatus()
     {
         agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking,isInterruptible,isFreezable,activeDraw,idleDraw,priority);
+    }
+
+    public void requestStartTask(Task task) {
+        String replyWith = "req-" + System.currentTimeMillis();
+        onPowerGrantedCallbacks.put(replyWith, task::start);
+        addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", replyWith));
     }
 
 }

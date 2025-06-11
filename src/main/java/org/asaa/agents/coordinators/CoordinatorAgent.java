@@ -8,8 +8,8 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import org.asaa.agents.SpringAwareAgent;
-import org.asaa.behaviours.coordinator.AgentScanningBehaviour;
-import org.asaa.behaviours.coordinator.HandleMessageBehaviour;
+import org.asaa.behaviours.coordinators.AgentScanningBehaviour;
+import org.asaa.behaviours.coordinators.MessageHandlerBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.exceptions.InvalidServiceSpecification;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         registerCoordinatorAgent();
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
-        addBehaviour(new HandleMessageBehaviour(this));
+        addBehaviour(new MessageHandlerBehaviour(this));
     }
 
     @Override

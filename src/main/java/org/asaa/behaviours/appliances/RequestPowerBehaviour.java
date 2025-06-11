@@ -1,4 +1,4 @@
-package org.asaa.behaviours.appliance;
+package org.asaa.behaviours.appliances;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -23,11 +23,11 @@ public class RequestPowerBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-        cfp.addReceiver(smartApplianceAgent.coordinatorAgent);
+        cfp.addReceiver(smartApplianceAgent.getCoordinatorAgent());
         cfp.setConversationId(convId);
         cfp.setContent(amount + "," + priority);
         cfp.setReplyWith(replyWith);
-        smartApplianceAgent.logger.info("Sent CFP for {}W, prio={}, convId={}", amount, priority, convId);
+        smartApplianceAgent.getLogger().info("Sent CFP for {}W, prio={}, convId={}", amount, priority, convId);
         smartApplianceAgent.environmentService.addPerformedTask();
         smartApplianceAgent.sendMessage(cfp);
     }

@@ -3,7 +3,7 @@ package org.asaa.agents;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
-import org.asaa.behaviours.sensor.HandleMessageBehaviour;
+import org.asaa.behaviours.sensor.MessageHandlerBehaviour;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public abstract class SensorAgent extends PhysicalAgent {
     protected void setup() {
         super.setup();
 
-        addBehaviour(new HandleMessageBehaviour(this) {
+        addBehaviour(new MessageHandlerBehaviour(this) {
             @Override
             protected void handleInform(ACLMessage msg) {
                 trigger();

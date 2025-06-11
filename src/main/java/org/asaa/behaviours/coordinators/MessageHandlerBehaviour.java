@@ -1,18 +1,17 @@
-package org.asaa.behaviours.coordinator;
+package org.asaa.behaviours.coordinators;
 
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.asaa.agents.coordinators.CoordinatorAgent;
-import org.asaa.behaviours.BaseMessageHandler;
-import org.asaa.services.EnvironmentService;
+import org.asaa.behaviours.BaseMessageHandlerBehaviour;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class HandleMessageBehaviour extends BaseMessageHandler {
+public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected final CoordinatorAgent coordinatorAgent;
 
-    public HandleMessageBehaviour(CoordinatorAgent coordinatorAgent) {
+    public MessageHandlerBehaviour(CoordinatorAgent coordinatorAgent) {
         super(coordinatorAgent);
         this.coordinatorAgent = coordinatorAgent;
     }

@@ -2,12 +2,12 @@ package org.asaa.behaviours.sensor;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SensorAgent;
-import org.asaa.behaviours.BaseMessageHandler;
+import org.asaa.behaviours.BaseMessageHandlerBehaviour;
 
-public class HandleMessageBehaviour extends BaseMessageHandler {
+public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected final SensorAgent sensorAgent;
 
-    public HandleMessageBehaviour(SensorAgent sensorAgent) {
+    public MessageHandlerBehaviour(SensorAgent sensorAgent) {
         super(sensorAgent);
 
         this.sensorAgent = sensorAgent;
@@ -27,7 +27,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleCancel(ACLMessage msg) {
-        sensorAgent.logger.info("Cancelled {}'s subscription", msg.getSender().getLocalName());
+        sensorAgent.getLogger().info("Cancelled {}'s subscription", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().remove(msg.getSender());
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
@@ -37,7 +37,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleSubscribe(ACLMessage msg) {
-        sensorAgent.logger.info("{} has subscribed", msg.getSender().getLocalName());
+        sensorAgent.getLogger().info("{} has subscribed", msg.getSender().getLocalName());
         sensorAgent.getSubscribers().add(msg.getSender());
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.AGREE);

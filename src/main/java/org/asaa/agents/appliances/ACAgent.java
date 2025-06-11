@@ -1,28 +1,30 @@
 package org.asaa.agents.appliances;
 
 import jade.core.AID;
-import jade.core.behaviours.TickerBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
+import lombok.Getter;
+import lombok.Setter;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.appliance.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliance.HandleMessageBehaviour;
-import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
-import org.asaa.behaviours.appliance.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.ACAgent.MessageHandlerBehaviour;
+import org.asaa.behaviours.appliances.ACAgent.ModeAutoBehaviour;
+import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
+@Getter
 public final class ACAgent extends SmartApplianceAgent {
-    private final Double targetTemperature = 21.0;
-    private final Double threshold = 0.5; // +/- margin before action (e.g., ±0.5°C)
-    private final Double coolingRate = 0.1;
+    @Setter
+    private Double currentTemperature;
+    private Double targetTemperature = 21.0;
+    private Double coolingRate = 0.2;
 
     @Override
     protected void setup() {
@@ -38,42 +40,9 @@ public final class ACAgent extends SmartApplianceAgent {
             }
         });
 
-        behaviours.add(new TickerBehaviour(this, 10000) {
-            @Override
-            protected void onTick() {
-                if (!isWorking) {
-                    requestTemperature();
-                }
-            }
-        });
+        behaviours.add(new ModeAutoBehaviour(this));
 
-        addBehaviour(new HandleMessageBehaviour(this) {
-            @Override
-            protected void handleInform(ACLMessage msg) {
-                switch (msg.getConversationId()) {
-                    case "def-reply":
-                        double temperature = Double.parseDouble(msg.getContent());
-                        if (temperature > targetTemperature) {
-                            if (!isWorking) {
-                                String replyWith = "req-" + System.currentTimeMillis();
-                                smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performCooling(temperature));
-                                addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
-                            } else performCooling(temperature);
-                        } else {
-                            if (isWorking) {
-                                logger.info("Finished cooling");
-                                environmentService.addPerformedTask();
-                                addBehaviour(new RelinquishPowerBehaviour(smartApplianceAgent, activeDraw, "disable-active"));
-                            }
-                            isWorking = false;
-                        }
-                        break;
-                    default:
-                        super.handleInform(msg);
-                        break;
-                }
-            }
-        });
+        addBehaviour(new MessageHandlerBehaviour(this));
 
         addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
 
@@ -103,11 +72,10 @@ public final class ACAgent extends SmartApplianceAgent {
         } catch (FIPAException e) {
             throw new RuntimeException(e);
         }
-
         return true;
     }
 
-    private void requestTemperature() {
+    public void requestTemperature() {
         AID tempSensor = subscribedSensors.get("TemperatureSensorAgent").getFirst();
         if (tempSensor != null) {
             ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
@@ -115,16 +83,6 @@ public final class ACAgent extends SmartApplianceAgent {
             request.setReplyByDate(new Date(System.currentTimeMillis() + 9000));
             sendMessage(request);
         }
-    }
-
-    private void performCooling(double temperature) {
-        environmentService.getArea(areaName).setAttribute("temperature", temperature - coolingRate);
-        addBehaviour(new WakerBehaviour(this, 1000) {
-            @Override
-            protected void onWake() {
-                requestTemperature();
-            }
-        });
     }
 
     @Override
