@@ -1,20 +1,19 @@
-package org.asaa.behaviours.coordinator;
+package org.asaa.behaviours.coordinators;
 
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.asaa.agents.coordinators.CoordinatorAgent;
-import org.asaa.behaviours.BaseMessageHandler;
-import org.asaa.services.EnvironmentService;
+import org.asaa.behaviours.BaseMessageHandlerBehaviour;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class HandleMessageBehaviour extends BaseMessageHandler {
-    protected final CoordinatorAgent coordinatorAgent;
+public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
+    protected final CoordinatorAgent agent;
 
-    public HandleMessageBehaviour(CoordinatorAgent coordinatorAgent) {
-        super(coordinatorAgent);
-        this.coordinatorAgent = coordinatorAgent;
+    public MessageHandlerBehaviour(CoordinatorAgent agent) {
+        super(agent);
+        this.agent = agent;
     }
 
     @Override
@@ -24,7 +23,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 !msg.getConversationId().equals("disable-passive-cfp") &&
                 !msg.getConversationId().equals("disable-active-cfp"));
 
-        final ACLMessage msg = coordinatorAgent.receive(mt);
+        final ACLMessage msg = agent.receive(mt);
         if (msg != null) {
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
             super.processMsg(msg);
@@ -35,7 +34,7 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
     @Override
     protected void handleCfp(ACLMessage msg) {
-        int availablePower = coordinatorAgent.environmentService.getPowerAvailability(), requiredPower, priority;
+        int availablePower = agent.environmentService.getPowerAvailability(), requiredPower, priority;
         String convId = msg.getConversationId();
         String[] msgParts = msg.getContent().split(",");
         switch (convId) {
@@ -44,13 +43,13 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
                 requiredPower = Integer.parseInt(msgParts[0]);
                 priority = Integer.parseInt(msgParts[1]);
                 if (availablePower >= requiredPower) {
-                    coordinatorAgent.environmentService.modifyPowerConsumption(+requiredPower);
+                    agent.environmentService.modifyPowerConsumption(+requiredPower);
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.AGREE);
                     reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
-                    coordinatorAgent.sendMessage(reply);
+                    agent.sendMessage(reply);
                 } else {
-                    coordinatorAgent.addBehaviour(new PowerNegotiationBehaviour(coordinatorAgent, msg, requiredPower - availablePower, requiredPower, priority));
+                    agent.addBehaviour(new PowerNegotiationBehaviour(agent, msg, requiredPower - availablePower, requiredPower, priority));
                 }
                 break;
             default:
@@ -65,25 +64,25 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
             case "disable-passive":
             case "disable-active":
                 returnedPower = Integer.parseInt(msg.getContent());
-                coordinatorAgent.environmentService.modifyPowerConsumption(-returnedPower);
-                if (!coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
+                agent.environmentService.modifyPowerConsumption(-returnedPower);
+                if (!agent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
                     ACLMessage callback = new ACLMessage(ACLMessage.INFORM);
                     callback.setConversationId("enable-callback");
                     callback.setContent(msg.getSender().getName());
-                    coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
-                    CoordinatorAgent.getLogger().info("Sending out {} callbacks after {} returned power", coordinatorAgent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
-                    coordinatorAgent.sendMessage(callback);
-                    coordinatorAgent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
+                    agent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
+                    agent.getLogger().info("Sending out {} callbacks after {} returned power", agent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
+                    agent.sendMessage(callback);
+                    agent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
                 }
                 ACLMessage reply = msg.createReply();
                 reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setContent(msg.getContent());
-                coordinatorAgent.sendMessage(reply);
+                agent.sendMessage(reply);
                 break;
             case "get-missing-items":
             case "action-morning":
                 if (msg.getContent().isEmpty()) {
-                    CoordinatorAgent.getLogger().info("No missing items in fridge to buy");
+                    agent.getLogger().info("No missing items in fridge to buy");
                     return;
                 }
                 List<ItemRequest> missingItems = new ArrayList<>();
@@ -100,27 +99,27 @@ public class HandleMessageBehaviour extends BaseMessageHandler {
 
                 Map<String, Integer> purchased = new HashMap<>();
                 for (ItemRequest item : missingItems) {
-                    int bought = coordinatorAgent.environmentService.buyBatch(item.name);
+                    int bought = agent.environmentService.buyBatch(item.name);
                     if (bought > 0) {
                         purchased.merge(item.name, bought, Integer::sum);
                     } else {
-                        CoordinatorAgent.getLogger().warn("Item {} could not be bought", item.name);
-                        coordinatorAgent.agentCommunicationController.sendError(coordinatorAgent.getName(), "Item " + item.name + " could not be bought");
+                        agent.getLogger().warn("Item {} could not be bought", item.name);
+                        agent.agentCommunicationController.sendError(agent.getName(), "Item " + item.name + " could not be bought");
                     }
                 }
 
-                CoordinatorAgent.getLogger().info("Bought items: {}", purchased);
+                agent.getLogger().info("Bought items: {}", purchased);
 
                 if (!purchased.isEmpty()) {
                     ACLMessage updateMsg = new ACLMessage(ACLMessage.INFORM);
                     updateMsg.addReceiver(msg.getSender());
                     updateMsg.setConversationId("stock-update");
                     updateMsg.setContent(purchased.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.joining(",")));
-                    coordinatorAgent.sendMessage(updateMsg);
+                    agent.sendMessage(updateMsg);
                 }
                 break;
             case "routine-morning":
-                coordinatorAgent.performMorningRoutine();
+                agent.performMorningRoutine();
                 break;
             default:
                 break;

@@ -4,13 +4,8 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.SchedulerAgent;
 import org.asaa.services.EnvironmentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.asaa.util.Util;
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -20,15 +15,15 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
     private final Random rand = new Random();
     private final Map<String, Boolean> oneShotSchedules = new HashMap<>();
     private final Map<String, LocalDateTime> cyclicSchedules = new HashMap<>();
-    private final SchedulerAgent schedulerAgent;
+    private final SchedulerAgent agent;
     private LocalDateTime previousTime;
     private LocalDateTime currentTime;
 
-    public ScheduleLoopBehaviour(SchedulerAgent schedulerAgent, long period) {
-        super(schedulerAgent, period);
-        env = schedulerAgent.environmentService;
+    public ScheduleLoopBehaviour(SchedulerAgent agent, long period) {
+        super(agent, period);
+        env = agent.environmentService;
         currentTime = env.getSimulationTime();
-        this.schedulerAgent = schedulerAgent;
+        this.agent = agent;
         initSchedulesStatus();
     }
 
@@ -57,12 +52,12 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         // At 8AM perform Morning Schedule
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
             oneShotSchedules.put("routine-morning", true);
-            SchedulerAgent.getLogger().info("Morning schedule started, message sent to coordinator");
-            Util.SendMessage(schedulerAgent, "", schedulerAgent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
+            agent.getLogger().info("Morning schedule started, message sent to coordinator");
+            Util.SendMessage(agent, "", agent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
         }
 
         if (currentTime.toLocalDate().isAfter(previousTime.toLocalDate())) {
-            SchedulerAgent.getLogger().info("Day has ended, resetting schedules status");
+            agent.getLogger().info("Day has ended, resetting schedules status");
             resetSchedulesStatus();
         }
     }

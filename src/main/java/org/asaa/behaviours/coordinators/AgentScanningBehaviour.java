@@ -1,4 +1,4 @@
-package org.asaa.behaviours.coordinator;
+package org.asaa.behaviours.coordinators;
 
 import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
@@ -15,15 +15,15 @@ import org.asaa.controllers.AgentPresenceController;
 import java.util.*;
 
 public class AgentScanningBehaviour extends TickerBehaviour {
-    private final CoordinatorAgent coordinatorAgent;
+    private final CoordinatorAgent agent;
     private final EnvironmentService environmentService;
     private final AgentPresenceController agentPresenceController;
 
-    public AgentScanningBehaviour(CoordinatorAgent coordinatorAgent, long period) {
-        super(coordinatorAgent, period);
-        this.coordinatorAgent = coordinatorAgent;
-        this.environmentService = coordinatorAgent.environmentService;
-        this.agentPresenceController = coordinatorAgent.agentPresenceController;
+    public AgentScanningBehaviour(CoordinatorAgent agent, long period) {
+        super(agent, period);
+        this.agent = agent;
+        this.environmentService = agent.environmentService;
+        this.agentPresenceController = agent.agentPresenceController;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                 final DFAgentDescription dfd = new DFAgentDescription();
                 dfd.addServices(sd);
 
-                DFAgentDescription[] results = DFService.search(coordinatorAgent, dfd);
+                DFAgentDescription[] results = DFService.search(agent, dfd);
 
                 for (DFAgentDescription desc : results) {
                     jade.util.leap.Iterator it = desc.getAllServices();
@@ -55,9 +55,9 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                     }
                 }
 
-                CoordinatorAgent.getLogger().debug("Found {} agents in {}:\n {}", agents.size(), area, agents);
+                agent.getLogger().debug("Found {} agents in {}:\n {}", agents.size(), area, agents);
 
-                Map<String, List<AID>> oldAgentsMap = coordinatorAgent.getPhysicalAgents().get(environmentService.getArea(area));
+                Map<String, List<AID>> oldAgentsMap = agent.getPhysicalAgents().get(environmentService.getArea(area));
                 if (oldAgentsMap != null) {
                     for (var entry : agents.entrySet()) {
                         String agentClass = entry.getKey();
@@ -80,7 +80,7 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                     }
                 }
 
-                coordinatorAgent.getPhysicalAgents().put(environmentService.getArea(area), agents);
+                agent.getPhysicalAgents().put(environmentService.getArea(area), agents);
             } catch (FIPAException e) {
                 throw new InvalidServiceSpecification(e);
             }
