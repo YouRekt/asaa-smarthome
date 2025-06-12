@@ -44,7 +44,7 @@ public class WashDishesTask extends Task {
             @Override
             protected void onTick() {
                 remainingWashTime = Math.max(0, fullWashTime - System.currentTimeMillis() + washStartTime);
-                agent.getLogger().info("Wash Dishes Task: {}ms remain", remainingWashTime);
+//                agent.getLogger().info("Wash Dishes Task: {}ms remain", remainingWashTime);
                 if (remainingWashTime <= 0) {
                     agent.getLogger().info("Wash complete!");
                     agent.environmentService.addPerformedTask();
