@@ -19,7 +19,6 @@ public final class FridgeAgent extends SmartApplianceAgent {
         idleDraw = 200; // We assume that the fridge is always fully on or off
         activeDraw = 0;
         priority = 999;
-        isInterruptible = false;
 
         super.setup();
 
@@ -41,8 +40,7 @@ public final class FridgeAgent extends SmartApplianceAgent {
         fridgeItems.put("Juice", new ItemInfo(0, 1));
     }
 
-    @Override
-    public String responseDefaultMsgContent() {
+    public String fridgeStock() {
         if (fridgeItems.isEmpty()) {
             return "Fridge was not initialized";
         }

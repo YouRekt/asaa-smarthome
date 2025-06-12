@@ -30,10 +30,6 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected boolean isEnabled = false;
     @Setter
     protected boolean isWorking = false;
-    @Setter
-    protected boolean isInterruptible = true;
-    @Setter
-    protected boolean isFreezable = false;
     protected int idleDraw = 0;
     protected int activeDraw = 0;
 
@@ -73,7 +69,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
 
     public void updateStatus()
     {
-        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking,isInterruptible,isFreezable,activeDraw,idleDraw,priority);
+        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
     }
 
     public void requestStartTask(Task task) {
@@ -85,5 +81,4 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         onPowerGrantedCallbacks.put(replyWith, task::start);
         addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", replyWith));
     }
-
 }

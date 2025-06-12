@@ -5,12 +5,12 @@ import org.asaa.agents.SensorAgent;
 import org.asaa.behaviours.BaseMessageHandlerBehaviour;
 
 public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
-    protected final SensorAgent sensorAgent;
+    protected final SensorAgent agent;
 
-    public MessageHandlerBehaviour(SensorAgent sensorAgent) {
-        super(sensorAgent);
+    public MessageHandlerBehaviour(SensorAgent agent) {
+        super(agent);
 
-        this.sensorAgent = sensorAgent;
+        this.agent = agent;
     }
 
     @Override
@@ -27,21 +27,21 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
 
     @Override
     protected void handleCancel(ACLMessage msg) {
-        sensorAgent.getLogger().info("Cancelled {}'s subscription", msg.getSender().getLocalName());
-        sensorAgent.getSubscribers().remove(msg.getSender());
+        agent.getLogger().info("Cancelled {}'s subscription", msg.getSender().getLocalName());
+        agent.getSubscribers().remove(msg.getSender());
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.INFORM);
         msg.setContent("cancelled");
-        sensorAgent.sendMessage(reply);
+        agent.sendMessage(reply);
     }
 
     @Override
     protected void handleSubscribe(ACLMessage msg) {
-        sensorAgent.getLogger().info("{} has subscribed", msg.getSender().getLocalName());
-        sensorAgent.getSubscribers().add(msg.getSender());
+        agent.getLogger().info("{} has subscribed", msg.getSender().getLocalName());
+        agent.getSubscribers().add(msg.getSender());
         ACLMessage reply = msg.createReply();
         reply.setPerformative(ACLMessage.AGREE);
         msg.setContent("subscribed");
-        sensorAgent.sendMessage(reply);
+        agent.sendMessage(reply);
     }
 }

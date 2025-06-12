@@ -47,10 +47,8 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
             case "power-relief":
                 if (agent.getCurrentTask() != null) {
                     agent.getCurrentTask().pause();
-                    super.handleAcceptProposal(msg);
-                } else {
-                    super.handleAcceptProposal(msg);
                 }
+                super.handleAcceptProposal(msg);
                 break;
             default:
                 super.handleAcceptProposal(msg);

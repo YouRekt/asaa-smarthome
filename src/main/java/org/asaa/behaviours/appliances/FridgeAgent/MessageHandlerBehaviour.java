@@ -33,13 +33,13 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
 
                 }
 
-                agent.getLogger().info("[UPDATED] - {}", agent.responseDefaultMsgContent());
+                agent.getLogger().info("[UPDATED] - {}", agent.fridgeStock());
                 agent.environmentService.addPerformedTask();
                 break;
             default:
+                super.handleInform(msg);
                 break;
         }
-        super.handleInform(msg);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
         switch (msg.getConversationId()) {
             case "get-missing-items":
             case "action-morning":
-                agent.getLogger().info("Get missing items called - {}", agent.responseDefaultMsgContent());
+                agent.getLogger().info("Get missing items called - {}", agent.fridgeStock());
                 List<String> missing = new ArrayList<>();
                 for (Map.Entry<String, ItemInfo> entry : agent.getFridgeItems().entrySet()) {
                     if (entry.getValue().getCount() == 0) {
@@ -66,6 +66,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
                 }
                 break;
             default:
+                super.handleRequest(msg);
                 break;
         }
     }

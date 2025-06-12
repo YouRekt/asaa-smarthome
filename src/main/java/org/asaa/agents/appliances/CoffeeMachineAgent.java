@@ -11,7 +11,6 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
         idleDraw = 5;
         activeDraw = 120;
         priority = 100;
-        isInterruptible = false;
 
         super.setup();
 
@@ -22,8 +21,4 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
-    @Override
-    protected String responseDefaultMsgContent() {
-        return String.valueOf(isWorking);
-    }
 }

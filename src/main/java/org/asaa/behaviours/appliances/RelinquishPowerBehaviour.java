@@ -5,13 +5,13 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 
 public class RelinquishPowerBehaviour extends OneShotBehaviour {
-    private final SmartApplianceAgent smartApplianceAgent;
+    private final SmartApplianceAgent agent;
     private final int amount;
     private final String convId;
 
-    public RelinquishPowerBehaviour(SmartApplianceAgent smartApplianceAgent, int amount, String convId) {
-        super(smartApplianceAgent);
-        this.smartApplianceAgent = smartApplianceAgent;
+    public RelinquishPowerBehaviour(SmartApplianceAgent agent, int amount, String convId) {
+        super(agent);
+        this.agent = agent;
         this.amount = amount;
         this.convId = convId;
     }
@@ -19,17 +19,17 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
     @Override
     public void action() {
         ACLMessage inform = new ACLMessage(ACLMessage.INFORM);
-        inform.addReceiver(smartApplianceAgent.getCoordinatorAgent());
+        inform.addReceiver(agent.getCoordinatorAgent());
         inform.setConversationId(convId);
         inform.setContent(Integer.toString(amount));
-        smartApplianceAgent.getLogger().info("Sent INFORM for {}W, convId={}", amount, convId);
-        smartApplianceAgent.environmentService.addPerformedTask();
-        smartApplianceAgent.sendMessage(inform);
+        agent.getLogger().info("Sent INFORM for {}W, convId={}", amount, convId);
+        agent.environmentService.addPerformedTask();
+        agent.sendMessage(inform);
         if (convId.equals("disable-active") || convId.equals("disable-active-cfp"))
-            smartApplianceAgent.setWorking(false);
+            agent.setWorking(false);
         else if (convId.equals("disable-passive") || convId.equals("disable-passive-cfp"))
-            smartApplianceAgent.setEnabled(false);
+            agent.setEnabled(false);
         else
-            smartApplianceAgent.getLogger().warn("Invalid convId {}", convId);
+            agent.getLogger().warn("Invalid convId {}", convId);
     }
 }

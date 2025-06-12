@@ -21,8 +21,4 @@ public final class SmartLightbulbAgent extends SmartApplianceAgent {
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
-    @Override
-    protected String responseDefaultMsgContent() {
-        return String.valueOf(isEnabled);
-    }
 }

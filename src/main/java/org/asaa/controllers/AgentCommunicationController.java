@@ -36,8 +36,8 @@ public class AgentCommunicationController {
         messageSendingOperations.convertAndSend("/topic/agent-error", dto);
     }
 
-    public void setAgentStatus(String agentName, Boolean isEnabled, Boolean isWorking, Boolean isInterruptible, Boolean isFreezable, Integer activeDraw, Integer idleDraw, Integer priority) {
-        AgentStatusDTO dto = new AgentStatusDTO(agentName, isEnabled, isWorking, isInterruptible, isFreezable, activeDraw, idleDraw, priority);
+    public void setAgentStatus(String agentName, Boolean isEnabled, Boolean isWorking, Boolean isInterruptible, Boolean isResumable, Integer activeDraw, Integer idleDraw, Integer priority) {
+        AgentStatusDTO dto = new AgentStatusDTO(agentName, isEnabled, isWorking, isInterruptible, isResumable, activeDraw, idleDraw, priority);
         messageSendingOperations.convertAndSend("/topic/agent-status", dto);
     }
 

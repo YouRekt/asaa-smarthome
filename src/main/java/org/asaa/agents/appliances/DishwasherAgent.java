@@ -20,7 +20,6 @@ public final class DishwasherAgent extends SmartApplianceAgent {
         idleDraw = 5;
         activeDraw = 275;
         priority = 150;
-        isFreezable = true;
 
         super.setup();
 
@@ -38,8 +37,4 @@ public final class DishwasherAgent extends SmartApplianceAgent {
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
-    @Override
-    protected String responseDefaultMsgContent() {
-        return String.valueOf(isWorking);
-    }
 }

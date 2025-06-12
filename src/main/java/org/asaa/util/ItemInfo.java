@@ -3,12 +3,10 @@ package org.asaa.util;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 public class ItemInfo {
-    @Setter
-    @Getter
     private int count;
-    @Setter
-    @Getter
     private int priority;
 
     public ItemInfo(final int count, final int priority) {

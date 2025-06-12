@@ -10,32 +10,32 @@ import java.util.List;
 import java.util.Map;
 
 public class AwaitEnableBehaviour extends TickerBehaviour {
-    private final SmartApplianceAgent smartApplianceAgent;
+    private final SmartApplianceAgent agent;
     private final List<Runnable> runnables = new ArrayList<>();
     private final Map<String, Behaviour> behaviours = new HashMap<>();
     private boolean previouslyEnabled = false;
 
-    public AwaitEnableBehaviour(SmartApplianceAgent smartApplianceAgent, long period, List<Runnable> runnables, Map<String, Behaviour> behaviours) {
-        super(smartApplianceAgent, period);
-        this.smartApplianceAgent = smartApplianceAgent;
+    public AwaitEnableBehaviour(SmartApplianceAgent agent, long period, List<Runnable> runnables, Map<String, Behaviour> behaviours) {
+        super(agent, period);
+        this.agent = agent;
         this.runnables.addAll(runnables);
         this.behaviours.putAll(behaviours);
     }
 
     @Override
     public void onTick() {
-        if (smartApplianceAgent.isEnabled() && !previouslyEnabled) {
+        if (agent.isEnabled() && !previouslyEnabled) {
             previouslyEnabled = true;
-            smartApplianceAgent.getLogger().info("{} enabled, starting runnables & behaviours", smartApplianceAgent.getLocalName());
+            agent.getLogger().info("{} enabled, starting runnables & behaviours", agent.getLocalName());
 
             runnables.forEach(Runnable::run);
-            behaviours.forEach((_, behaviour) -> smartApplianceAgent.addBehaviour(behaviour));
-        } else if (!smartApplianceAgent.isEnabled() && previouslyEnabled) {
+            behaviours.forEach((_, behaviour) -> agent.addBehaviour(behaviour));
+        } else if (!agent.isEnabled() && previouslyEnabled) {
             previouslyEnabled = false;
-            smartApplianceAgent.getLogger().info("{} disabled, stopping runnables & behaviours", smartApplianceAgent.getLocalName());
+            agent.getLogger().info("{} disabled, stopping runnables & behaviours", agent.getLocalName());
 
-            behaviours.forEach((_, behaviour) -> smartApplianceAgent.removeBehaviour(behaviour));
+            behaviours.forEach((_, behaviour) -> agent.removeBehaviour(behaviour));
         }
-        smartApplianceAgent.updateStatus();
+        agent.updateStatus();
     }
 }

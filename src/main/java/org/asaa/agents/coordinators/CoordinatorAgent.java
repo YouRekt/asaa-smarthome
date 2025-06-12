@@ -1,19 +1,12 @@
 package org.asaa.agents.coordinators;
 
 import jade.core.AID;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import org.asaa.agents.SpringAwareAgent;
 import org.asaa.behaviours.coordinators.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinators.MessageHandlerBehaviour;
 import org.asaa.environment.Area;
-import org.asaa.exceptions.InvalidServiceSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.*;
@@ -21,10 +14,7 @@ import java.util.*;
 @Getter
 public final class CoordinatorAgent extends SpringAwareAgent {
     private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
-    @Getter
     private final Map<AID, List<AID>> appliancesAwaitingCallback = new HashMap<>();
-    @Getter
-    private final static Logger logger = LoggerFactory.getLogger("Coordinator");
 
     @Override
     protected void setup() {
@@ -35,9 +25,10 @@ public final class CoordinatorAgent extends SpringAwareAgent {
 
         logger.info("Initialized");
 
-        registerCoordinatorAgent();
+        register("");
 
         addBehaviour(new AgentScanningBehaviour(this, 5000));
+
         addBehaviour(new MessageHandlerBehaviour(this));
     }
 
@@ -45,21 +36,6 @@ public final class CoordinatorAgent extends SpringAwareAgent {
     protected void takeDown() {
         MDC.clear();
         super.takeDown();
-    }
-
-    private void registerCoordinatorAgent() {
-        final ServiceDescription sd = new ServiceDescription();
-        sd.setType(getClass().getSimpleName());
-        sd.setName(getLocalName());
-        sd.setOwnership(getName());
-
-        try {
-            final DFAgentDescription dfd = new DFAgentDescription();
-            dfd.addServices(sd);
-            DFService.register(this, dfd);
-        } catch (FIPAException e) {
-            throw new InvalidServiceSpecification(e);
-        }
     }
 
     private List<AID> getAgentListAIDForArea(String agentClass, String areaStr) {

@@ -6,11 +6,11 @@ import org.asaa.behaviours.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
 
 public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
-    protected final HumanAgent humanAgent;
+    protected final HumanAgent agent;
 
-    public MessageHandlerBehaviour(HumanAgent humanAgent) {
-        super(humanAgent);
-        this.humanAgent = humanAgent;
+    public MessageHandlerBehaviour(HumanAgent agent) {
+        super(agent);
+        this.agent = agent;
     }
 
     @Override
@@ -18,7 +18,7 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
         final ACLMessage msg = myAgent.receive();
 
         if (msg != null) {
-            humanAgent.getLogger().info("Received message, perf={}, convId={}, content={}", msg.getPerformative(), Util.ConvertStringToACLPerformative(msg.getConversationId()), msg.getContent());
+            agent.getLogger().info("Received message, perf={}, convId={}, content={}", msg.getPerformative(), Util.ConvertStringToACLPerformative(msg.getConversationId()), msg.getContent());
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
             super.processMsg(msg);
         } else {
