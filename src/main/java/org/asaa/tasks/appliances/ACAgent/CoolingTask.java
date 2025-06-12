@@ -1,6 +1,5 @@
 package org.asaa.tasks.appliances.ACAgent;
 
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.WakerBehaviour;
 import org.asaa.agents.appliances.ACAgent;
 import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
@@ -12,15 +11,13 @@ public final class CoolingTask extends Task {
     private final double coolingRate;
     private final double targetTemperature;
 
-    private boolean paused = false;
-    private boolean interrupted = false;
-    private boolean awaitingWake = false;
-
     public CoolingTask(ACAgent agent, double coolingRate, double targetTemperature) {
         this.agent = agent;
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
         this.delayMillis = 1000;
+        resumable = true;
+        interruptible = true;
     }
 
     @Override

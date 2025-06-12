@@ -2,7 +2,7 @@ package org.asaa.behaviours.appliances.DishwasherAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.DishwasherAgent;
-import org.asaa.behaviours.appliances.RequestPowerBehaviour;
+import org.asaa.tasks.appliances.DishwasherAgent.WashDishesTask;
 
 public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.MessageHandlerBehaviour {
     private final DishwasherAgent agent;
@@ -16,25 +16,28 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
     protected void handleInform(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "enable-callback":
-                if (agent.getWashBehaviour() == null && agent.getRemainingWashTime() > 0) {
-                    String replyWith = "req-" + System.currentTimeMillis();
-                    agent.onPowerGrantedCallbacks.put(replyWith, () -> agent.performWash(true));
-                    agent.addBehaviour(new RequestPowerBehaviour(agent, agent.getActiveDraw(), agent.getPriority(), "enable-active", replyWith));
+                agent.getLogger().info("Received enable-callback message");
+                if (agent.getCurrentTask() != null) {
+                    agent.getCurrentTask().resume();
                 }
                 break;
             default:
+                super.handleInform(msg);
                 break;
         }
-        super.handleInform(msg);
     }
 
     @Override
     protected void handleRequest(ACLMessage msg) {
-        if (!agent.isWorking()) {
-            agent.setRemainingWashTime(agent.getFullWashTime());
-            String replyWith = "req-" + System.currentTimeMillis();
-            agent.onPowerGrantedCallbacks.put(replyWith, () -> agent.performWash(false));
-            agent.addBehaviour(new RequestPowerBehaviour(agent, agent.getActiveDraw(), agent.getPriority(), "enable-active", replyWith));
+        switch (msg.getConversationId()) {
+            case "wash-dishes-task":
+                if (agent.getCurrentTask() == null) {
+                    agent.requestStartTask(new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()));
+                }
+                break;
+            default:
+                super.handleRequest(msg);
+                break;
         }
     }
 
@@ -42,18 +45,15 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
     protected void handleAcceptProposal(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "power-relief":
-                if (agent.getWashBehaviour() != null) {
-                    long elapsed = System.currentTimeMillis() - agent.getWashStartTime();
-                    agent.setRemainingWashTime(Math.max(0, agent.getRemainingWashTime() - elapsed));
-                    agent.removeBehaviour(agent.getWashBehaviour());
-                    agent.setWashBehaviour(null);
-                    agent.getLogger().info("Wash paused, {}ms left", agent.getRemainingWashTime());
+                if (agent.getCurrentTask() != null) {
+                    agent.getCurrentTask().pause();
                     super.handleAcceptProposal(msg);
                 } else {
                     super.handleAcceptProposal(msg);
                 }
                 break;
             default:
+                super.handleAcceptProposal(msg);
                 break;
         }
     }

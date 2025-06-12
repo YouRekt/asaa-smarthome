@@ -15,6 +15,14 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
     @Override
     protected void handleInform(ACLMessage msg) {
         switch (msg.getConversationId()) {
+            case "cooling-task":
+                if (agent.getCurrentTask() == null) {
+                    agent.requestStartTask(new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()));
+                } else {
+                    agent.getLogger().warn("cooling-task@inform: Cooling Task already running");
+                    agent.agentCommunicationController.sendError(agent.getName(), "cooling-task@inform: Cooling Task already running");
+                }
+                break;
             case "def-reply":
                 agent.setCurrentTemperature(Double.parseDouble(msg.getContent()));
                 if (agent.getCurrentTemperature() > agent.getTargetTemperature() && agent.getCurrentTask() == null) {

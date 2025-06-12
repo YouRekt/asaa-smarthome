@@ -2,7 +2,7 @@ package org.asaa.behaviours.appliances.CoffeeMachineAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.CoffeeMachineAgent;
-import org.asaa.behaviours.appliances.RequestPowerBehaviour;
+import org.asaa.tasks.appliances.CoffeeMachineAgent.MakeCoffeeTask;
 
 public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.MessageHandlerBehaviour {
     private final CoffeeMachineAgent agent;
@@ -15,14 +15,13 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
     @Override
     protected void handleRequest(ACLMessage msg) {
         switch (msg.getConversationId()) {
+            case "make-coffee-task":
             case "action-morning":
-                if (!agent.isWorking()) {
-                    String replyWith = "req-" + System.currentTimeMillis();
-                    agent.onPowerGrantedCallbacks.put(replyWith, agent::makeCoffee);
-                    agent.addBehaviour(new RequestPowerBehaviour(agent, agent.getActiveDraw(), agent.getPriority(), "enable-active", replyWith));
+                if (agent.getCurrentTask() == null) {
+                    agent.requestStartTask(new MakeCoffeeTask(agent));
                 } else {
-                    agent.getLogger().warn("Currently making coffee, can not respond to request");
-                    agent.agentCommunicationController.sendError(agent.getName(), "Currently making coffee, can not respond to request");
+                    agent.getLogger().warn("{}@request: Make Coffee Task already running", msg.getConversationId());
+                    agent.agentCommunicationController.sendError(agent.getName(), msg.getConversationId() + "@request: Make Coffee Task already running");
                 }
                 break;
             default:

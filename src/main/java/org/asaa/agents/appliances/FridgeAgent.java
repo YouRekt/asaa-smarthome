@@ -1,6 +1,5 @@
 package org.asaa.agents.appliances;
 
-import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
@@ -8,9 +7,7 @@ import org.asaa.behaviours.appliances.FridgeAgent.MessageHandlerBehaviour;
 import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 import org.asaa.util.ItemInfo;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Getter

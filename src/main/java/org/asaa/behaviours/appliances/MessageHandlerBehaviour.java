@@ -65,9 +65,6 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     @Override
     protected void handleInform(ACLMessage msg) {
         switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
-            case "enable-callback":
-                agent.getLogger().info("Received enable-callback message");
-                break;
             case "trigger":
                 agent.trigger();
                 break;
@@ -134,12 +131,14 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 agent.setCfpInProgress(true);
                 int canFree = 0, prio = agent.getPriority();
                 if (agent.isWorking()) {
-                    if (agent.isInterruptible()) {
+                    if (agent.getCurrentTask() == null)
+                        agent.getLogger().error("Power relief CFP: Agent is working without any task assigned!!!");
+                    if (agent.getCurrentTask().isInterruptible()) {
                         canFree = agent.getActiveDraw();
-                        if (agent.isFreezable()) {
+                        if (agent.getCurrentTask().isResumable()) {
                             prio = agent.getPriority() % 100;
                         }
-                        agent.getLogger().warn("Power relief CFP: Currently working and interruptible, will interrupt my current action on accept-proposal");
+                        agent.getLogger().warn("Power relief CFP: Currently working and interruptible, will interrupt my current task on accept-proposal");
                     } else {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.REFUSE);

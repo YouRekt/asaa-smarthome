@@ -23,8 +23,8 @@ import java.util.Optional;
 public final class ACAgent extends SmartApplianceAgent {
     @Setter
     private Double currentTemperature;
-    private Double targetTemperature = 21.0;
-    private Double coolingRate = 0.2;
+    private final Double targetTemperature = 21.0;
+    private final Double coolingRate = 0.2;
 
     @Override
     protected void setup() {

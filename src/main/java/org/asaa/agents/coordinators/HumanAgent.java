@@ -13,7 +13,7 @@ public final class HumanAgent extends PhysicalAgent {
     private final HumanCommunicationService humanCommunicationService = SpringContext.get().getBean(HumanCommunicationService.class);
     @Setter
     @Getter
-    protected Task currentTask = null;
+    private Task currentTask = null;
 
     @Override
     protected void setup() {

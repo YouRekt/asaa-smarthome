@@ -13,11 +13,15 @@ public abstract class Task {
     @Setter
     protected boolean interruptible;
 
-    public void start(SmartApplianceAgent agent) {
+    protected boolean paused = false;
+    protected boolean interrupted = false;
+    protected boolean awaitingWake = false;
+
+    protected void start(SmartApplianceAgent agent) {
         agent.setCurrentTask(this);
     }
 
-    public void end(SmartApplianceAgent agent) {
+    protected void end(SmartApplianceAgent agent) {
         agent.setCurrentTask(null);
         agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active"));
     }

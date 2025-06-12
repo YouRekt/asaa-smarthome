@@ -77,6 +77,10 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     }
 
     public void requestStartTask(Task task) {
+        if (!this.isEnabled) {
+            logger.warn("Request Start Task was called when the appliance is disabled!");
+            return;
+        }
         String replyWith = "req-" + System.currentTimeMillis();
         onPowerGrantedCallbacks.put(replyWith, task::start);
         addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", replyWith));
