@@ -2,7 +2,7 @@ package org.asaa.agents.coordinators;
 
 import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.PhysicalAgent;
-import org.asaa.behaviours.human.HandleMessageBehaviour;
+import org.asaa.behaviours.human.MessageHandlerBehaviour;
 import org.asaa.services.HumanCommunicationService;
 import org.asaa.util.SpringContext;
 
@@ -13,7 +13,7 @@ public final class HumanAgent extends PhysicalAgent {
     protected void setup() {
         super.setup();
 
-        addBehaviour(new HandleMessageBehaviour(this));
+        addBehaviour(new MessageHandlerBehaviour(this));
 
         addBehaviour(new TickerBehaviour(this, 1000) {
             @Override
@@ -28,11 +28,6 @@ public final class HumanAgent extends PhysicalAgent {
 
     @Override
     protected void handleTrigger() {
-
-    }
-
-    @Override
-    protected String responseDefaultMsgContent() {
-        return "I am currently in " + areaName;
+        logger.info("HumanAgent handleTrigger");
     }
 }

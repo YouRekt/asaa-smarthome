@@ -7,7 +7,6 @@ import org.asaa.environment.Area;
 import org.asaa.environment.TemperatureSimulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -18,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
     private final Map<String, LocalDateTime> cyclicEvents = new HashMap<>();
-    private final Random rand = new Random();
     @Getter
     @Setter
     private Area humanLocation;
@@ -132,8 +129,8 @@ public class EnvironmentService {
         if (Duration.between(cyclicEvents.get("kitchen-temp"), simulationTime).toMinutes() >= 30) {
             cyclicEvents.put("kitchen-temp", simulationTime);
             double newTemp = TemperatureSimulator.simulateRoomTemperature((double)getArea("kitchen").getAttribute("temperature"), simulationTime.getHour(), 14, 21.0, 25.0);
-            getArea("kitchen").setAttribute("temperature", newTemp);
-            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", newTemp));
+            getArea("kitchen").setAttribute("temperature", 23.0);
+            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", 23.0));
         }
     }
 

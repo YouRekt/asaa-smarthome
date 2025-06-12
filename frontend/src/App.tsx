@@ -28,6 +28,7 @@ export default function App() {
 		errors,
 		setAgentStatus,
 		environment,
+		setLatestMessage,
 	} = useStore();
 
 	const { setClient, sendMessage } = useStomp();
@@ -39,7 +40,6 @@ export default function App() {
 			onConnect: () => {
 				stompClient.subscribe("/topic/environment", (message) => {
 					const data = JSON.parse(message.body);
-					console.log(data);
 					setEnvironment(data);
 				});
 				stompClient.subscribe("/topic/agent", (message) => {
@@ -49,6 +49,7 @@ export default function App() {
 				stompClient.subscribe("/topic/agent-message", (message) => {
 					const data = JSON.parse(message.body);
 					setAgentMessage(data.aid, data.timestamp, data.message);
+					setLatestMessage(data.aid, data.timestamp, data.message);
 				});
 				stompClient.subscribe("/topic/agent-error", (message) => {
 					const data = JSON.parse(message.body);
@@ -74,6 +75,7 @@ export default function App() {
 		setClient,
 		setEnvironment,
 		setError,
+		setLatestMessage,
 	]);
 
 	const handleRoomClick = (id: string) => {

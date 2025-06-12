@@ -5,40 +5,32 @@ import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.behaviours.appliance.RelinquishPowerBehaviour;
-import org.asaa.behaviours.appliance.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
+import org.asaa.tasks.Task;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Getter
 public abstract class SmartApplianceAgent extends PhysicalAgent {
     public final Map<String, Runnable> onPowerGrantedCallbacks = new ConcurrentHashMap<>();
 
     protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
     protected final List<Runnable> runnables = new ArrayList<>();
-    protected final List<Behaviour> behaviours = new ArrayList<>();
-    @Getter
+    protected final Map<String, Behaviour> behaviours = new HashMap<>();
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
+    @Setter
+    protected Task currentTask = null;
 
     @Setter
-    @Getter
     private boolean cfpInProgress = false;
 
     @Setter
-    @Getter
     protected boolean isEnabled = false;
     @Setter
-    @Getter
     protected boolean isWorking = false;
-    @Setter
-    @Getter
-    protected boolean isInterruptible = true;
-    @Setter
-    @Getter
-    protected boolean isFreezable = false;
-    @Getter
     protected int idleDraw = 0;
-    @Getter
     protected int activeDraw = 0;
 
     protected final long awaitEnablePeriod = 1000;
@@ -77,7 +69,16 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
 
     public void updateStatus()
     {
-        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking,isInterruptible,isFreezable,activeDraw,idleDraw,priority);
+        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
     }
 
+    public void requestStartTask(Task task) {
+        if (!this.isEnabled) {
+            logger.warn("Request Start Task was called when the appliance is disabled!");
+            return;
+        }
+        String replyWith = "req-" + System.currentTimeMillis();
+        onPowerGrantedCallbacks.put(replyWith, task::start);
+        addBehaviour(new RequestPowerBehaviour(this, activeDraw, priority, "enable-active", replyWith));
+    }
 }
