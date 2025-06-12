@@ -28,4 +28,17 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
                 break;
         }
     }
+
+    @Override
+    protected void handleRequest(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "interrupt-task":
+                agent.removeBehaviour(agent.getBehaviours().get("ModeAutoBehaviour"));
+                super.handleRequest(msg);
+                break;
+            default:
+                super.handleRequest(msg);
+                break;
+        }
+    }
 }

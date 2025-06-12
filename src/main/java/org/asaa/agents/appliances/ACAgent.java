@@ -40,7 +40,7 @@ public final class ACAgent extends SmartApplianceAgent {
             }
         });
 
-        behaviours.add(new ModeAutoBehaviour(this));
+        behaviours.put("ModeAutoBehaviour", new ModeAutoBehaviour(this));
 
         addBehaviour(new MessageHandlerBehaviour(this));
 

@@ -1,10 +1,9 @@
 package org.asaa.agents.appliances;
 
 import jade.core.behaviours.WakerBehaviour;
-import jade.lang.acl.ACLMessage;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliances.MessageHandlerBehaviour;
+import org.asaa.behaviours.appliances.CoffeeMachineAgent.MessageHandlerBehaviour;
 import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
 import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 
@@ -20,26 +19,14 @@ public final class CoffeeMachineAgent extends SmartApplianceAgent {
 
         super.setup();
 
-        addBehaviour(new MessageHandlerBehaviour(this) {
-            @Override
-            protected void handleRequest(ACLMessage msg) {
-                if (!isWorking) {
-                    String replyWith = "req-" + System.currentTimeMillis();
-                    smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> makeCoffee());
-                    addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
-                } else {
-                    logger.warn("Currently making coffee, can not respond to request");
-                    agentCommunicationController.sendError(getName(), "Currently making coffee, can not respond to request");
-                }
-            }
-        });
+        addBehaviour(new MessageHandlerBehaviour(this));
 
         addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
 
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
-    private void makeCoffee() {
+    public void makeCoffee() {
         logger.info("Making coffee");
         makingCoffeeBehaviour = new WakerBehaviour(this, 10000) {
             @Override

@@ -25,6 +25,7 @@ public final class CoolingTask extends Task {
 
     @Override
     public void start() {
+        agent.getLogger().info("Cooling task started");
         super.start(agent);
         coolAndWait();
     }
@@ -34,6 +35,7 @@ public final class CoolingTask extends Task {
             return;
 
         agent.environmentService.getArea(agent.getAreaName()).setAttribute("temperature", (Double)agent.environmentService.getArea(agent.getAreaName()).getAttribute("temperature") - coolingRate);
+        agent.getLogger().info("Cooling task step: before - {}, after - {}", String.format("%.2f", agent.getCurrentTemperature()), String.format("%.2f", (Double)agent.environmentService.getArea(agent.getAreaName()).getAttribute("temperature")));
 
         agent.addBehaviour(new WakerBehaviour(agent, delayMillis) {
             @Override
@@ -50,14 +52,18 @@ public final class CoolingTask extends Task {
     @Override
     public void pause() {
         if (!paused) {
+            agent.getLogger().info("Cooling task paused");
             paused = true;
             agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active"));
+        } else {
+            agent.getLogger().warn("Cooling task was already paused");
         }
     }
 
     @Override
     public void resume() {
         if (paused) {
+            agent.getLogger().info("Cooling task resumed");
             paused = false;
             start();
         }
@@ -65,6 +71,7 @@ public final class CoolingTask extends Task {
 
     @Override
     public void interrupt() {
+        agent.getLogger().warn("Cooling task interrupted");
         interrupted = true;
         end(agent);
     }
@@ -72,6 +79,7 @@ public final class CoolingTask extends Task {
     @Override
     public void wake() {
         if (awaitingWake) {
+            agent.getLogger().info("Cooling task received wake call");
             awaitingWake = false;
             if (agent.getCurrentTemperature() > targetTemperature) {
                 coolAndWait();

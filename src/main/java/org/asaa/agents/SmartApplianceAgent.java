@@ -12,37 +12,29 @@ import org.asaa.tasks.Task;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Getter
 public abstract class SmartApplianceAgent extends PhysicalAgent {
     public final Map<String, Runnable> onPowerGrantedCallbacks = new ConcurrentHashMap<>();
 
     protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
     protected final List<Runnable> runnables = new ArrayList<>();
-    protected final List<Behaviour> behaviours = new ArrayList<>();
-    @Getter
+    protected final Map<String, Behaviour> behaviours = new HashMap<>();
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
     @Setter
-    @Getter
     protected Task currentTask = null;
 
     @Setter
-    @Getter
     private boolean cfpInProgress = false;
 
     @Setter
-    @Getter
     protected boolean isEnabled = false;
     @Setter
-    @Getter
     protected boolean isWorking = false;
     @Setter
-    @Getter
     protected boolean isInterruptible = true;
     @Setter
-    @Getter
     protected boolean isFreezable = false;
-    @Getter
     protected int idleDraw = 0;
-    @Getter
     protected int activeDraw = 0;
 
     protected final long awaitEnablePeriod = 1000;

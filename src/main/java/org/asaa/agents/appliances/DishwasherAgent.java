@@ -2,16 +2,21 @@ package org.asaa.agents.appliances;
 
 import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
+import lombok.Getter;
+import lombok.Setter;
 import org.asaa.agents.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliances.MessageHandlerBehaviour;
+import org.asaa.behaviours.appliances.DishwasherAgent.MessageHandlerBehaviour;
 import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
 import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 
+@Getter
 public final class DishwasherAgent extends SmartApplianceAgent {
     private final long fullWashTime = 30000;
+    @Setter
     private long remainingWashTime = fullWashTime;
     private long washStartTime;
+    @Setter
     private WakerBehaviour washBehaviour;
 
     @Override
@@ -35,60 +40,14 @@ public final class DishwasherAgent extends SmartApplianceAgent {
             });
         });
 
-        addBehaviour(new MessageHandlerBehaviour(this) {
-            @Override
-            protected void handleInform(ACLMessage msg) {
-                switch (msg.getConversationId()) {
-                    case "enable-callback":
-                        if (washBehaviour == null && remainingWashTime > 0) {
-                            String replyWith = "req-" + System.currentTimeMillis();
-                            smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performWash(true));
-                            addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                super.handleInform(msg);
-            }
-
-            @Override
-            protected void handleRequest(ACLMessage msg) {
-                if (!isWorking) {
-                    remainingWashTime = fullWashTime;
-                    String replyWith = "req-" + System.currentTimeMillis();
-                    smartApplianceAgent.onPowerGrantedCallbacks.put(replyWith, () -> performWash(false));
-                    addBehaviour(new RequestPowerBehaviour(smartApplianceAgent, activeDraw, priority, "enable-active", replyWith));
-                }
-            }
-
-            @Override
-            protected void handleAcceptProposal(ACLMessage msg) {
-                switch (msg.getConversationId()) {
-                    case "power-relief":
-                        if (washBehaviour != null) {
-                            long elapsed = System.currentTimeMillis() - washStartTime;
-                            remainingWashTime = Math.max(0, remainingWashTime - elapsed);
-                            myAgent.removeBehaviour(washBehaviour);
-                            washBehaviour = null;
-                            logger.info("Wash paused, {}ms left", remainingWashTime);
-                            super.handleAcceptProposal(msg);
-                        } else {
-                            super.handleAcceptProposal(msg);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        });
+        addBehaviour(new MessageHandlerBehaviour(this));
 
         addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
 
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
-    private void performWash(boolean isResumed) {
+    public void performWash(boolean isResumed) {
         if (remainingWashTime <= 0) {
             logger.info("Nothing to do: no remaining time");
             return;
