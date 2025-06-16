@@ -43,7 +43,7 @@ public final class LightTask extends Task {
             agent.addBehaviour(lightBehaviour);
         }
 
-        agent.getLogger().info("I am currently on{}", fullTime != 0 ? " for " + fullTime : " indefinitely");
+        agent.getLogger().info("I am currently on{}", fullTime != 0 ? " for " + fullTime + "ms" : " indefinitely");
     }
 
     @Override

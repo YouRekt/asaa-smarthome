@@ -52,6 +52,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
         // At 8AM perform Morning Schedule
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
+            env.setHumanLocation(null);
             oneShotSchedules.put("routine-morning", true);
             agent.getLogger().info("Morning schedule started, message sent to coordinator");
             Util.SendMessage(agent, "", agent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");

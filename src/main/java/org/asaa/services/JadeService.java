@@ -36,11 +36,17 @@ public class JadeService {
         runAgent(container, "Scheduler", "coordinators", "SchedulerAgent");
         runAgent(container, "Temperature Sensor", "sensors", "TemperatureSensorAgent", new Object[]{"kitchen"});
         runAgent(container, "Motion Sensor", "sensors", "MotionSensorAgent", new Object[]{"kitchen"});
-        runAgent(container, "Smart Lightbulb", "appliances", "SmartLightbulbAgent", new Object[]{"kitchen"});
-        runAgent(container, "AC", "appliances", "ACAgent", new Object[]{"kitchen"});
-        runAgent(container, "Fridge", "appliances", "FridgeAgent", new Object[]{"kitchen"});
-        runAgent(container, "Coffee", "appliances", "CoffeeMachineAgent", new Object[]{"kitchen"});
-        runAgent(container, "Dishwasher", "appliances", "DishwasherAgent", new Object[]{"kitchen"});
+        runAgent(container, "Smart Lightbulb 1", "appliances", "SmartLightbulbAgent", new Object[]{"kitchen"});
+        runAgent(container, "Smart Lightbulb 2", "appliances", "SmartLightbulbAgent", new Object[]{"bathroom"});
+        runAgent(container, "Smart Lightbulb 3", "appliances", "SmartLightbulbAgent", new Object[]{"bedroom 1"});
+        runAgent(container, "Smart Lightbulb 4", "appliances", "SmartLightbulbAgent", new Object[]{"bedroom 2"});
+        runAgent(container, "Smart Lightbulb 5", "appliances", "SmartLightbulbAgent", new Object[]{"bedroom 3"});
+        runAgent(container, "Smart Lightbulb 6", "appliances", "SmartLightbulbAgent", new Object[]{"before room"});
+
+//        runAgent(container, "AC", "appliances", "ACAgent", new Object[]{"kitchen"});
+//        runAgent(container, "Fridge", "appliances", "FridgeAgent", new Object[]{"kitchen"});
+//        runAgent(container, "Coffee", "appliances", "CoffeeMachineAgent", new Object[]{"kitchen"});
+//        runAgent(container, "Dishwasher", "appliances", "DishwasherAgent", new Object[]{"kitchen"});
     }
 
     public static void runGUI(final ContainerController mainContainer) {
