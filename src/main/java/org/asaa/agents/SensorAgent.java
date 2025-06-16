@@ -35,4 +35,10 @@ public abstract class SensorAgent extends PhysicalAgent {
     }
 
     protected abstract String defaultRequestReplyMessage();
+
+    public void trigger() {
+        handleTrigger();
+    }
+
+    protected abstract void handleTrigger();
 }

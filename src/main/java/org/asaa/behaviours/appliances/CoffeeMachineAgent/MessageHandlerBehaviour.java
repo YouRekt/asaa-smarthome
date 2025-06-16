@@ -18,7 +18,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
             case "make-coffee-task":
             case "action-morning":
                 if (agent.getCurrentTask() == null) {
-                    agent.requestStartTask(new MakeCoffeeTask(agent));
+                    new MakeCoffeeTask(agent).start();
                 } else {
                     agent.getLogger().warn("{}@request: Make Coffee Task already running", msg.getConversationId());
                     agent.agentCommunicationController.sendError(agent.getName(), msg.getConversationId() + "@request: Make Coffee Task already running");

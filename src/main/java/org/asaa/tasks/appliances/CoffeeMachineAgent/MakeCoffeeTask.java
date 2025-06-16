@@ -9,15 +9,14 @@ public final class MakeCoffeeTask extends Task {
     private final long duration = 10000;
 
     public MakeCoffeeTask(CoffeeMachineAgent agent) {
+        super(agent, false, false);
+
         this.agent = agent;
-        resumable = false;
-        interruptible = false;
     }
 
     @Override
-    public void start() {
-        agent.getLogger().info("MakeCoffeeTask started");
-        super.start(agent);
+    protected void onPowerGranted() {
+        super.onPowerGranted();
         makeCoffee();
     }
 
@@ -27,29 +26,8 @@ public final class MakeCoffeeTask extends Task {
             @Override
             protected void onWake() {
                 agent.getLogger().info("Coffee made! Enjoy");
-                agent.environmentService.addPerformedTask();
-                end(agent);
+                end(true);
             }
         });
-    }
-
-    @Override
-    public void pause() {
-        agent.getLogger().warn("MakeCoffeeTask cannot be paused!");
-    }
-
-    @Override
-    public void resume() {
-
-    }
-
-    @Override
-    public void interrupt() {
-        agent.getLogger().warn("MakeCoffeeTask cannot be interrupted!");
-    }
-
-    @Override
-    public void wake() {
-        agent.getLogger().warn("MakeCoffeeTask will never await wake!");
     }
 }

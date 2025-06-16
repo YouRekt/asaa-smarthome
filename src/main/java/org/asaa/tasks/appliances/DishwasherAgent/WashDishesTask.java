@@ -15,20 +15,18 @@ public class WashDishesTask extends Task {
     private long washStartTime;
 
     public WashDishesTask(DishwasherAgent agent, long updateDelay, double noninterruptibleStartPercent, double noninterruptibleEndPercent, long fullWashTime) {
+        super(agent, true, false);
         this.agent = agent;
         this.updateDelay = updateDelay;
         this.noninterruptibleStartTime = (long)(noninterruptibleStartPercent * fullWashTime);
         this.noninterruptibleEndTime = (long)(noninterruptibleEndPercent * fullWashTime);
         this.fullWashTime = fullWashTime;
         remainingWashTime = fullWashTime;
-        resumable = true;
-        interruptible = true;
     }
 
     @Override
-    public void start() {
-        agent.getLogger().info("WashDishesTask started");
-        super.start(agent);
+    protected void onPowerGranted() {
+        super.onPowerGranted();
         performWash();
     }
 
@@ -47,15 +45,14 @@ public class WashDishesTask extends Task {
 //                agent.getLogger().info("Wash Dishes Task: {}ms remain", remainingWashTime);
                 if (remainingWashTime <= 0) {
                     agent.getLogger().info("Wash complete!");
-                    agent.environmentService.addPerformedTask();
-                    end(agent);
+                    end(true);
                     agent.removeBehaviour(this);
-                } else if (remainingWashTime <= noninterruptibleStartTime && remainingWashTime >= noninterruptibleEndTime && interruptible) {
-                    agent.getLogger().info("Wash Dishes Task entering an uninterruptible phase!");
-                    interruptible = false;
-                } else if (remainingWashTime < noninterruptibleEndTime && !interruptible) {
-                    agent.getLogger().info("Dishwasher may be interrupted again");
-                    interruptible = true;
+                } else if (remainingWashTime <= noninterruptibleStartTime && remainingWashTime >= noninterruptibleEndTime && resumable) {
+                    agent.getLogger().info("Wash Dishes Task entering an unpausable phase!");
+                    resumable = false;
+                } else if (remainingWashTime < noninterruptibleEndTime && !resumable) {
+                    agent.getLogger().info("Dishwasher may be paused again");
+                    resumable = true;
                 }
             }
         };
@@ -65,40 +62,12 @@ public class WashDishesTask extends Task {
 
     @Override
     public void pause() {
-        if (!interruptible) {
-            agent.getLogger().error("WashDishesTask tried to call pause when interruptible is false");
-        }
         if (!paused && washBehaviour != null) {
-            paused = true;
             remainingWashTime = Math.max(0, fullWashTime - System.currentTimeMillis() + washStartTime);
             agent.removeBehaviour(washBehaviour);
             washBehaviour = null;
             agent.getLogger().info("Wash paused, {}ms left", remainingWashTime);
-        } else {
-            agent.getLogger().warn("Wash Dishes Task was already paused");
         }
-    }
-
-    @Override
-    public void resume() {
-        if (paused) {
-            paused = false;
-            agent.requestStartTask(this);
-        }
-    }
-
-    @Override
-    public void interrupt() {
-        if (!interruptible) {
-            agent.getLogger().error("WashDishesTask tried to call interrupt when interruptible is false");
-        }
-        agent.getLogger().warn("Wash Dishes Task interrupted");
-        interrupted = true;
-        end(agent);
-    }
-
-    @Override
-    public void wake() {
-
+        super.pause();
     }
 }

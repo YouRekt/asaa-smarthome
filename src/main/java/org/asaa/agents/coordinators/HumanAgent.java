@@ -25,9 +25,4 @@ public final class HumanAgent extends PhysicalAgent {
             }
         });
     }
-
-    @Override
-    protected void handleTrigger() {
-        logger.info("HumanAgent handleTrigger");
-    }
 }

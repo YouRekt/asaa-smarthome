@@ -26,7 +26,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
         runnables.add(() -> this.addBehaviour(new WakerBehaviour(this, 5000) {
             @Override
             protected void onWake() {
-                requestStartTask(new WashDishesTask((DishwasherAgent)myAgent, updateDelay, noninterruptibleStartPercent, noninterruptibleEndPercent, fullWashTime));
+                new WashDishesTask((DishwasherAgent)myAgent, updateDelay, noninterruptibleStartPercent, noninterruptibleEndPercent, fullWashTime).start();
             }
         }));
 

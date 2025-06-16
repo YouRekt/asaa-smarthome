@@ -17,7 +17,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
         switch (msg.getConversationId()) {
             case "cooling-task":
                 if (agent.getCurrentTask() == null) {
-                    agent.requestStartTask(new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()));
+                    new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()).start();
                 } else {
                     agent.getLogger().warn("cooling-task@inform: Cooling Task already running");
                     agent.agentCommunicationController.sendError(agent.getName(), "cooling-task@inform: Cooling Task already running");
@@ -26,7 +26,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
             case "def-reply":
                 agent.setCurrentTemperature(Double.parseDouble(msg.getContent()));
                 if (agent.getCurrentTemperature() > agent.getTargetTemperature() && agent.getCurrentTask() == null) {
-                    agent.requestStartTask(new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()));
+                    new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()).start();
                 } else if (agent.getCurrentTask() != null) {
                     agent.getCurrentTask().wake();
                 }
