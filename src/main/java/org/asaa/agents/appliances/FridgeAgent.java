@@ -2,9 +2,7 @@ package org.asaa.agents.appliances;
 
 import lombok.Getter;
 import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
 import org.asaa.behaviours.appliances.FridgeAgent.MessageHandlerBehaviour;
-import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 import org.asaa.util.ItemInfo;
 
 import java.util.HashMap;
@@ -16,19 +14,15 @@ public final class FridgeAgent extends SmartApplianceAgent {
 
     @Override
     protected void setup() {
-        idleDraw = 200; // We assume that the fridge is always fully on or off
+        idleDraw = 200;
         activeDraw = 0;
         priority = 999;
 
-        super.setup();
-
         runnables.add(this::initializeFridgeItems);
 
+        super.setup();
+
         addBehaviour(new MessageHandlerBehaviour(this));
-
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-
-        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     private void initializeFridgeItems() {

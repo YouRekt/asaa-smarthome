@@ -5,6 +5,8 @@ import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
+import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
+import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 import org.asaa.tasks.Task;
 
 import java.util.*;
@@ -32,6 +34,15 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected int activeDraw = 0;
 
     protected final long awaitEnablePeriod = 1000;
+
+    @Override
+    protected void setup() {
+        super.setup();
+
+        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+
+        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
+    }
 
     public final void subscribeSensor(AID aid, String sensorType) {
         subscribedSensors.computeIfAbsent(sensorType, k -> new ArrayList<>()).add(aid);
