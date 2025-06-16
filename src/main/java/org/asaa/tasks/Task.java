@@ -46,11 +46,11 @@ public abstract class Task {
         agent.setCurrentTask(this);
     }
 
-    public void pause() {
+    public void pause(boolean isCfpCall) {
         if (resumable && !paused) {
             agent.getLogger().info("{} paused", this.getClass().getSimpleName());
             paused = true;
-            agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active-cfp"));
+            agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active" + (isCfpCall ? "-cfp" : "")));
         } else {
             agent.getLogger().warn("{} was already paused, or cannot be paused", this.getClass().getSimpleName());
         }

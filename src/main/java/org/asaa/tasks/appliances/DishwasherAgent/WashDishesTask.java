@@ -61,13 +61,13 @@ public class WashDishesTask extends Task {
     }
 
     @Override
-    public void pause() {
+    public void pause(boolean isCfpCall) {
         if (!paused && washBehaviour != null) {
             remainingWashTime = Math.max(0, fullWashTime - System.currentTimeMillis() + washStartTime);
             agent.removeBehaviour(washBehaviour);
             washBehaviour = null;
             agent.getLogger().info("Wash paused, {}ms left", remainingWashTime);
         }
-        super.pause();
+        super.pause(isCfpCall);
     }
 }

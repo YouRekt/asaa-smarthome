@@ -37,7 +37,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         switch (msg.getConversationId()) {
             case "pause-task":
                 if (agent.getCurrentTask() != null) {
-                    agent.getCurrentTask().pause();
+                    agent.getCurrentTask().pause(false);
                 }
                 break;
             case "resume-task":
@@ -160,7 +160,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
             case "power-relief":
                 int freed = Integer.parseInt(msg.getContent());
                 if (agent.getCurrentTask() != null && agent.getCurrentTask().isResumable()) {
-                    agent.getCurrentTask().pause();
+                    agent.getCurrentTask().pause(true);
                 } else {
                     agent.addBehaviour(new RelinquishPowerBehaviour(agent, freed, "disable-passive-cfp"));
                 }
