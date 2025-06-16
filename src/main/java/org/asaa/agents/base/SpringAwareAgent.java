@@ -1,4 +1,4 @@
-package org.asaa.agents;
+package org.asaa.agents.base;
 
 import jade.core.AID;
 import jade.core.Agent;

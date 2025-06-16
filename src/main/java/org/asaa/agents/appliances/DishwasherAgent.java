@@ -2,7 +2,7 @@ package org.asaa.agents.appliances;
 
 import jade.core.behaviours.WakerBehaviour;
 import lombok.Getter;
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.DishwasherAgent.MessageHandlerBehaviour;
 import org.asaa.tasks.appliances.DishwasherAgent.WashDishesTask;
 

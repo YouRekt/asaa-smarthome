@@ -1,6 +1,6 @@
 package org.asaa.agents.appliances;
 
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.CoffeeMachineAgent.MessageHandlerBehaviour;
 
 public final class CoffeeMachineAgent extends SmartApplianceAgent {

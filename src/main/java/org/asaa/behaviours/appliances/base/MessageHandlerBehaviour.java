@@ -1,9 +1,9 @@
-package org.asaa.behaviours.appliances;
+package org.asaa.behaviours.appliances.base;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.BaseMessageHandlerBehaviour;
+import org.asaa.agents.base.SmartApplianceAgent;
+import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
 
 public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
@@ -35,6 +35,9 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     @Override
     protected void handleRequest(ACLMessage msg) {
         switch (msg.getConversationId()) {
+            case "toggle":
+                agent.handleToggle(msg.getContent());
+                break;
             case "pause-task":
                 if (agent.getCurrentTask() != null) {
                     agent.getCurrentTask().pause(false);

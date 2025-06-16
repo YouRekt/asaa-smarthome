@@ -4,7 +4,7 @@ import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.ACAgent.MessageHandlerBehaviour;
 import org.asaa.behaviours.appliances.ACAgent.ModeAutoBehaviour;
 

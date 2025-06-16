@@ -1,8 +1,8 @@
 package org.asaa.behaviours.sensor;
 
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SensorAgent;
-import org.asaa.behaviours.BaseMessageHandlerBehaviour;
+import org.asaa.agents.base.SensorAgent;
+import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 
 public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected final SensorAgent agent;

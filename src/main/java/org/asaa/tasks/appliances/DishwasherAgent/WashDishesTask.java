@@ -4,7 +4,7 @@ import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.appliances.DishwasherAgent;
 import org.asaa.tasks.Task;
 
-public class WashDishesTask extends Task {
+public final class WashDishesTask extends Task {
     private final DishwasherAgent agent;
     private TickerBehaviour washBehaviour;
     private final long updateDelay;
@@ -21,19 +21,14 @@ public class WashDishesTask extends Task {
         this.noninterruptibleStartTime = (long)(noninterruptibleStartPercent * fullWashTime);
         this.noninterruptibleEndTime = (long)(noninterruptibleEndPercent * fullWashTime);
         this.fullWashTime = fullWashTime;
-        remainingWashTime = fullWashTime;
+        this.remainingWashTime = fullWashTime;
     }
 
     @Override
-    protected void onPowerGranted() {
-        super.onPowerGranted();
-        performWash();
-    }
-
-    public void performWash() {
+    protected void execute() {
         if (remainingWashTime <= 0) {
             agent.getLogger().info("Nothing to do: no remaining time");
-            return;
+            end(true);
         }
         washStartTime = System.currentTimeMillis();
         fullWashTime = remainingWashTime;
@@ -62,7 +57,7 @@ public class WashDishesTask extends Task {
 
     @Override
     public void pause(boolean isCfpCall) {
-        if (!paused && washBehaviour != null) {
+        if (!paused && resumable && washBehaviour != null) {
             remainingWashTime = Math.max(0, fullWashTime - System.currentTimeMillis() + washStartTime);
             agent.removeBehaviour(washBehaviour);
             washBehaviour = null;

@@ -2,9 +2,9 @@ package org.asaa.tasks;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
-import org.asaa.behaviours.appliances.RequestPowerBehaviour;
+import org.asaa.agents.base.SmartApplianceAgent;
+import org.asaa.behaviours.appliances.base.RelinquishPowerBehaviour;
+import org.asaa.behaviours.appliances.base.RequestPowerBehaviour;
 
 /**
  * Simple abstract class that is the base of the task that a SmartApplianceAgent can be performing
@@ -44,7 +44,10 @@ public abstract class Task {
     protected void onPowerGranted() {
         agent.getLogger().info("{} has been granted power", this.getClass().getSimpleName());
         agent.setCurrentTask(this);
+        execute();
     }
+
+    protected abstract void execute();
 
     public void pause(boolean isCfpCall) {
         if (resumable && !paused) {
@@ -52,7 +55,7 @@ public abstract class Task {
             paused = true;
             agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active" + (isCfpCall ? "-cfp" : "")));
         } else {
-            agent.getLogger().warn("{} was already paused, or cannot be paused", this.getClass().getSimpleName());
+            agent.getLogger().warn("{} was already, or can not be, paused", this.getClass().getSimpleName());
         }
     }
 
@@ -69,7 +72,7 @@ public abstract class Task {
             interrupted = true;
             end(false);
         } else {
-            agent.getLogger().warn("{} has already been, or cannot be interrupted", this.getClass().getSimpleName());
+            agent.getLogger().warn("{} has already been, or can not be, interrupted", this.getClass().getSimpleName());
         }
     }
 

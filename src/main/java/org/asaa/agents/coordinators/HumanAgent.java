@@ -1,7 +1,7 @@
 package org.asaa.agents.coordinators;
 
 import jade.core.behaviours.TickerBehaviour;
-import org.asaa.agents.PhysicalAgent;
+import org.asaa.agents.base.PhysicalAgent;
 import org.asaa.behaviours.human.MessageHandlerBehaviour;
 import org.asaa.services.HumanCommunicationService;
 import org.asaa.util.SpringContext;

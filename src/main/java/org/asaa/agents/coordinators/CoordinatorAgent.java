@@ -3,13 +3,15 @@ package org.asaa.agents.coordinators;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
-import org.asaa.agents.SpringAwareAgent;
+import org.asaa.agents.base.SpringAwareAgent;
 import org.asaa.behaviours.coordinators.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinators.MessageHandlerBehaviour;
 import org.asaa.environment.Area;
+import org.asaa.util.Util;
 import org.slf4j.MDC;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 public final class CoordinatorAgent extends SpringAwareAgent {
@@ -88,6 +90,16 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         receivers.forEach(msg::addReceiver);
         msg.setConversationId("action-morning");
         sendMessage(msg);
+    }
+
+    public void toggleRandomLight(String message) {
+        Area area = environmentService.getArea(message);
+        if (area == null) {
+            getLogger().warn("toggleRandomLight | Area was null");
+            return;
+        }
+        AID selectedBulb = Util.getRandomEntry(physicalAgents.get(area).get("SmartLightbulbAgent"));
+        Util.SendMessage(this, Long.toString(ThreadLocalRandom.current().nextLong(3000L, 150001L)), selectedBulb, ACLMessage.REQUEST, "toggle");
     }
 }
 

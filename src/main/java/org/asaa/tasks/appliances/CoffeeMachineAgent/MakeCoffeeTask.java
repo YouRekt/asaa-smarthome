@@ -15,12 +15,7 @@ public final class MakeCoffeeTask extends Task {
     }
 
     @Override
-    protected void onPowerGranted() {
-        super.onPowerGranted();
-        makeCoffee();
-    }
-
-    private void makeCoffee() {
+    protected void execute() {
         agent.getLogger().info("Making coffee");
         agent.addBehaviour(new WakerBehaviour(agent, duration) {
             @Override

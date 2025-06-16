@@ -20,12 +20,7 @@ public final class CoolingTask extends Task {
     }
 
     @Override
-    protected void onPowerGranted() {
-        super.onPowerGranted();
-        coolAndWait();
-    }
-
-    private void coolAndWait() {
+    protected void execute() {
         if (paused || interrupted)
             return;
 
@@ -52,7 +47,7 @@ public final class CoolingTask extends Task {
             agent.getLogger().info("Cooling task received wake call");
             awaitingWake = false;
             if (agent.getCurrentTemperature() > targetTemperature) {
-                coolAndWait();
+                execute();
             } else {
                 end(true);
             }

@@ -1,10 +1,10 @@
-package org.asaa.behaviours;
+package org.asaa.behaviours.base;
 
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SpringAwareAgent;
+import org.asaa.agents.base.SpringAwareAgent;
 import org.asaa.util.Util;
 
 import java.util.Spliterator;

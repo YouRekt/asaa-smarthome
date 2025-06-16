@@ -1,7 +1,7 @@
 package org.asaa.agents.appliances;
 
 import lombok.Getter;
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.FridgeAgent.MessageHandlerBehaviour;
 import org.asaa.util.ItemInfo;
 

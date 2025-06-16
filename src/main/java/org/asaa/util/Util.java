@@ -2,7 +2,12 @@ package org.asaa.util;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SpringAwareAgent;
+import org.asaa.agents.base.SpringAwareAgent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class Util {
     public static void SendMessage(SpringAwareAgent agent, String content, AID receiver, int performative, String conversationId) {
@@ -68,5 +73,22 @@ public class Util {
             case "PROPAGATE" -> ACLMessage.PROPAGATE;
             default -> ACLMessage.UNKNOWN;
         };
+    }
+
+    public static <K, V> Map.Entry<K, V> getRandomEntry(Map<K, V> map) {
+        if (map.isEmpty())
+            return null;
+
+        List<Map.Entry<K, V>> entries = new ArrayList<>(map.entrySet());
+        int randomIndex = new Random().nextInt(entries.size());
+        return entries.get(randomIndex);
+    }
+
+    public static <T> T getRandomEntry(List<T> list) {
+        if (list == null || list.isEmpty())
+            return null;
+
+        int randomIndex = new Random().nextInt(list.size());
+        return list.get(randomIndex);
     }
 }

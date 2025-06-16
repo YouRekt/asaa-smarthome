@@ -1,12 +1,12 @@
-package org.asaa.agents;
+package org.asaa.agents.base;
 
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliances.RequestPowerBehaviour;
+import org.asaa.behaviours.appliances.base.AwaitEnableBehaviour;
+import org.asaa.behaviours.appliances.base.RequestPowerBehaviour;
 import org.asaa.tasks.Task;
 
 import java.util.*;
@@ -52,4 +52,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
     }
 
+    public void handleToggle(String message) {
+        logger.warn("I have been toggled, but I do not have a handleToggle defined");
+    }
 }

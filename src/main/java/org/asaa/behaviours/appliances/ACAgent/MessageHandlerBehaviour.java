@@ -4,7 +4,7 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.ACAgent;
 import org.asaa.tasks.appliances.ACAgent.CoolingTask;
 
-public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.MessageHandlerBehaviour {
+public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final ACAgent agent;
 
     public MessageHandlerBehaviour(ACAgent agent) {
