@@ -2,34 +2,24 @@ package org.asaa.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ConfigDTO {
-    private Integer maxPowerCapacity;
-    private Integer delta;
-    private Integer credits;
-    private LocalDateTime startTime;
-    private List<PriceEntry> unitPrices;
-    private List<PriceEntry> batchSizes;
-    private List<AreaAttributesEntry> areaAttributes;
+    private List<AreaEntry> areas;
+    private List<AgentEntry> agents;
 
     @Data
-    public static class PriceEntry {
+    public static class AreaEntry {
         private String name;
-        private Integer value;
+        private Map<String, Object> attributes;
     }
 
     @Data
-    public static class AreaAttributesEntry {
+    public static class AgentEntry {
+        private String aid;
         private String area;
-        private List<Attribute> attributes;
-    }
-
-    @Data
-    public static class Attribute {
-        private String key;
-        private Object value;
+        private String name;
     }
 }

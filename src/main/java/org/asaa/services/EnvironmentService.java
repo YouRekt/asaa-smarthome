@@ -70,8 +70,8 @@ public class EnvironmentService {
 
     public void startSimulation() {
         if (future != null && future.isDone()) return;
+        simulationTime = simulationStartTime;
         if (!configProvided) {
-            simulationTime = simulationStartTime;
             Area kitchen = new Area("kitchen");
             kitchen.setAttribute("temperature", 21.0);
             addArea("kitchen", kitchen);
@@ -93,10 +93,10 @@ public class EnvironmentService {
             Area beforeRoom = new Area("before room");
             beforeRoom.setAttribute("temperature", 19.0);
             addArea("before room", beforeRoom);
-            humanLocation = kitchen;
-            initializePriceMaps();
-            initializeCyclicEvents();
         }
+        humanLocation = areas.entrySet().iterator().next().getValue();
+        initializePriceMaps();
+        initializeCyclicEvents();
         executor = Executors.newSingleThreadScheduledExecutor();
         future = executor.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
     }
