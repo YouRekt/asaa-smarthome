@@ -4,8 +4,8 @@ public record AgentStatusDTO(
         String aid,
         Boolean isEnabled,
         Boolean isWorking,
-        Boolean isInterruptible,
-        Boolean isFreezable,
+        Boolean isTaskInterruptible,
+        Boolean isTaskResumable,
         Integer activeDraw,
         Integer idleDraw,
         Integer priority

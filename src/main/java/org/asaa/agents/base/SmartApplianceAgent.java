@@ -49,7 +49,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     }
 
     public void updateStatus() {
-        agentCommunicationController.setAgentStatus(getName(),isEnabled,isWorking, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
+        agentCommunicationController.setAgentStatus(getLocalName(),isEnabled,isWorking, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
     }
 
     public void handleToggle(String message) {
