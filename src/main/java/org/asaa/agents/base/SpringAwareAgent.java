@@ -55,12 +55,14 @@ public abstract class SpringAwareAgent extends Agent {
         if (msg.getContent() == null)
             msg.setContent("");
         send(msg);
-        agentCommunicationController.sendMessage(getName(), String.format("[Out] [%s] -> [%s <%s>] -> [%s]%s",
-                getLocalName(),
+        agentCommunicationController.sendMessage(
+                msg.getSender().getLocalName(),
+                StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Util.IteratorAdapter<AID>(msg.getAllReceiver(), AID.class), Spliterator.ORDERED), false).map(AID::getLocalName).collect(Collectors.toList()),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),
                 msg.getConversationId(),
-                StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
-                msg.getContent() == null ? "" : String.format(": %s", msg.getContent())));
+                msg.getContent(),
+                true
+                );
     }
 
     public final void register(String areaName) {

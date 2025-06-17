@@ -1,15 +1,14 @@
 package org.asaa.controllers;
 
-import org.asaa.dto.ACLMessageDTO;
-import org.asaa.dto.AgentMessageDTO;
-import org.asaa.dto.AgentStatusDTO;
-import org.asaa.dto.HumanLocationDTO;
+import org.asaa.dto.*;
 import org.asaa.services.EnvironmentService;
 import org.asaa.services.HumanCommunicationService;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
+
+import java.util.List;
 
 @Controller
 public class AgentCommunicationController {
@@ -23,15 +22,15 @@ public class AgentCommunicationController {
         this.humanCommunicationService = humanCommunicationService;
     }
 
-    public void sendMessage(String agentName, String message) {
-        AgentMessageDTO dto = new AgentMessageDTO(agentName, environmentService.getSimulationTimeString(), message);
+    public void sendMessage(String sender, List<String> receiver, String performative, String conversationId, String content, boolean outgoing) {
+        AgentMessageDTO dto = new AgentMessageDTO(environmentService.getSimulationTimeString(), sender, receiver, performative, conversationId, content, outgoing);
 
         messageSendingOperations.convertAndSend("/topic/agent-message", dto);
     }
 
-    public void sendError(String agentName, String message) {
+    public void sendError(String sender, String message) {
         environmentService.addPerformedTaskError();
-        AgentMessageDTO dto = new AgentMessageDTO(agentName, environmentService.getSimulationTimeString(), message);
+        AgentErrorDTO dto = new AgentErrorDTO(environmentService.getSimulationTimeString(), sender, message);
 
         messageSendingOperations.convertAndSend("/topic/agent-error", dto);
     }

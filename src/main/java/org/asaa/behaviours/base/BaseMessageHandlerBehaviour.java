@@ -7,6 +7,7 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.base.SpringAwareAgent;
 import org.asaa.util.Util;
 
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -20,13 +21,13 @@ public abstract class BaseMessageHandlerBehaviour extends CyclicBehaviour {
 
     public void processMsg(ACLMessage msg) {
         ((SpringAwareAgent)myAgent).agentCommunicationController.sendMessage(
-                myAgent.getLocalName(),
-                String.format("[In] [%s] -> [%s <%s>] -> [%s]%s",
                 msg.getSender().getLocalName(),
+                StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Util.IteratorAdapter<AID>(msg.getAllReceiver(), AID.class), Spliterator.ORDERED), false).map(AID::getLocalName).collect(Collectors.toList()),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),
                 msg.getConversationId(),
-                StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
-                msg.getContent() == null ? "" : String.format(": %s", msg.getContent())));
+                msg.getContent() == null ? "" : msg.getContent(),
+                false
+                );
 
         switch (msg.getPerformative()) {
             case ACLMessage.ACCEPT_PROPOSAL -> handleAcceptProposal(msg);
