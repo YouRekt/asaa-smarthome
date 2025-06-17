@@ -121,25 +121,30 @@ type AID = string;
 
 export type Message = {
 	sender: AID;
-	receivers: AID[];
-	content?: string;
+	receiver: AID[];
+	content: string;
 	timestamp: string;
 	performative: Performative;
 	conversationId: string;
+	outgoing: boolean;
 };
 
 export const getIncomingMessages = (
 	agentAid: AID,
 	messages: Message[]
 ): Message[] => {
-	return messages.filter((message) => message.receivers.includes(agentAid));
+	return messages.filter(
+		(message) => message.receiver.includes(agentAid) && !message.outgoing
+	);
 };
 
 export const getOutgoingMessages = (
 	agentAid: AID,
 	messages: Message[]
 ): Message[] => {
-	return messages.filter((message) => message.sender === agentAid);
+	return messages.filter(
+		(message) => message.sender === agentAid && message.outgoing
+	);
 };
 
 export type AgentStatus = "enabled" | "working" | "disabled";

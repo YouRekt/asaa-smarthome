@@ -25,7 +25,7 @@ const Message = ({
 			case "INFORM":
 				return "bg-blue-600/10 text-blue-800 dark:text-blue-600";
 			case "REQUEST":
-				return "bg-orange-600/10 text-blue-800 dark:text-blue-600";
+				return "bg-orange-600/10 text-orange-800 dark:text-orange-600";
 			case "CFP":
 				return "bg-purple-600/10 text-purple-800 dark:text-purple-600";
 			case "AGREE":
@@ -43,11 +43,9 @@ const Message = ({
 		}
 	};
 
-	// Determine if this is an incoming or outgoing message for the viewer
-	const isOutgoing = viewerAgent ? message.sender === viewerAgent.aid : false;
-	const isIncoming = viewerAgent
-		? message.receivers.includes(viewerAgent.aid)
-		: false;
+	// Use the outgoing flag from the message
+	const isOutgoing = message.outgoing;
+	const isIncoming = !message.outgoing;
 
 	// Get border color based on message direction
 	const getBorderColor = () => {
@@ -107,7 +105,7 @@ const Message = ({
 								<>
 									<span className="font-medium">To:</span>
 									<div className="flex gap-1 flex-wrap">
-										{message.receivers.map(
+										{message.receiver.map(
 											(receiver, idx) => (
 												<Badge
 													key={idx}
@@ -156,8 +154,12 @@ const Message = ({
 				Conversation: {message.conversationId}
 			</div>
 
-			{/* Message content */}
-			<p className="text-sm">{message.content}</p>
+			{/* Message content - handle empty string */}
+			<p className="text-sm">
+				{message.content || (
+					<em className="text-muted-foreground">No content</em>
+				)}
+			</p>
 		</div>
 	);
 };
