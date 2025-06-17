@@ -4,6 +4,7 @@ import java.util.List;
 
 public record AgentMessageDTO(
         String timestamp,
+        String dtoSender,
         String sender,
         List<String> receiver,
         String performative,

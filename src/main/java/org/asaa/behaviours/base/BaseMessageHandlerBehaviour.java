@@ -21,6 +21,7 @@ public abstract class BaseMessageHandlerBehaviour extends CyclicBehaviour {
 
     public void processMsg(ACLMessage msg) {
         ((SpringAwareAgent)myAgent).agentCommunicationController.sendMessage(
+                myAgent.getLocalName(),
                 msg.getSender().getLocalName(),
                 StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Util.IteratorAdapter<AID>(msg.getAllReceiver(), AID.class), Spliterator.ORDERED), false).map(AID::getLocalName).collect(Collectors.toList()),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),

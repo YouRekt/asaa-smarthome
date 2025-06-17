@@ -22,8 +22,8 @@ public class AgentCommunicationController {
         this.humanCommunicationService = humanCommunicationService;
     }
 
-    public void sendMessage(String sender, List<String> receiver, String performative, String conversationId, String content, boolean outgoing) {
-        AgentMessageDTO dto = new AgentMessageDTO(environmentService.getSimulationTimeString(), sender, receiver, performative, conversationId, content, outgoing);
+    public void sendMessage(String currentAgent, String sender, List<String> receiver, String performative, String conversationId, String content, boolean outgoing) {
+        AgentMessageDTO dto = new AgentMessageDTO(environmentService.getSimulationTimeString(), currentAgent, sender, receiver, performative, conversationId, content, outgoing);
 
         messageSendingOperations.convertAndSend("/topic/agent-message", dto);
     }

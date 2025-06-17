@@ -56,6 +56,7 @@ public abstract class SpringAwareAgent extends Agent {
             msg.setContent("");
         send(msg);
         agentCommunicationController.sendMessage(
+                getLocalName(),
                 msg.getSender().getLocalName(),
                 StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Util.IteratorAdapter<AID>(msg.getAllReceiver(), AID.class), Spliterator.ORDERED), false).map(AID::getLocalName).collect(Collectors.toList()),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),
