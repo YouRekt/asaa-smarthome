@@ -1,7 +1,7 @@
 package org.asaa.agents.sensors;
 
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SensorAgent;
+import org.asaa.agents.base.SensorAgent;
 
 public final class TemperatureSensorAgent extends SensorAgent {
 

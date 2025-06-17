@@ -2,7 +2,7 @@ package org.asaa.agents.coordinators;
 
 import jade.core.AID;
 import lombok.Getter;
-import org.asaa.agents.SpringAwareAgent;
+import org.asaa.agents.base.SpringAwareAgent;
 import org.asaa.behaviours.scheduler.ScheduleLoopBehaviour;
 import org.slf4j.MDC;
 

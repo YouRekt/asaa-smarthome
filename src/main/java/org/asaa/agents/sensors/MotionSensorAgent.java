@@ -2,7 +2,7 @@ package org.asaa.agents.sensors;
 
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SensorAgent;
+import org.asaa.agents.base.SensorAgent;
 
 public final class MotionSensorAgent extends SensorAgent {
     private boolean previousState;

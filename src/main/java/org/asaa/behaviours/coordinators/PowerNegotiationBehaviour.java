@@ -22,6 +22,15 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
     private int cfpRelievedPower = 0;
     private boolean cfpProposalsProcessed = false;
 
+    private final WakerBehaviour cfpTimeoutBehaviour = new WakerBehaviour(myAgent, cfpResponseTimeout) {
+        @Override
+        protected void onWake() {
+            agent.getLogger().warn("Reply-by for cfp expired, received {} responses, sent {}", cfpReceivedResponses, cfpSentProposals);
+            if (cfpProposalsProcessed) cfpRespondToSender();
+            else cfpProcessProposals();
+        }
+    };
+
     public PowerNegotiationBehaviour(CoordinatorAgent agent, ACLMessage cfpMessage, int cfpShortage, int cfpRequiredPower, int cfpSenderPriority) {
         super(agent);
 
@@ -43,18 +52,15 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         agent.send(cfp);
 
         agent.addBehaviour(cfpTimeoutBehaviour);
-    }    private final WakerBehaviour cfpTimeoutBehaviour = new WakerBehaviour(myAgent, cfpResponseTimeout) {
-        @Override
-        protected void onWake() {
-            agent.getLogger().warn("Reply-by for cfp expired, received {} responses, sent {}", cfpReceivedResponses, cfpSentProposals);
-            if (cfpProposalsProcessed) cfpRespondToSender();
-            else cfpProcessProposals();
-        }
-    };
+    }
 
     @Override
     public void action() {
-        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null && msg.getConversationId().equals("power-relief") || msg.getConversationId().equals("disable-passive-cfp") || msg.getConversationId().equals("disable-active-cfp"));
+        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null
+                &&(
+                       msg.getConversationId().equals("power-relief")
+                    || msg.getConversationId().equals("disable-passive-cfp")
+                    || msg.getConversationId().equals("disable-active-cfp")));
 
         final ACLMessage msg = agent.receive(mt);
 

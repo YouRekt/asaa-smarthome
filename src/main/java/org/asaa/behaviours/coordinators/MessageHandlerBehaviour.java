@@ -3,7 +3,7 @@ package org.asaa.behaviours.coordinators;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import org.asaa.agents.coordinators.CoordinatorAgent;
-import org.asaa.behaviours.BaseMessageHandlerBehaviour;
+import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,10 +18,10 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
 
     @Override
     public void action() {
-        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null &&
-                !msg.getConversationId().equals("power-relief") &&
-                !msg.getConversationId().equals("disable-passive-cfp") &&
-                !msg.getConversationId().equals("disable-active-cfp"));
+        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null
+                && !msg.getConversationId().equals("power-relief")
+                && !msg.getConversationId().equals("disable-passive-cfp")
+                && !msg.getConversationId().equals("disable-active-cfp"));
 
         final ACLMessage msg = agent.receive(mt);
         if (msg != null) {
@@ -120,6 +120,9 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
                 break;
             case "routine-morning":
                 agent.performMorningRoutine();
+                break;
+            case "human-not-home-lights":
+                agent.toggleRandomLight(msg.getContent());
                 break;
             default:
                 break;

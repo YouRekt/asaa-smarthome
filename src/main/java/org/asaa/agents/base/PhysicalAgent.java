@@ -1,4 +1,4 @@
-package org.asaa.agents;
+package org.asaa.agents.base;
 
 import jade.core.AID;
 import lombok.Getter;
@@ -47,11 +47,4 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
     protected Area getArea() {
         return environmentService.getArea(areaName);
     }
-
-    public void trigger() {
-        handleTrigger();
-    }
-
-    protected abstract void handleTrigger();
-
 }

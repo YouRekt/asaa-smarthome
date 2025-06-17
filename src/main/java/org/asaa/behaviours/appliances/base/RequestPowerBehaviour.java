@@ -1,8 +1,8 @@
-package org.asaa.behaviours.appliances;
+package org.asaa.behaviours.appliances.base;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 
 public class RequestPowerBehaviour extends OneShotBehaviour {
     private final SmartApplianceAgent agent;

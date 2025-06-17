@@ -3,12 +3,13 @@ package org.asaa.behaviours.scheduler;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.SchedulerAgent;
+import org.asaa.environment.Area;
 import org.asaa.services.EnvironmentService;
 import org.asaa.util.Util;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class ScheduleLoopBehaviour extends TickerBehaviour {
     private final EnvironmentService env;
@@ -33,7 +34,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         oneShotSchedules.put("routine-morning", false);
 
         // These are more cyclical (once 30 minutes etc.)
-        // cyclicSchedules.put("kitchen-temp", LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45)));
+        cyclicSchedules.put("human-not-home-lights", env.getSimulationStartTime());
     }
 
     // Reset all scheduled events so they can be executed again
@@ -51,9 +52,21 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
 
         // At 8AM perform Morning Schedule
         if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
+            env.setHumanLocation(null);
             oneShotSchedules.put("routine-morning", true);
             agent.getLogger().info("Morning schedule started, message sent to coordinator");
             Util.SendMessage(agent, "", agent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
+        }
+
+        if (env.getHumanLocation() == null && Duration.between(cyclicSchedules.get("human-not-home-lights"), currentTime).toMinutes() >= 5 ) {
+            cyclicSchedules.put("human-not-home-lights", currentTime);
+            agent.getLogger().info("Human is not home, turning random light on/off");
+            Map.Entry<String, Area> randomArea = Util.getRandomEntry(env.getAreas());
+            if (randomArea == null) {
+                agent.getLogger().warn("ScheduleLoopBehaviour@onTick there are no areas in the environment");
+                return;
+            }
+            Util.SendMessage(agent, randomArea.getValue().getName(), agent.getCoordinatorAgent(), ACLMessage.INFORM, "human-not-home-lights");
         }
 
         if (currentTime.toLocalDate().isAfter(previousTime.toLocalDate())) {

@@ -4,7 +4,7 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.CoffeeMachineAgent;
 import org.asaa.tasks.appliances.CoffeeMachineAgent.MakeCoffeeTask;
 
-public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.MessageHandlerBehaviour {
+public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final CoffeeMachineAgent agent;
 
     public MessageHandlerBehaviour(CoffeeMachineAgent agent) {
@@ -18,7 +18,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
             case "make-coffee-task":
             case "action-morning":
                 if (agent.getCurrentTask() == null) {
-                    agent.requestStartTask(new MakeCoffeeTask(agent));
+                    new MakeCoffeeTask(agent).start();
                 } else {
                     agent.getLogger().warn("{}@request: Make Coffee Task already running", msg.getConversationId());
                     agent.agentCommunicationController.sendError(agent.getName(), msg.getConversationId() + "@request: Make Coffee Task already running");

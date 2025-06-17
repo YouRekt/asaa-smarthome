@@ -1,8 +1,8 @@
-package org.asaa.behaviours.appliances;
+package org.asaa.behaviours.appliances.base;
 
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.TickerBehaviour;
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 
 import java.util.ArrayList;
 import java.util.HashMap;

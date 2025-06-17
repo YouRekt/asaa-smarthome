@@ -4,7 +4,7 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.DishwasherAgent;
 import org.asaa.tasks.appliances.DishwasherAgent.WashDishesTask;
 
-public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.MessageHandlerBehaviour {
+public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final DishwasherAgent agent;
 
     public MessageHandlerBehaviour(DishwasherAgent agent) {
@@ -32,26 +32,11 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
         switch (msg.getConversationId()) {
             case "wash-dishes-task":
                 if (agent.getCurrentTask() == null) {
-                    agent.requestStartTask(new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()));
+                    new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()).start();
                 }
                 break;
             default:
                 super.handleRequest(msg);
-                break;
-        }
-    }
-
-    @Override
-    protected void handleAcceptProposal(ACLMessage msg) {
-        switch (msg.getConversationId()) {
-            case "power-relief":
-                if (agent.getCurrentTask() != null) {
-                    agent.getCurrentTask().pause();
-                }
-                super.handleAcceptProposal(msg);
-                break;
-            default:
-                super.handleAcceptProposal(msg);
                 break;
         }
     }

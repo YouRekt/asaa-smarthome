@@ -2,7 +2,7 @@ package org.asaa.behaviours.human;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.HumanAgent;
-import org.asaa.behaviours.BaseMessageHandlerBehaviour;
+import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
 
 public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {

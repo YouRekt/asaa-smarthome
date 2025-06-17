@@ -1,9 +1,9 @@
-package org.asaa.behaviours.appliances;
+package org.asaa.behaviours.appliances.base;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SmartApplianceAgent;
-import org.asaa.behaviours.BaseMessageHandlerBehaviour;
+import org.asaa.agents.base.SmartApplianceAgent;
+import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
 
 public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
@@ -20,14 +20,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         final ACLMessage msg = myAgent.receive();
 
         if (msg != null) {
-            if (!agent.isEnabled() &&
-                    (msg.getConversationId() == null ||
-                            !(msg.getConversationId().equals("enable-passive") ||
-                                    msg.getConversationId().equals("enable-active") ||
-                                    msg.getConversationId().equals("power-relief") ||
-                                    msg.getConversationId().equals("toggle") ||
-                                    msg.getConversationId().equals("disable-passive") ||
-                                    msg.getConversationId().equals("disable-active")))) {
+            if (!agent.isEnabled() && (msg.getConversationId() == null || !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief") || msg.getConversationId().equals("toggle") || msg.getConversationId().equals("disable-passive") || msg.getConversationId().equals("disable-active")))) {
                 agent.getLogger().warn("{} is not enabled. Ignoring message perf={} convId={} content={}", agent.getLocalName(), Util.ConvertACLPerformativeToString(msg.getPerformative()), msg.getConversationId(), msg.getContent());
                 agent.agentCommunicationController.sendError(agent.getName(), "Message sent to a disabled agent");
                 return;
@@ -42,9 +35,12 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     @Override
     protected void handleRequest(ACLMessage msg) {
         switch (msg.getConversationId()) {
+            case "toggle":
+                agent.handleToggle(msg.getContent());
+                break;
             case "pause-task":
                 if (agent.getCurrentTask() != null) {
-                    agent.getCurrentTask().pause();
+                    agent.getCurrentTask().pause(false);
                 }
                 break;
             case "resume-task":
@@ -65,11 +61,9 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     @Override
     protected void handleInform(ACLMessage msg) {
         switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
-            case "trigger":
-                agent.trigger();
+            case " ":
+                agent.getLogger().error("CONVERSATION ID WAS NULL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 break;
-            case "toggle":
-                agent.toggle();
             default:
                 break;
         }
@@ -133,11 +127,12 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 if (agent.isWorking()) {
                     if (agent.getCurrentTask() == null)
                         agent.getLogger().error("Power relief CFP: Agent is working without any task assigned!!!");
-                    if (agent.getCurrentTask().isInterruptible()) {
+                    if (agent.getCurrentTask().isResumable()) {
                         canFree = agent.getActiveDraw();
-                        if (agent.getCurrentTask().isResumable()) {
-                            prio = agent.getPriority() % 100;
-                        }
+                        prio = agent.getPriority() % 100;
+                        agent.getLogger().warn("Power relief CFP: Currently working and resumable, will pause my current task on accept-proposal");
+                    } else if (agent.getCurrentTask().isInterruptible()) {
+                        canFree = agent.getActiveDraw();
                         agent.getLogger().warn("Power relief CFP: Currently working and interruptible, will interrupt my current task on accept-proposal");
                     } else {
                         ACLMessage reply = msg.createReply();
@@ -167,8 +162,8 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         switch (msg.getConversationId()) {
             case "power-relief":
                 int freed = Integer.parseInt(msg.getContent());
-                if (agent.isWorking()) {
-                    agent.addBehaviour(new RelinquishPowerBehaviour(agent, freed, "disable-active-cfp"));
+                if (agent.getCurrentTask() != null && agent.getCurrentTask().isResumable()) {
+                    agent.getCurrentTask().pause(true);
                 } else {
                     agent.addBehaviour(new RelinquishPowerBehaviour(agent, freed, "disable-passive-cfp"));
                 }

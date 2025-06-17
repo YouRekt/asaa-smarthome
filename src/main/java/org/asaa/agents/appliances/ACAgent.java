@@ -4,11 +4,9 @@ import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.agents.SmartApplianceAgent;
+import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.ACAgent.MessageHandlerBehaviour;
 import org.asaa.behaviours.appliances.ACAgent.ModeAutoBehaviour;
-import org.asaa.behaviours.appliances.AwaitEnableBehaviour;
-import org.asaa.behaviours.appliances.RequestPowerBehaviour;
 
 import java.util.Date;
 
@@ -25,8 +23,6 @@ public final class ACAgent extends SmartApplianceAgent {
         activeDraw = 190;
         priority = 120;
 
-        super.setup();
-
         runnables.add(() -> {
             AID sensor;
             while ((sensor = findAgent("Temperature Sensor", areaName)) == null) {
@@ -37,11 +33,9 @@ public final class ACAgent extends SmartApplianceAgent {
 
         behaviours.put("ModeAutoBehaviour", new ModeAutoBehaviour(this));
 
+        super.setup();
+
         addBehaviour(new MessageHandlerBehaviour(this));
-
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
-
-        addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
     }
 
     public void requestTemperature() {
