@@ -105,28 +105,59 @@ const ConfigurationForm = ({
 			attributes: area.attributes,
 		}));
 
-		let globalIndex = 0; // Global counter for all agents
+		// First pass: count total agents per template
+		const templateCounts = new Map<string, number>();
+		data.areas.forEach((area) => {
+			area.agents
+				.filter((agent) => agent.count > 0)
+				.forEach((agent) => {
+					const template = agentTemplates.find(
+						(t) => t.name === agent.templateId
+					);
+					if (template) {
+						const currentCount =
+							templateCounts.get(template.name) || 0;
+						templateCounts.set(
+							template.name,
+							currentCount + agent.count
+						);
+					}
+				});
+		});
+
+		// Second pass: create agents with proper indexing
+		const templateIndices = new Map<string, number>();
 
 		const transformedAgents: Agent[] = data.areas.flatMap((area) => {
 			return area.agents
-				.filter((agent) => agent.count > 0) // Only include agents with count > 0
+				.filter((agent) => agent.count > 0)
 				.flatMap((agent) => {
 					const template = agentTemplates.find(
 						(t) => t.name === agent.templateId
 					);
 					if (!template) return [];
 
-					// Create multiple agents based on count
-					return Array.from({ length: agent.count }, () => {
-						const agentData = {
-							aid: `${template.name} ${globalIndex}`,
+					const totalForTemplate =
+						templateCounts.get(template.name) || 0;
+					const currentIndex =
+						templateIndices.get(template.name) || 1;
+
+					return Array.from({ length: agent.count }, (_, i) => {
+						const agentIndex = currentIndex + i;
+						const aid =
+							totalForTemplate === 1
+								? template.name
+								: `${template.name} ${agentIndex}`;
+
+						templateIndices.set(template.name, agentIndex + 1);
+
+						return {
+							aid,
 							area: area.name,
 							name: template.name,
 							type: template.type,
 							status: "enabled" as AgentStatus,
 						};
-						globalIndex++;
-						return agentData;
 					});
 				});
 		});
