@@ -15,11 +15,22 @@ const Messages = () => {
 
 	const currentRoom = areas.find((area) => area.name === selectedArea);
 
-	const currentRoomMessages = messages.filter(
-		(message) =>
-			agents.find((agent) => agent.aid === message.aid)?.area ===
-			selectedArea
-	);
+	// Filter messages to show all messages where sender or any receiver is in the current room
+	const currentRoomMessages = messages.filter((message) => {
+		const senderAgent = agents.find(
+			(agent) => agent.aid === message.sender
+		);
+		const receiverAgents = message.receivers
+			.map((receiverId) =>
+				agents.find((agent) => agent.aid === receiverId)
+			)
+			.filter(Boolean);
+
+		return (
+			senderAgent?.area === selectedArea ||
+			receiverAgents.some((agent) => agent?.area === selectedArea)
+		);
+	});
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
@@ -44,15 +55,15 @@ const Messages = () => {
 								No messages yet
 							</p>
 						) : (
-							currentRoomMessages.map((message) => {
-								const agent = agents.find(
-									(agent) => message.aid === agent.aid
+							currentRoomMessages.map((message, index) => {
+								const senderAgent = agents.find(
+									(agent) => message.sender === agent.aid
 								);
 								return (
 									<Message
-										key={message.aid + message.timestamp}
+										key={`${message.sender}-${message.timestamp}-${index}`}
 										message={message}
-										agent={agent}
+										agent={senderAgent}
 									/>
 								);
 							})
@@ -64,4 +75,5 @@ const Messages = () => {
 		</Card>
 	);
 };
+
 export default Messages;

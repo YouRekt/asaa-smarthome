@@ -1,9 +1,9 @@
 import Message from "@/components/management-panel/message";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Agent, Message as MessageType } from "@/hooks/use-store";
-import { Inbox } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
-const AgentInbox = ({
+const AgentOutbox = ({
 	agent,
 	messages,
 }: {
@@ -13,10 +13,10 @@ const AgentInbox = ({
 	if (messages.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-				<Inbox className="h-12 w-12 mb-4 opacity-50" />
-				<p className="text-lg font-medium">No incoming messages</p>
+				<ArrowUp className="h-12 w-12 mb-4 opacity-50" />
+				<p className="text-lg font-medium">No outgoing messages</p>
 				<p className="text-sm">
-					This agent hasn't received any messages yet.
+					This agent hasn't sent any messages yet.
 				</p>
 			</div>
 		);
@@ -44,4 +44,4 @@ const AgentInbox = ({
 	);
 };
 
-export default AgentInbox;
+export default AgentOutbox;
