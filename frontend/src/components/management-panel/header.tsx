@@ -1,3 +1,4 @@
+import { useStomp } from "@/hooks/use-stomp";
 import { useStore } from "@/hooks/use-store";
 import {
 	Clock,
@@ -9,7 +10,8 @@ import {
 } from "lucide-react";
 
 const Header = () => {
-	const { areas, selectedArea, isConnected, environment } = useStore();
+	const { areas, selectedArea, environment } = useStore();
+	const { isConnected } = useStomp();
 
 	const currentRoom = areas.find((area) => area.name === selectedArea);
 

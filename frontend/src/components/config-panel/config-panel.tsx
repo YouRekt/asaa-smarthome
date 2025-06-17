@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
+import { useStomp } from "@/hooks/use-stomp";
 import { agentTemplates, useStore } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,6 +40,7 @@ import {
 	Wrench,
 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const defaultValues: ConfigurationFormValues = {
 	areas: [
@@ -48,7 +50,7 @@ const defaultValues: ConfigurationFormValues = {
 				temperature: 20,
 			},
 			agents: agentTemplates.map((template) => ({
-				templateId: template.id,
+				templateId: template.name,
 				count: 0,
 			})),
 		},
@@ -57,6 +59,7 @@ const defaultValues: ConfigurationFormValues = {
 
 const ConfigPanel = () => {
 	const { areas, agents, setSystemStatus } = useStore();
+	const { isConnected } = useStomp();
 	const hasConfiguration = areas.length > 0 && agents.length > 0;
 	const totalAgents = agents.length;
 
@@ -72,10 +75,36 @@ const ConfigPanel = () => {
 
 	async function handleStartSystem() {
 		//TODO: POST request to start the system
-		setSystemStatus("starting");
-		setTimeout(() => {
-			setSystemStatus("running");
-		}, 1000); // Simulate a delay for starting the system
+		const configResponse = await fetch("/system/config", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				areas: areas.map((area) => ({
+					name: area.name.toLowerCase(), // Convert to lowercase for backend
+					attributes: area.attributes,
+				})),
+				agents: agents.map((agent) => ({
+					aid: agent.aid,
+					name: agent.name,
+					area: agent.area.toLowerCase(), // Convert to lowercase for backend
+				})),
+			}),
+		});
+		if (!configResponse.ok) {
+			toast.error("Failed to upload the configuration");
+			return;
+		}
+
+		const response = await fetch("/system/start", {
+			method: "POST",
+		});
+		if (!response.ok) {
+			toast.error("Failed to start the system");
+			return;
+		}
+		setSystemStatus("running");
 	}
 
 	return (
@@ -183,7 +212,7 @@ const ConfigPanel = () => {
 													agents: agentTemplates.map(
 														(template) => ({
 															templateId:
-																template.id,
+																template.name,
 															count: 0,
 														})
 													),
@@ -206,6 +235,11 @@ const ConfigPanel = () => {
 											<Button
 												type="submit"
 												form="configuration-form"
+												onClick={() =>
+													console.log(
+														form.formState.errors
+													)
+												}
 											>
 												Save Configuration
 											</Button>
@@ -245,11 +279,13 @@ const ConfigPanel = () => {
 									<CheckCircle className="h-4 w-4 mr-2" />
 									Configuration complete
 								</div>
-								<div className="flex items-center text-green-600">
-									<CheckCircle className="h-4 w-4 mr-2" />
-									JADE backend ready
-								</div>
-								<div className="flex items-center text-green-600">
+								<div
+									className={`flex items-center ${
+										isConnected
+											? "text-green-600"
+											: "text-muted-foreground"
+									}`}
+								>
 									<CheckCircle className="h-4 w-4 mr-2" />
 									WebSocket connection available
 								</div>
