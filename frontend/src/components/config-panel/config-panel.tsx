@@ -23,72 +23,89 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { agentTemplates } from "@/hooks/use-store";
+import { useStomp } from "@/hooks/use-stomp";
+import { agentTemplates, useStore } from "@/hooks/use-store";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	AlertCircle,
 	CheckCircle,
+	Cpu,
 	Home,
 	Play,
 	Plus,
+	Radio,
 	Settings,
 	Users,
 	Wrench,
 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-const defualtValues: ConfigurationFormValues = {
+const defaultValues: ConfigurationFormValues = {
 	areas: [
 		{
 			name: "Kitchen",
 			attributes: {
 				temperature: 20,
 			},
-			agents: [
-				{
-					templateId: "temp_sensor" as const,
-					count: 0,
-				},
-				{
-					templateId: "motion_sensor" as const,
-					count: 0,
-				},
-				{
-					templateId: "ac_unit" as const,
-					count: 0,
-				},
-				{
-					templateId: "coffee_machine" as const,
-					count: 0,
-				},
-				{
-					templateId: "dishwasher" as const,
-					count: 0,
-				},
-				{
-					templateId: "fridge" as const,
-					count: 0,
-				},
-				{
-					templateId: "smart_light" as const,
-					count: 0,
-				},
-			],
+			agents: agentTemplates.map((template) => ({
+				templateId: template.name,
+				count: 0,
+			})),
 		},
 	],
 };
 
 const ConfigPanel = () => {
-	const hasConfiguration = true; // Replace with actual logic to check configuration
+	const { areas, agents, setSystemStatus } = useStore();
+	const { isConnected } = useStomp();
+	const hasConfiguration = areas.length > 0 && agents.length > 0;
+	const totalAgents = agents.length;
+
 	const form = useForm<ConfigurationFormValues>({
 		resolver: zodResolver(ConfigurationFormSchema),
-		defaultValues: defualtValues,
+		defaultValues: defaultValues,
 	});
 
 	const fieldArray = useFieldArray({
 		control: form.control,
 		name: "areas",
 	});
+
+	async function handleStartSystem() {
+		//TODO: POST request to start the system
+		const configResponse = await fetch("/system/config", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				areas: areas.map((area) => ({
+					name: area.name.toLowerCase(), // Convert to lowercase for backend
+					attributes: area.attributes,
+				})),
+				agents: agents.map((agent) => ({
+					aid: agent.aid,
+					name: agent.name,
+					area: agent.area.toLowerCase(), // Convert to lowercase for backend
+				})),
+			}),
+		});
+		if (!configResponse.ok) {
+			toast.error("Failed to upload the configuration");
+			return;
+		}
+
+		const response = await fetch("/system/start", {
+			method: "POST",
+		});
+		if (!response.ok) {
+			toast.error("Failed to start the system");
+			return;
+		}
+		setSystemStatus("running");
+	}
 
 	return (
 		<main className="flex-1 p-4 overflow-y-auto flex flex-col justify-center">
@@ -110,8 +127,7 @@ const ConfigPanel = () => {
 							<div className="text-center p-4 bg-blue-600/10 rounded-lg">
 								<Home className="size-8 text-blue-800 dark:text-blue-600 mx-auto mb-2" />
 								<div className="text-2xl font-bold text-blue-800 dark:text-blue-600">
-									{/* {configuredRooms.length} */}
-									Number of Rooms
+									{areas.length}
 								</div>
 								<div className="text-sm text-blue-700">
 									Rooms
@@ -120,8 +136,7 @@ const ConfigPanel = () => {
 							<div className="text-center p-4 bg-green-500/10 rounded-lg">
 								<Users className="size-8 text-green-800 dark:text-green-600 mx-auto mb-2" />
 								<div className="text-2xl font-bold text-green-800 dark:text-green-600">
-									{/* {totalAgents} */}
-									Number of Agents
+									{totalAgents}
 								</div>
 								<div className="text-sm text-green-700">
 									Agents
@@ -132,31 +147,28 @@ const ConfigPanel = () => {
 						<Separator />
 
 						{hasConfiguration ? (
-							<div className="space-y-3">
+							<div className="flex flex-col gap-3">
 								<div className="flex items-center text-green-600">
 									<CheckCircle className="h-4 w-4 mr-2" />
 									<span className="font-medium">
 										Configuration Ready
 									</span>
 								</div>
-								<div className="text-sm text-gray-600">
-									{/* Your smart home is configured with{" "}
-									{configuredRooms.length} rooms and{" "}
-									{totalAgents} agents. */}
-									Your smart home is configured with
-									configuredRooms.length rooms and totalAgents
+								<div className="text-sm text-muted-foreground">
+									Your smart home is configured with{" "}
+									{areas.length} rooms and {totalAgents}{" "}
 									agents.
 								</div>
 							</div>
 						) : (
-							<div className="space-y-3">
+							<div className="flex flex-col gap-3">
 								<div className="flex items-center text-amber-600">
 									<AlertCircle className="h-4 w-4 mr-2" />
 									<span className="font-medium">
 										Configuration Required
 									</span>
 								</div>
-								<div className="text-sm text-gray-600">
+								<div className="text-sm text-muted-foreground">
 									Please configure your rooms and agents
 									before starting the system.
 								</div>
@@ -164,21 +176,17 @@ const ConfigPanel = () => {
 						)}
 						<Dialog>
 							<DialogTrigger asChild>
-								<Button
-									variant="outline"
-									className="w-full"
-									// onClick={() => setShowConfiguration(true)}
-								>
-									<Wrench />
+								<Button variant="outline" className="w-full">
+									<Wrench className="mr-2 h-4 w-4" />
 									{hasConfiguration
 										? "Modify Configuration"
 										: "Configure System"}
 								</Button>
 							</DialogTrigger>
-							<DialogContent className="max-w-dvw max-h-dvh min-w-fit">
+							<DialogContent className="max-w-dvw max-h-[90dvh] min-w-fit">
 								<DialogHeader>
 									<DialogTitle>
-										<Settings className="inline mr-2" />
+										<Settings className="inline mr-2 h-5 w-5" />
 										System Configuration
 									</DialogTitle>
 									<DialogDescription>
@@ -194,8 +202,7 @@ const ConfigPanel = () => {
 									<DialogFooter className="flex justify-between">
 										<Button
 											type="button"
-											variant="ghost"
-											size="icon"
+											variant="outline"
 											onClick={() =>
 												fieldArray.append({
 													name: "",
@@ -205,14 +212,15 @@ const ConfigPanel = () => {
 													agents: agentTemplates.map(
 														(template) => ({
 															templateId:
-																template.id,
+																template.name,
 															count: 0,
 														})
 													),
 												})
 											}
 										>
-											<Plus />
+											<Plus className="mr-2 h-4 w-4" />
+											Add Room
 										</Button>
 										{form.formState.isValid ? (
 											<DialogClose asChild>
@@ -227,6 +235,11 @@ const ConfigPanel = () => {
 											<Button
 												type="submit"
 												form="configuration-form"
+												onClick={() =>
+													console.log(
+														form.formState.errors
+													)
+												}
 											>
 												Save Configuration
 											</Button>
@@ -250,27 +263,29 @@ const ConfigPanel = () => {
 							configuration
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="p-4 bg-gray-50 rounded-lg">
+					<CardContent className="flex flex-col gap-4">
+						<div className="p-4 bg-muted rounded-lg">
 							<h4 className="font-medium mb-2">
 								Pre-Start Checklist:
 							</h4>
-							<div className="space-y-2 text-sm">
+							<div className="flex flex-col gap-2 text-sm">
 								<div
 									className={`flex items-center ${
 										hasConfiguration
 											? "text-green-600"
-											: "text-gray-400"
+											: "text-muted-foreground"
 									}`}
 								>
 									<CheckCircle className="h-4 w-4 mr-2" />
 									Configuration complete
 								</div>
-								<div className="flex items-center text-green-600">
-									<CheckCircle className="h-4 w-4 mr-2" />
-									JADE backend ready
-								</div>
-								<div className="flex items-center text-green-600">
+								<div
+									className={`flex items-center ${
+										isConnected
+											? "text-green-600"
+											: "text-muted-foreground"
+									}`}
+								>
 									<CheckCircle className="h-4 w-4 mr-2" />
 									WebSocket connection available
 								</div>
@@ -279,21 +294,10 @@ const ConfigPanel = () => {
 
 						<Button
 							className="w-full h-12 text-lg"
-							// onClick={handleStartSystem}
-							// disabled={!hasConfiguration || isStarting}
+							disabled={!hasConfiguration}
+							onClick={handleStartSystem}
 						>
-							{/* {isStarting ? (
-								<>
-									<Loader2 className="h-5 w-5 mr-2 animate-spin" />
-									Starting System...
-								</>
-							) : (
-								<>
-									<Play className="h-5 w-5 mr-2" />
-									Start Smart Home System
-								</>
-							)} */}
-							<Play />
+							<Play className="h-5 w-5 mr-2" />
 							Start Smart Home System
 						</Button>
 
@@ -306,6 +310,7 @@ const ConfigPanel = () => {
 					</CardContent>
 				</Card>
 			</div>
+
 			{/* Configuration Overview */}
 			{hasConfiguration && (
 				<Card className="mt-8">
@@ -317,43 +322,78 @@ const ConfigPanel = () => {
 					</CardHeader>
 					<CardContent>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{[1, 2, 3, 4, 5].map((room) => (
-								<div
-									key={room}
-									className="border rounded-lg p-4"
-								>
-									<div className="flex items-center mb-3">
-										<Home className="h-5 w-5 text-blue-600 mr-2" />
-										<h3 className="font-semibold">
-											room.name
-										</h3>
-										<Badge
-											variant="secondary"
-											className="ml-auto"
-										>
-											room.agents.length agents
-										</Badge>
-									</div>
-									<div className="space-y-2">
-										<div className="flex items-center justify-between text-sm">
-											<div className="flex items-center">
-												{"getAgentIcon(agent.type)"}
-												<span className="ml-2">
-													agent.name
-												</span>
-											</div>
+							{areas.map((area) => {
+								const areaAgents = agents.filter(
+									(agent) => agent.area === area.name
+								);
+								return (
+									<div
+										key={area.name}
+										className="border rounded-lg p-4"
+									>
+										<div className="flex items-center mb-3">
+											<Home className="h-5 w-5 text-blue-600 mr-2" />
+											<h3 className="font-semibold">
+												{area.name}
+											</h3>
 											<Badge
-												variant="outline"
-												// className={`text-xs ${getAgentTypeColor(
-												// 	agent.type
-												// )}`}
+												variant="secondary"
+												className="ml-auto"
 											>
-												agent.type
+												{areaAgents.length} agents
 											</Badge>
 										</div>
+										<div className="flex flex-col gap-3">
+											{areaAgents
+												.slice(0, 3)
+												.map((agent) => (
+													<div
+														key={agent.aid}
+														className="flex items-center justify-between text-sm"
+													>
+														<div className="flex items-center">
+															{agent.type ===
+															"appliance" ? (
+																<Cpu className="size-4 text-blue-600" />
+															) : (
+																<Radio className="size-4 text-green-600" />
+															)}
+															<span className="ml-2">
+																{agent.name}
+															</span>
+														</div>
+														<Badge
+															className={cn(
+																"ml-2 text-xs",
+																agent?.type ===
+																	"sensor"
+																	? "bg-blue-500/20 text-blue-800 dark:text-blue-400 dark:border-blue-400"
+																	: "bg-green-500/20 text-green-800 dark:text-green-400 dark:border-green-400"
+															)}
+														>
+															{agent?.type
+																? agent.type
+																		.charAt(
+																			0
+																		)
+																		.toUpperCase() +
+																  agent.type.slice(
+																		1
+																  )
+																: ""}
+														</Badge>
+													</div>
+												))}
+											{areaAgents.length > 3 && (
+												<div className="text-xs text-muted-foreground">
+													+{areaAgents.length - 3}{" "}
+													more agents
+												</div>
+											)}
+										</div>
 									</div>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					</CardContent>
 				</Card>

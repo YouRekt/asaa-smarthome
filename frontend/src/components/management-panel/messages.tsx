@@ -38,7 +38,7 @@ const Messages = () => {
 			</CardHeader>
 			<CardContent>
 				<ScrollArea className="h-96">
-					<div className="space-y-3">
+					<div className="flex flex-col gap-3">
 						{currentRoomMessages.length === 0 ? (
 							<p className="text-center text-muted-foreground py-8">
 								No messages yet

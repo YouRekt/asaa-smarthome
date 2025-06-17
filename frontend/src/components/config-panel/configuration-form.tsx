@@ -19,39 +19,71 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AreaAttributesSchema, TemplateIdSchema } from "@/hooks/use-store";
+import {
+	agentTemplates,
+	AreaAttributesSchema,
+	TemplateIdSchema,
+	useStore,
+	type Agent,
+	type AgentStatus,
+	type Area,
+} from "@/hooks/use-store";
 import { X } from "lucide-react";
 import { useFormContext, type UseFieldArrayReturn } from "react-hook-form";
 import { z } from "zod/v4";
 
 export const ConfigurationFormSchema = z.object({
-	areas: z.array(
-		z.object({
-			name: z.string().min(1, {
-				error: "Area name is required",
-			}),
-			attributes: z.record(AreaAttributesSchema, z.number()),
-			agents: z
-				.array(
-					z.object({
-						templateId: TemplateIdSchema,
-						count: z.number().min(0),
-					})
-				)
-				.check((ctx) => {
-					if (!ctx.value.some((agent) => agent.count > 0)) {
-						ctx.issues.push({
-							code: "too_small",
-							minimum: 1,
-							origin: "array",
-							inclusive: true,
+	areas: z
+		.array(
+			z.object({
+				name: z.string().min(1, {
+					message: "Area name is required",
+				}),
+				attributes: z.record(AreaAttributesSchema, z.number()),
+				agents: z
+					.array(
+						z.object({
+							templateId: TemplateIdSchema,
+							count: z.number().min(0),
+						})
+					)
+					.refine(
+						(agents) => agents.some((agent) => agent.count > 0),
+						{
 							message: "At least one agent is required",
-							input: ctx.value,
+						}
+					),
+			})
+		)
+		.check((ctx) => {
+			if (ctx.value.length > 1) {
+				const nameToIndices = new Map<string, number[]>();
+
+				// Group areas by lowercase name to find duplicates
+				ctx.value.forEach((area, index) => {
+					const normalizedName = area.name.toLowerCase().trim();
+					if (!nameToIndices.has(normalizedName)) {
+						nameToIndices.set(normalizedName, []);
+					}
+					nameToIndices.get(normalizedName)!.push(index);
+				});
+
+				// Add errors for each duplicate
+				for (const [, indices] of nameToIndices.entries()) {
+					if (indices.length > 1) {
+						// Add error to each duplicate field
+						indices.forEach((index) => {
+							ctx.issues.push({
+								code: "custom",
+								message: "Area names must be unique",
+								path: [index, "name"], // This will target areas[index].name
+								input: ctx.value[index].name,
+							});
 						});
 					}
-				}),
-		})
-	),
+				}
+			}
+		}),
 });
 
 export type ConfigurationFormValues = z.infer<typeof ConfigurationFormSchema>;
@@ -62,11 +94,45 @@ const ConfigurationForm = ({
 	fieldArray: UseFieldArrayReturn<ConfigurationFormValues>;
 }) => {
 	const form = useFormContext<ConfigurationFormValues>();
+	const { addConfiguration } = useStore();
 
 	const { fields: areas } = fieldArray;
 
 	function onSubmit(data: ConfigurationFormValues) {
+		// Transform form data to store format
+		const transformedAreas: Area[] = data.areas.map((area) => ({
+			name: area.name,
+			attributes: area.attributes,
+		}));
+
+		const transformedAgents: Agent[] = data.areas.flatMap((area) => {
+			return area.agents
+				.filter((agent) => agent.count > 0) // Only include agents with count > 0
+				.flatMap((agent) => {
+					const template = agentTemplates.find(
+						(t) => t.name === agent.templateId
+					);
+					if (!template) return [];
+
+					// Create multiple agents based on count
+					return Array.from({ length: agent.count }, (_, index) => ({
+						aid: `${area.name.toLowerCase()}_${agent.templateId
+							.split(" ")
+							.join("_")}_${index}`,
+						area: area.name,
+						name: template.name,
+						type: template.type,
+						status: "enabled" as AgentStatus,
+					}));
+				});
+		});
+
+		// Update the store
+		addConfiguration(transformedAreas, transformedAgents);
+
 		console.log("Form submitted with data:", data);
+		console.log("Transformed areas:", transformedAreas);
+		console.log("Transformed agents:", transformedAgents);
 	}
 
 	return (

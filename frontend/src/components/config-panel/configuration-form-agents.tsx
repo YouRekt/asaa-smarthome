@@ -31,7 +31,7 @@ const ConfigurationFormAgents = ({ areaIndex }: { areaIndex: number }) => {
 		>
 			{agents.map((field, agentIndex) => {
 				const agentTemplate = agentTemplates.find(
-					(template) => template.id === field.templateId
+					(template) => template.name === field.templateId
 				);
 
 				return (

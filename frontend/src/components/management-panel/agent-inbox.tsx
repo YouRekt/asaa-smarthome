@@ -19,7 +19,7 @@ const AgentInbox = ({ agent }: { agent: Agent }) => {
 
 	return (
 		<ScrollArea className="h-96">
-			<div className="space-y-3">
+			<div className="flex flex-col gap-3">
 				{agentMessages.length === 0 ? (
 					<p className="text-center text-muted-foreground py-8">
 						No messages yet

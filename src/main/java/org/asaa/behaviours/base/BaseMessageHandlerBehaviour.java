@@ -20,7 +20,7 @@ public abstract class BaseMessageHandlerBehaviour extends CyclicBehaviour {
 
     public void processMsg(ACLMessage msg) {
         ((SpringAwareAgent)myAgent).agentCommunicationController.sendMessage(
-                myAgent.getName(),
+                myAgent.getLocalName(),
                 String.format("[In] [%s] -> [%s <%s>] -> [%s]%s",
                 msg.getSender().getLocalName(),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),

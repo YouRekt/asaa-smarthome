@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useStore } from "@/hooks/use-store";
 import { Square } from "lucide-react";
 import { useCallback } from "react";
+import { toast } from "sonner";
 
 const SystemStatus = () => {
 	const { systemStatus, setSystemStatus } = useStore();
@@ -31,9 +32,20 @@ const SystemStatus = () => {
 		}
 	}, [systemStatus]);
 
+	async function handleStopSystem() {
+		const response = await fetch("system/stop", {
+			method: "POST",
+		});
+		if (!response.ok) {
+			toast.error("Failed to stop the system");
+			return;
+		}
+		setSystemStatus("stopped");
+	}
+
 	return (
 		<div className="mx-4 mt-4 p-3 bg-accent rounded-lg">
-			<div className="flex items-center space-x-2">
+			<div className="flex items-center gap-2">
 				<div
 					className={`w-2 h-2 rounded-full ${getSystemStatusColor()}`}
 				/>
@@ -46,12 +58,7 @@ const SystemStatus = () => {
 					variant="ghost"
 					size="sm"
 					className="w-full mt-2 hover:text-destructive"
-					onClick={() => {
-						setSystemStatus("stopping");
-						setTimeout(() => {
-							setSystemStatus("stopped");
-						}, 1000);
-					}}
+					onClick={handleStopSystem}
 				>
 					<Square className="size-3 mr-1" />
 					Stop System
