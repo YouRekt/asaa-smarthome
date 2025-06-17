@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import type { Agent, Message as MessageType } from "@/hooks/use-store";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const Message = ({
 	message,
@@ -31,13 +31,13 @@ const Message = ({
 					</span>
 
 					<span className="text-xs text-muted-foreground">
-						{formatDate(message.timestamp)}
+						{message.timestamp}
 					</span>
 				</div>
 			) : (
 				<div className="flex items-center justify-between mb-1">
 					<span className="text-xs font-semibold text-muted-foreground">
-						{formatDate(message.timestamp)}
+						{message.timestamp}
 					</span>
 				</div>
 			)}

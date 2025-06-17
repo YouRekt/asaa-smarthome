@@ -105,6 +105,8 @@ const ConfigurationForm = ({
 			attributes: area.attributes,
 		}));
 
+		let globalIndex = 0; // Global counter for all agents
+
 		const transformedAgents: Agent[] = data.areas.flatMap((area) => {
 			return area.agents
 				.filter((agent) => agent.count > 0) // Only include agents with count > 0
@@ -115,15 +117,17 @@ const ConfigurationForm = ({
 					if (!template) return [];
 
 					// Create multiple agents based on count
-					return Array.from({ length: agent.count }, (_, index) => ({
-						aid: `${area.name.toLowerCase()}_${agent.templateId
-							.split(" ")
-							.join("_")}_${index}`,
-						area: area.name,
-						name: template.name,
-						type: template.type,
-						status: "enabled" as AgentStatus,
-					}));
+					return Array.from({ length: agent.count }, () => {
+						const agentData = {
+							aid: `${template.name} ${globalIndex}`,
+							area: area.name,
+							name: template.name,
+							type: template.type,
+							status: "enabled" as AgentStatus,
+						};
+						globalIndex++;
+						return agentData;
+					});
 				});
 		});
 
