@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useStomp } from "@/hooks/use-stomp";
 import { useStore } from "@/hooks/use-store";
 import { Square } from "lucide-react";
 import { useCallback } from "react";
@@ -6,7 +7,7 @@ import { toast } from "sonner";
 
 const SystemStatus = () => {
 	const { systemStatus, setSystemStatus } = useStore();
-
+	const { isConnected } = useStomp();
 	const getSystemStatusColor = useCallback(() => {
 		switch (systemStatus) {
 			case "running":
@@ -33,12 +34,14 @@ const SystemStatus = () => {
 	}, [systemStatus]);
 
 	async function handleStopSystem() {
-		const response = await fetch("system/stop", {
-			method: "POST",
-		});
-		if (!response.ok) {
-			toast.error("Failed to stop the system");
-			return;
+		if (isConnected) {
+			const response = await fetch("system/stop", {
+				method: "POST",
+			});
+			if (!response.ok) {
+				toast.error("Failed to stop the system");
+				return;
+			}
 		}
 		setSystemStatus("stopped");
 	}
