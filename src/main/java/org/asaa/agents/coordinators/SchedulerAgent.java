@@ -19,7 +19,7 @@ public final class SchedulerAgent extends SpringAwareAgent {
 
         logger.info("Initialized");
 
-        coordinatorAgent = findAgent("Coordinator", "");
+        coordinatorAgent = findAgent("CoordinatorAgent", "", true);
 
         addBehaviour(new ScheduleLoopBehaviour(this, 500));
     }

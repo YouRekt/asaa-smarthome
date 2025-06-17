@@ -49,7 +49,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         cfp.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
         cfpSentProposals = (int) agent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(cfpMessage.getSender())).count();
         agent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream().filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream())).filter(a -> !a.equals(cfpMessage.getSender())).forEach(cfp::addReceiver);
-        agent.send(cfp);
+        agent.sendMessage(cfp);
 
         agent.addBehaviour(cfpTimeoutBehaviour);
     }
@@ -114,7 +114,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
                 ACLMessage reply = msg.createReply();
                 reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setContent(msg.getContent());
-                agent.send(reply);
+                agent.sendMessage(reply);
                 if (cfpReceivedResponses >= cfpSentProposals) {
                     cfpRespondToSender();
                 }
@@ -152,7 +152,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
             proposalReply.setConversationId("power-relief");
             proposalReply.setContent(Integer.toString(proposal.getValue().canFree()));
             proposalReply.setReplyByDate(new Date(System.currentTimeMillis() + cfpResponseTimeout));
-            agent.send(proposalReply);
+            agent.sendMessage(proposalReply);
             cfpSentProposals += accepted.contains(proposal.getKey()) ? 1 : 0;
 
         }
@@ -160,7 +160,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
             ACLMessage reply = cfpMessage.createReply();
             reply.setPerformative(ACLMessage.REFUSE);
             reply.setContent("Enable " + (cfpMessage.getConversationId().equals("enable-passive") ? "passive" : "active") + " refused even after proposed relief - " + cfpRequiredPower + "W");
-            agent.send(reply);
+            agent.sendMessage(reply);
             agent.removeBehaviour(this);
         } else agent.addBehaviour(cfpTimeoutBehaviour);
     }
@@ -171,7 +171,7 @@ public class PowerNegotiationBehaviour extends CyclicBehaviour {
         ACLMessage reply = cfpMessage.createReply();
         reply.setPerformative(ACLMessage.AGREE);
         reply.setContent("Enable " + (cfpMessage.getConversationId().equals("enable-passive") ? "passive" : "active") + " accepted after relief - " + cfpRequiredPower + "W (shortage: " + cfpShortage + "W, relief " + cfpRelievedPower + "W)");
-        agent.send(reply);
+        agent.sendMessage(reply);
         agent.removeBehaviour(this);
     }
 

@@ -55,7 +55,10 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
             env.setHumanLocation(null);
             oneShotSchedules.put("routine-morning", true);
             agent.getLogger().info("Morning schedule started, message sent to coordinator");
-            Util.SendMessage(agent, "", agent.getCoordinatorAgent(), ACLMessage.INFORM, "routine-morning");
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(agent.getCoordinatorAgent());
+            msg.setConversationId("routine-morning");
+            agent.sendMessage(msg);
         }
 
         if (env.getHumanLocation() == null && Duration.between(cyclicSchedules.get("human-not-home-lights"), currentTime).toMinutes() >= 5 ) {
@@ -66,7 +69,10 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
                 agent.getLogger().warn("ScheduleLoopBehaviour@onTick there are no areas in the environment");
                 return;
             }
-            Util.SendMessage(agent, randomArea.getValue().getName(), agent.getCoordinatorAgent(), ACLMessage.INFORM, "human-not-home-lights");
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(agent.getCoordinatorAgent());
+            msg.setConversationId("human-not-home-lights");
+            msg.setContent(randomArea.getValue().getName());
         }
 
         if (currentTime.toLocalDate().isAfter(previousTime.toLocalDate())) {

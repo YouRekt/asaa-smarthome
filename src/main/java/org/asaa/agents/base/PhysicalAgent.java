@@ -35,7 +35,7 @@ public abstract class PhysicalAgent extends SpringAwareAgent {
         logger.info("Initialized in area: {}", areaName);
 
         register(areaName);
-        coordinatorAgent = findAgent("Coordinator", "");
+        coordinatorAgent = findAgent("CoordinatorAgent", "", true);
     }
 
     @Override
