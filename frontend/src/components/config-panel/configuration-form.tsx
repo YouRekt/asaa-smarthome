@@ -19,7 +19,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AreaAttributesSchema, TemplateIdSchema } from "@/hooks/use-store";
+import {
+	agentTemplates,
+	AreaAttributesSchema,
+	TemplateIdSchema,
+	useStore,
+	type Agent,
+	type AgentStatus,
+	type Area,
+} from "@/hooks/use-store";
 import { X } from "lucide-react";
 import { useFormContext, type UseFieldArrayReturn } from "react-hook-form";
 import { z } from "zod/v4";
@@ -62,11 +70,43 @@ const ConfigurationForm = ({
 	fieldArray: UseFieldArrayReturn<ConfigurationFormValues>;
 }) => {
 	const form = useFormContext<ConfigurationFormValues>();
+	const { addConfiguration } = useStore();
 
 	const { fields: areas } = fieldArray;
 
 	function onSubmit(data: ConfigurationFormValues) {
+		// Transform form data to store format
+		const transformedAreas: Area[] = data.areas.map((area) => ({
+			name: area.name,
+			attributes: area.attributes,
+		}));
+
+		const transformedAgents: Agent[] = data.areas.flatMap((area) => {
+			return area.agents
+				.filter((agent) => agent.count > 0) // Only include agents with count > 0
+				.flatMap((agent) => {
+					const template = agentTemplates.find(
+						(t) => t.id === agent.templateId
+					);
+					if (!template) return [];
+
+					// Create multiple agents based on count
+					return Array.from({ length: agent.count }, (_, index) => ({
+						aid: `${area.name}-${agent.templateId}-${index}`,
+						area: area.name,
+						name: template.name,
+						type: template.type,
+						status: "enabled" as AgentStatus,
+					}));
+				});
+		});
+
+		// Update the store
+		addConfiguration(transformedAreas, transformedAgents);
+
 		console.log("Form submitted with data:", data);
+		console.log("Transformed areas:", transformedAreas);
+		console.log("Transformed agents:", transformedAgents);
 	}
 
 	return (

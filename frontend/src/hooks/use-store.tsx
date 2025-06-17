@@ -118,6 +118,9 @@ type Actions = {
 	setSystemStatus: (status: SystemStatus) => void;
 	setSelectedArea: (area: string) => void;
 	setConnected: (connected: boolean) => void;
+	setAreas: (areas: Area[]) => void;
+	setAgents: (agents: Agent[]) => void;
+	addConfiguration: (areas: Area[], agents: Agent[]) => void;
 };
 
 const defaultAreas: Area[] = [
@@ -316,10 +319,10 @@ const defaultMessages: Message[] = [
 
 export const useStore = create<State & Actions>()(
 	immer((set) => ({
-		systemStatus: "running",
-		areas: defaultAreas,
-		agents: defaultAgents,
-		messages: defaultMessages,
+		systemStatus: "stopped",
+		areas: [],
+		agents: [],
+		messages: [],
 		selectedArea: "Kitchen",
 		isConnected: false,
 		setSystemStatus: (status) =>
@@ -333,6 +336,19 @@ export const useStore = create<State & Actions>()(
 		setConnected: (connected) =>
 			set((state) => {
 				state.isConnected = connected;
+			}),
+		setAreas: (areas) =>
+			set((state) => {
+				state.areas = areas;
+			}),
+		setAgents: (agents) =>
+			set((state) => {
+				state.agents = agents;
+			}),
+		addConfiguration: (areas, agents) =>
+			set((state) => {
+				state.areas = areas;
+				state.agents = agents;
 			}),
 	}))
 );

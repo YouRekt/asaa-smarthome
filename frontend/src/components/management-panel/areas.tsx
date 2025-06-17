@@ -7,7 +7,7 @@ const Areas = () => {
 
 	return (
 		<div className="mt-8 flex-grow flex flex-col">
-			<nav className="flex-1 px-2 space-y-1">
+			<nav className="flex-1 px-2 flex flex-col gap-1">
 				<div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
 					Rooms
 				</div>

@@ -33,7 +33,7 @@ const SystemStatus = () => {
 
 	return (
 		<div className="mx-4 mt-4 p-3 bg-accent rounded-lg">
-			<div className="flex items-center space-x-2">
+			<div className="flex items-center gap-2">
 				<div
 					className={`w-2 h-2 rounded-full ${getSystemStatusColor()}`}
 				/>

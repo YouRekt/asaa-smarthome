@@ -70,7 +70,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 						{agent.type === "appliance" ? <Cpu /> : <Radio />}
 						<CardTitle className="text-lg">{agent.name}</CardTitle>
 					</div>
-					<div className="flex items-center space-x-2">
+					<div className="flex items-center gap-2">
 						<div
 							className={cn(
 								"size-2 rounded-full",
