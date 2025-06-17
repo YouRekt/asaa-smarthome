@@ -25,7 +25,7 @@ public final class ACAgent extends SmartApplianceAgent {
 
         runnables.add(() -> {
             AID sensor;
-            while ((sensor = findAgent("Temperature Sensor", areaName)) == null) {
+            while ((sensor = findAgent("TemperatureSensorAgent", areaName, true)) == null) {
                 logger.info("Looking for temperature sensor");
             }
             subscribeSensor(sensor, "TemperatureSensorAgent");

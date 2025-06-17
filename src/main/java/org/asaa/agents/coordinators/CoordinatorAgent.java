@@ -99,7 +99,11 @@ public final class CoordinatorAgent extends SpringAwareAgent {
             return;
         }
         AID selectedBulb = Util.getRandomEntry(physicalAgents.get(area).get("SmartLightbulbAgent"));
-        Util.SendMessage(this, Long.toString(ThreadLocalRandom.current().nextLong(3000L, 15001L)), selectedBulb, ACLMessage.REQUEST, "toggle");
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+        msg.addReceiver(selectedBulb);
+        msg.setConversationId("toggle");
+        msg.setContent(Long.toString(ThreadLocalRandom.current().nextLong(3000L, 15001L)));
+        sendMessage(msg);
     }
 }
 

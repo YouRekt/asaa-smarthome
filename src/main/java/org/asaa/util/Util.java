@@ -2,22 +2,10 @@ package org.asaa.util;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.base.SpringAwareAgent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Util {
-    public static void SendMessage(SpringAwareAgent agent, String content, AID receiver, int performative, String conversationId) {
-        ACLMessage msg = new ACLMessage(performative);
-        msg.addReceiver(receiver);
-        msg.setContent(content);
-        msg.setConversationId(conversationId);
-        agent.sendMessage(msg);
-    }
-
     public static String ConvertACLPerformativeToString(int performative) {
         return switch (performative) {
             case ACLMessage.ACCEPT_PROPOSAL -> "ACCEPT_PROPOSAL";
@@ -90,5 +78,29 @@ public class Util {
 
         int randomIndex = new Random().nextInt(list.size());
         return list.get(randomIndex);
+    }
+
+    public static class IteratorAdapter<T> implements Iterator<T> {
+        private final jade.util.leap.Iterator it;
+        private final Class<T> type;
+
+        public IteratorAdapter(jade.util.leap.Iterator it, Class<T> type) {
+            this.it = it;
+            this.type = type;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            Object obj = it.next();
+            if (!type.isInstance(obj)) {
+                throw new ClassCastException("Expected type: " + type + ", but got: " + obj.getClass());
+            }
+            return type.cast(obj);
+        }
     }
 }

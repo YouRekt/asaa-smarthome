@@ -1,8 +1,14 @@
 package org.asaa.dto;
 
+import java.util.List;
+
 public record AgentMessageDTO(
-        String aid,
         String timestamp,
-        String content
+        String sender,
+        List<String> receiver,
+        String performative,
+        String conversationId,
+        String content,
+        boolean outgoing
 ) {
 }

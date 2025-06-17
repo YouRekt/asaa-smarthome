@@ -45,7 +45,7 @@ public class ApplicationController {
             Area area = new Area(areaEntry.getName());
 
             for (Map.Entry<String, Object> attr : areaEntry.getAttributes().entrySet()) {
-                area.setAttribute(attr.getKey(), attr.getValue());
+                area.setAttribute(attr.getKey(), Double.parseDouble(attr.getValue().toString()));
             }
 
             areas.put(areaEntry.getName(), area);

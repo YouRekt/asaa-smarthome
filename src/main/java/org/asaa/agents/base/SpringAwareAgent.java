@@ -55,12 +55,14 @@ public abstract class SpringAwareAgent extends Agent {
         if (msg.getContent() == null)
             msg.setContent("");
         send(msg);
-        agentCommunicationController.sendMessage(getName(), String.format("[Out] [%s] -> [%s <%s>] -> [%s]%s",
-                getLocalName(),
+        agentCommunicationController.sendMessage(
+                msg.getSender().getLocalName(),
+                StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Util.IteratorAdapter<AID>(msg.getAllReceiver(), AID.class), Spliterator.ORDERED), false).map(AID::getLocalName).collect(Collectors.toList()),
                 Util.ConvertACLPerformativeToString(msg.getPerformative()),
                 msg.getConversationId(),
-                StreamSupport.stream(Spliterators.spliteratorUnknownSize(msg.getAllReceiver(), Spliterator.ORDERED), false).map(aid -> ((AID) aid).getLocalName()).collect(Collectors.joining(", ")),
-                msg.getContent() == null ? "" : String.format(": %s", msg.getContent())));
+                msg.getContent(),
+                true
+                );
     }
 
     public final void register(String areaName) {
@@ -88,9 +90,13 @@ public abstract class SpringAwareAgent extends Agent {
         }
     }
 
-    protected List<AID> findAgents(String agentName, String areaName) {
+    protected List<AID> findAgents(String agentName, String areaName, boolean byType) {
         final ServiceDescription sd = new ServiceDescription();
-        sd.setName(agentName);
+        if (byType) {
+            sd.setType(agentName);
+        } else {
+            sd.setName(agentName);
+        }
 
         if (!areaName.isEmpty()) {
             final Property property = new Property();
@@ -110,14 +116,14 @@ public abstract class SpringAwareAgent extends Agent {
         }
     }
 
-    protected AID findAgent(String agentName, String areaName) {
-        AID chosenAgent = (findAgents(agentName, areaName) == null) ? null : findAgents(agentName, areaName).getFirst();
+    protected AID findAgent(String agentName, String areaName, boolean byType) {
+        AID chosenAgent = (findAgents(agentName, areaName, byType) == null) ? null : findAgents(agentName, areaName, byType).getFirst();
         if (chosenAgent == null) {
-            logger.warn("No {} found", agentName);
+            logger.warn("No agent {} found", byType ? "of type " + agentName : agentName);
             agentCommunicationController.sendError(getName(), "No" + agentName + "found");
             return null;
         }
-        if (!chosenAgent.getLocalName().equals(agentName)) {
+        if (!byType && !chosenAgent.getLocalName().equals(agentName)) {
             logger.error("Agent was not of the expected type!!! Found: {}, should be {}", chosenAgent.getLocalName(), agentName);
             agentCommunicationController.sendError(getName(), "Fatal: Agent was not of the expected type");
             return null;
