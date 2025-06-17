@@ -3,6 +3,7 @@ import ManagementPanel from "@/components/management-panel/management-panel";
 import { useStomp } from "@/hooks/use-stomp";
 import {
 	useStore,
+	type AgentStatus,
 	type Environment,
 	type Message,
 	type SystemStatus,
@@ -18,7 +19,13 @@ const STATUS = "/topic/agent-status" as const;
 
 const App = () => {
 	const { connect, disconnect, subscribe } = useStomp();
-	const { setEnvironment, addMessage, setSystemStatus } = useStore();
+	const {
+		setEnvironment,
+		addMessage,
+		setSystemStatus,
+		updateAgentStatus,
+		updateAreaAttributes,
+	} = useStore();
 
 	useEffect(() => {
 		connect();
@@ -30,7 +37,18 @@ const App = () => {
 
 		subscribe(ENVIRONMENT, (message) => {
 			console.log("Environment update:", message);
-			setEnvironment(message as Environment);
+			// Extract environment data without areas
+			const { areas, ...environmentData } = message;
+			setEnvironment(environmentData as Environment);
+
+			// Update area attributes separately
+			if (areas && Array.isArray(areas)) {
+				areas.forEach((area) => {
+					if (area.name && area.attributes) {
+						updateAreaAttributes(area.name, area.attributes);
+					}
+				});
+			}
 		});
 
 		subscribe(AGENTS, (message) => {
@@ -50,7 +68,8 @@ const App = () => {
 
 		subscribe(STATUS, (message) => {
 			console.log("Status update:", message);
-			// Here dont update the store, just log the status
+			const { aid, ...status } = message;
+			updateAgentStatus(status as AgentStatus, aid as string);
 		});
 
 		return () => disconnect();
@@ -61,6 +80,8 @@ const App = () => {
 		setEnvironment,
 		setSystemStatus,
 		subscribe,
+		updateAgentStatus,
+		updateAreaAttributes,
 	]);
 
 	return (

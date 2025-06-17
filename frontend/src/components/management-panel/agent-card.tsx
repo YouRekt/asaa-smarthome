@@ -27,7 +27,18 @@ import {
 	type Agent,
 } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { Cpu, Inbox, PenLine, Radio, Send } from "lucide-react";
+import {
+	Cpu,
+	Inbox,
+	Pause,
+	PenLine,
+	Play,
+	Radio,
+	Send,
+	Shield,
+	Zap,
+	ZapOff,
+} from "lucide-react";
 import { useCallback } from "react";
 
 const AgentCard = ({ agent }: { agent: Agent }) => {
@@ -46,28 +57,35 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 	};
 
 	const getAgentStatusIndicatorColor = useCallback(() => {
-		switch (agent.status) {
-			default:
-			case "disabled":
-				return "bg-red-500";
-			case "enabled":
-				return "bg-blue-500";
-			case "working":
-				return "bg-green-500";
-		}
-	}, [agent.status]);
+		if (!agent.status.isEnabled) return "bg-red-500";
+		if (!agent.status.isWorking) return "bg-blue-500";
+		return "bg-green-500";
+	}, [agent.status.isEnabled, agent.status.isWorking]);
 
 	const getAgentStatusBadgeColor = useCallback(() => {
-		switch (agent.status) {
-			default:
-			case "disabled":
-				return "bg-red-500/20 text-red-800 dark:text-red-400 dark:border-red-400";
-			case "enabled":
-				return "bg-blue-500/20 text-blue-800 dark:text-blue-400 dark:border-blue-400";
-			case "working":
-				return "bg-green-500/20 text-green-800 dark:text-green-400 dark:border-green-400";
+		if (!agent.status.isEnabled)
+			return "bg-red-500/20 text-red-800 dark:text-red-400 dark:border-red-400";
+		if (!agent.status.isWorking)
+			return "bg-blue-500/20 text-blue-800 dark:text-blue-400 dark:border-blue-400";
+		return "bg-green-500/20 text-green-800 dark:text-green-400 dark:border-green-400";
+	}, [agent.status.isEnabled, agent.status.isWorking]);
+
+	const getAgentStatusText = useCallback(() => {
+		if (!agent.status.isEnabled) return "Disabled";
+		if (!agent.status.isWorking) return "Idle";
+		return "Working";
+	}, [agent.status.isEnabled, agent.status.isWorking]);
+
+	const getCurrentPowerDraw = useCallback(() => {
+		if (agent.status.isWorking) {
+			return agent.status.activeDraw || 0;
 		}
-	}, [agent.status]);
+		return agent.status.idleDraw || 0;
+	}, [
+		agent.status.activeDraw,
+		agent.status.idleDraw,
+		agent.status.isWorking,
+	]);
 
 	return (
 		<Card className="hover:shadow-lg transition-shadow w-full max-w-md">
@@ -98,13 +116,12 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 								getAgentStatusBadgeColor()
 							)}
 						>
-							{agent.status.charAt(0).toUpperCase() +
-								agent.status.slice(1)}
+							{getAgentStatusText()}
 						</Badge>
 					</div>
 				</div>
 				<CardDescription>
-					<div className="flex justify-between items-center">
+					<div className="flex justify-between items-center mb-2">
 						<span className="text-sm text-muted-foreground">
 							Messages
 						</span>
@@ -116,6 +133,40 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 								↑ {outgoingMessages.length}
 							</Badge>
 						</div>
+					</div>
+
+					{/* Power and Task Info */}
+					<div className="flex flex-wrap gap-2 text-xs">
+						<div className="flex items-center gap-1">
+							{getCurrentPowerDraw() > 0 ? (
+								<Zap className="size-3 text-yellow-500" />
+							) : (
+								<ZapOff className="size-3 text-muted-foreground" />
+							)}
+							<span>{getCurrentPowerDraw()}W</span>
+						</div>
+
+						{agent.status.priority !== undefined && (
+							<div className="flex items-center gap-1">
+								<Shield className="size-3 text-blue-500" />
+								<span>P{agent.status.priority}</span>
+							</div>
+						)}
+
+						{agent.status.isTaskInterruptible !== undefined && (
+							<div className="flex items-center gap-1">
+								{agent.status.isTaskInterruptible ? (
+									<Pause className="size-3 text-orange-500" />
+								) : (
+									<Play className="size-3 text-green-500" />
+								)}
+								<span>
+									{agent.status.isTaskInterruptible
+										? "Int"
+										: "Fixed"}
+								</span>
+							</div>
+						)}
 					</div>
 				</CardDescription>
 			</CardHeader>
@@ -146,10 +197,38 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 					</DialogTrigger>
 					<DialogContent className="max-h-dvh max-w-dvw">
 						<DialogHeader>
-							<DialogTitle>{agent.name}</DialogTitle>
+							<DialogTitle className="flex items-center gap-2">
+								{agent.name}
+								<div className="flex gap-2">
+									<Badge
+										variant="outline"
+										className="text-xs"
+									>
+										Priority:{" "}
+										{agent.status.priority || "N/A"}
+									</Badge>
+									<Badge
+										variant="outline"
+										className="text-xs"
+									>
+										{getCurrentPowerDraw()}W
+									</Badge>
+								</div>
+							</DialogTitle>
 							<DialogDescription>
 								Manage agent communications - view
 								incoming/outgoing messages and compose new ones.
+								{agent.status.isTaskInterruptible !==
+									undefined && (
+									<div className="mt-2 text-xs">
+										Task:{" "}
+										{agent.status.isTaskInterruptible
+											? "Interruptible"
+											: "Non-interruptible"}
+										{agent.status.isTaskResumable &&
+											" & Resumable"}
+									</div>
+								)}
 							</DialogDescription>
 						</DialogHeader>
 						<Tabs defaultValue="inbox">

@@ -25,13 +25,15 @@ const Message = ({
 			case "INFORM":
 				return "bg-blue-600/10 text-blue-800 dark:text-blue-600";
 			case "REQUEST":
-				return "bg-orange-600/10 text-blue-800 dark:text-blue-600";
+				return "bg-orange-600/10 text-orange-800 dark:text-orange-600";
 			case "CFP":
 				return "bg-purple-600/10 text-purple-800 dark:text-purple-600";
 			case "AGREE":
 				return "bg-green-600/10 text-green-800 dark:text-green-600";
 			case "REFUSE":
 				return "bg-red-600/10 text-red-800 dark:text-red-600";
+			case "CONFIRM":
+				return "bg-teal-600/10 text-teal-800 dark:text-teal-600";
 			case "REJECT_PROPOSAL":
 				return "bg-rose-600/10 text-rose-800 dark:text-rose-600";
 			case "ACCEPT_PROPOSAL":
@@ -39,15 +41,13 @@ const Message = ({
 			case "PROPOSE":
 				return "bg-yellow-600/10 text-yellow-800 dark:text-yellow-600";
 			default:
-				return "bg-muted-foreground text-muted-foreground";
+				return "bg-zinc-500/10 text-zinc-800 dark:text-zinc-600";
 		}
 	};
 
-	// Determine if this is an incoming or outgoing message for the viewer
-	const isOutgoing = viewerAgent ? message.sender === viewerAgent.aid : false;
-	const isIncoming = viewerAgent
-		? message.receivers.includes(viewerAgent.aid)
-		: false;
+	// Use the outgoing flag from the message
+	const isOutgoing = message.outgoing;
+	const isIncoming = !message.outgoing;
 
 	// Get border color based on message direction
 	const getBorderColor = () => {
@@ -107,7 +107,7 @@ const Message = ({
 								<>
 									<span className="font-medium">To:</span>
 									<div className="flex gap-1 flex-wrap">
-										{message.receivers.map(
+										{message.receiver.map(
 											(receiver, idx) => (
 												<Badge
 													key={idx}
@@ -156,8 +156,12 @@ const Message = ({
 				Conversation: {message.conversationId}
 			</div>
 
-			{/* Message content */}
-			<p className="text-sm">{message.content}</p>
+			{/* Message content - handle empty string */}
+			<p className="text-sm">
+				{message.content || (
+					<em className="text-muted-foreground">No content</em>
+				)}
+			</p>
 		</div>
 	);
 };

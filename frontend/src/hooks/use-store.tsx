@@ -10,6 +10,9 @@ export type Environment = {
 	timeDelta: number;
 	maxPowerCapacity: number;
 	currentPowerConsumption: number;
+	performedTasks: number;
+	errorTasks: number;
+	humanLocation: string | null;
 };
 
 const AreaAttributes = ["temperature"] as const;
@@ -24,6 +27,16 @@ export type Area = {
 };
 
 export type AgentType = "sensor" | "appliance";
+
+export type AgentStatus = {
+	isEnabled: boolean;
+	isWorking: boolean;
+	isTaskInterruptible?: boolean;
+	isTaskResumable?: boolean;
+	idleDraw?: number;
+	activeDraw?: number;
+	priority?: number;
+};
 
 export type Agent = {
 	aid: string;
@@ -121,28 +134,35 @@ type AID = string;
 
 export type Message = {
 	sender: AID;
-	receivers: AID[];
-	content?: string;
+	dtoSender: AID;
+	receiver: AID[];
+	content: string;
 	timestamp: string;
 	performative: Performative;
 	conversationId: string;
+	outgoing: boolean;
 };
 
 export const getIncomingMessages = (
 	agentAid: AID,
 	messages: Message[]
 ): Message[] => {
-	return messages.filter((message) => message.receivers.includes(agentAid));
+	return messages.filter(
+		(message) =>
+			message.receiver.includes(agentAid) &&
+			message.dtoSender === agentAid &&
+			!message.outgoing
+	);
 };
 
 export const getOutgoingMessages = (
 	agentAid: AID,
 	messages: Message[]
 ): Message[] => {
-	return messages.filter((message) => message.sender === agentAid);
+	return messages.filter(
+		(message) => message.dtoSender === agentAid && message.outgoing
+	);
 };
-
-export type AgentStatus = "enabled" | "working" | "disabled";
 
 type State = {
 	systemStatus: SystemStatus;
@@ -162,201 +182,12 @@ type Actions = {
 	setEnvironment: (environment: Environment) => void;
 	addMessage: (message: Message) => void;
 	clearMessages: () => void;
+	updateAgentStatus: (agentStatus: AgentStatus, aid: string) => void;
+	updateAreaAttributes: (
+		areaName: string,
+		attributes: Partial<Record<AreaAttributes, number>>
+	) => void;
 };
-
-// const defaultAreas: Area[] = [
-// 	{
-// 		name: "Kitchen",
-// 		attributes: { temperature: 21.0 },
-// 	},
-// 	{
-// 		name: "Living Room",
-// 		attributes: { temperature: 22.0 },
-// 	},
-// 	{
-// 		name: "Bedroom",
-// 		attributes: { temperature: 20.0 },
-// 	},
-// 	{
-// 		name: "Bathroom",
-// 		attributes: { temperature: 23.0 },
-// 	},
-// ];
-
-// const defaultAgents: Agent[] = [
-// 	{
-// 		aid: "0",
-// 		area: "Kitchen",
-// 		name: "Temperature Sensor",
-// 		type: "sensor",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "1",
-// 		area: "Kitchen",
-// 		name: "Motion Sensor",
-// 		type: "sensor",
-// 		status: "disabled",
-// 	},
-// 	{
-// 		aid: "2",
-// 		area: "Kitchen",
-// 		name: "Smart Lightbulb",
-// 		type: "appliance",
-// 		status: "working",
-// 	},
-// 	{
-// 		aid: "3",
-// 		area: "Kitchen",
-// 		name: "AC",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "4",
-// 		area: "Kitchen",
-// 		name: "Fridge",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "5",
-// 		area: "Kitchen",
-// 		name: "Coffe Machine",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "6",
-// 		area: "Kitchen",
-// 		name: "Dishwasher",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "7",
-// 		area: "Kitchen",
-// 		name: "Oven",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "8",
-// 		area: "Kitchen",
-// 		name: "Washing Machine",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "9",
-// 		area: "Kitchen",
-// 		name: "Dryer",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "10",
-// 		area: "Kitchen",
-// 		name: "Smart Speaker",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "11",
-// 		area: "Kitchen",
-// 		name: "Smart Thermostat",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "12",
-// 		area: "Kitchen",
-// 		name: "Smart TV",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// 	{
-// 		aid: "13",
-// 		area: "Kitchen",
-// 		name: "Smart Vacuum Cleaner",
-// 		type: "appliance",
-// 		status: "enabled",
-// 	},
-// ];
-
-// const defaultMessages: Message[] = [
-// 	{
-// 		aid: "0",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Temperature is 21°C",
-// 	},
-// 	{
-// 		aid: "1",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Motion detected in the kitchen",
-// 	},
-// 	{
-// 		aid: "2",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Smart lightbulb turned on",
-// 	},
-// 	{
-// 		aid: "3",
-// 		timestamp: new Date().toISOString(),
-// 		content: "AC set to 22°C",
-// 	},
-// 	{
-// 		aid: "4",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Fridge temperature is stable",
-// 	},
-// 	{
-// 		aid: "5",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Coffee machine started brewing",
-// 	},
-// 	{
-// 		aid: "6",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Dishwasher cycle completed",
-// 	},
-// 	{
-// 		aid: "7",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Oven preheated to 180°C",
-// 	},
-// 	{
-// 		aid: "8",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Washing machine finished cycle",
-// 	},
-// 	{
-// 		aid: "9",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Dryer completed drying clothes",
-// 	},
-// 	{
-// 		aid: "10",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Smart speaker playing music",
-// 	},
-// 	{
-// 		aid: "11",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Smart thermostat adjusted to 20°C",
-// 	},
-// 	{
-// 		aid: "12",
-// 		timestamp: new Date().toISOString(),
-// 		content: "Smart TV turned on",
-// 	},
-// 	{
-// 		aid: "13",
-// 		timestamp: new Date().toISOString(),
-// 		content:
-// 			"Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus odio sit eos quod, earum pariatur dolores iure, quas repellendus velit, sapiente aliquam? Eum, itaque ea fuga beatae vero in porro. Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus odio sit eos quod, earum pariatur dolores iure, quas repellendus velit, sapiente aliquam? Eum, itaque ea fuga beatae vero in porro. Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus odio sit eos quod, earum pariatur dolores iure, quas repellendus velit, sapiente aliquam? Eum, itaque ea fuga beatae vero in porro.",
-// 	},
-// ];
 
 export const useStore = create<State & Actions>()(
 	immer((set) => ({
@@ -397,6 +228,29 @@ export const useStore = create<State & Actions>()(
 		clearMessages: () =>
 			set((state) => {
 				state.messages = [];
+			}),
+		updateAgentStatus: (agentStatus, aid) =>
+			set((state) => {
+				const agent = state.agents.find((a) => a.aid === aid);
+				if (agent) {
+					agent.status = {
+						...agent.status,
+						...agentStatus,
+					};
+				}
+			}),
+		updateAreaAttributes: (areaName, attributes) =>
+			set((state) => {
+				const area = state.areas.find(
+					(a) => a.name.toLowerCase() === areaName.toLowerCase()
+				);
+				if (area) {
+					Object.entries(attributes).forEach(([key, value]) => {
+						if (value !== undefined) {
+							area.attributes[key as AreaAttributes] = value;
+						}
+					});
+				}
 			}),
 	}))
 );

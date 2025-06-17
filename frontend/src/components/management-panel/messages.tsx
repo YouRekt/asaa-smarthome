@@ -20,7 +20,7 @@ const Messages = () => {
 		const senderAgent = agents.find(
 			(agent) => agent.aid === message.sender
 		);
-		const receiverAgents = message.receivers
+		const receiverAgents = message.receiver
 			.map((receiverId) =>
 				agents.find((agent) => agent.aid === receiverId)
 			)

@@ -156,7 +156,10 @@ const ConfigurationForm = ({
 							area: area.name,
 							name: template.name,
 							type: template.type,
-							status: "enabled" as AgentStatus,
+							status: {
+								isEnabled: true,
+								isWorking: false,
+							} as AgentStatus,
 						};
 					});
 				});
