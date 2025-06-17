@@ -17,6 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useStomp } from "@/hooks/use-stomp";
 import {
 	performatives,
 	performativeSchema,
@@ -35,6 +36,8 @@ const FormSchema = z.object({
 });
 
 const AgentMessageForm = ({ agent }: { agent: Agent }) => {
+	const { publish } = useStomp();
+
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
@@ -46,8 +49,9 @@ const AgentMessageForm = ({ agent }: { agent: Agent }) => {
 	});
 
 	function onSubmit(data: z.infer<typeof FormSchema>) {
-		console.log(data);
+		console.log("Sent message to agent", data);
 		// sendMessage("/app/agent-message", data);
+		publish("/app/agent-message", data);
 		form.reset();
 	}
 	return (

@@ -32,6 +32,8 @@ const Message = ({
 				return "bg-green-600/10 text-green-800 dark:text-green-600";
 			case "REFUSE":
 				return "bg-red-600/10 text-red-800 dark:text-red-600";
+			case "CONFIRM":
+				return "bg-teal-600/10 text-teal-800 dark:text-teal-600";
 			case "REJECT_PROPOSAL":
 				return "bg-rose-600/10 text-rose-800 dark:text-rose-600";
 			case "ACCEPT_PROPOSAL":
@@ -39,7 +41,7 @@ const Message = ({
 			case "PROPOSE":
 				return "bg-yellow-600/10 text-yellow-800 dark:text-yellow-600";
 			default:
-				return "bg-muted-foreground text-muted-foreground";
+				return "bg-zinc-500/10 text-zinc-800 dark:text-zinc-600";
 		}
 	};
 
