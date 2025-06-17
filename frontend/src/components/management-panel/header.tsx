@@ -1,8 +1,8 @@
 import { useStomp } from "@/hooks/use-stomp";
 import { useStore } from "@/hooks/use-store";
 import {
+	CircleDollarSign,
 	Clock,
-	CreditCard,
 	Thermometer,
 	Wifi,
 	WifiOff,
@@ -39,7 +39,7 @@ const Header = () => {
 					{isConnected && (
 						<div className="hidden lg:flex items-center gap-6">
 							<div className="flex items-center gap-2">
-								<Clock className="size-4 text-gray-400" />
+								<Clock className="size-4 text-muted-foreground" />
 								<span className="text-sm font-medium">
 									{environment?.time}
 								</span>
@@ -55,7 +55,7 @@ const Header = () => {
 								</span>
 							</div>
 							<div className="flex items-center gap-2">
-								<CreditCard className="size-4 text-muted-foreground" />
+								<CircleDollarSign className="size-4 text-muted-foreground" />
 								<span className="text-sm font-medium">
 									{environment?.credits}
 								</span>
