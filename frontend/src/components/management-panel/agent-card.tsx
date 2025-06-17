@@ -1,5 +1,6 @@
 import AgentInbox from "@/components/management-panel/agent-inbox";
 import AgentMessageForm from "@/components/management-panel/agent-message-form";
+import AgentOutbox from "@/components/management-panel/agent-outbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,17 +20,30 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useStore, type Agent } from "@/hooks/use-store";
+import {
+	getIncomingMessages,
+	getOutgoingMessages,
+	useStore,
+	type Agent,
+} from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { Cpu, Inbox, PenLine, Radio } from "lucide-react";
+import { Cpu, Inbox, PenLine, Radio, Send } from "lucide-react";
 import { useCallback } from "react";
 
 const AgentCard = ({ agent }: { agent: Agent }) => {
 	const { messages } = useStore();
 
-	const agentMessages = messages.filter(
-		(message) => message.aid === agent.aid
-	);
+	const incomingMessages = getIncomingMessages(agent.aid, messages);
+	const outgoingMessages = getOutgoingMessages(agent.aid, messages);
+
+	const getLastMessage = () => {
+		const allAgentMessages = [...incomingMessages, ...outgoingMessages];
+		return allAgentMessages.sort(
+			(a, b) =>
+				new Date(b.timestamp).getTime() -
+				new Date(a.timestamp).getTime()
+		)[0];
+	};
 
 	const getAgentStatusIndicatorColor = useCallback(() => {
 		switch (agent.status) {
@@ -90,27 +104,40 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 					</div>
 				</div>
 				<CardDescription>
-					<div className="flex justify-between">
-						<span className="text-sm text-muted-foreground items-baseline">
+					<div className="flex justify-between items-center">
+						<span className="text-sm text-muted-foreground">
 							Messages
 						</span>
-						<Badge className="ml-2" variant="outline">
-							{agentMessages.length}
-						</Badge>
+						<div className="flex gap-2">
+							<Badge variant="outline" className="text-xs">
+								↓ {incomingMessages.length}
+							</Badge>
+							<Badge variant="outline" className="text-xs">
+								↑ {outgoingMessages.length}
+							</Badge>
+						</div>
 					</div>
 				</CardDescription>
 			</CardHeader>
-			<CardContent className="text-sm text-muted-foreground truncate">
-				<Badge variant="outline">Last message</Badge>
-				<span className="ml-2">
-					{
-						agentMessages.sort(
-							(a, b) =>
-								new Date(b.timestamp).getTime() -
-								new Date(a.timestamp).getTime()
-						)[0]?.content
-					}
-				</span>
+			<CardContent className="text-sm text-muted-foreground">
+				<div className="flex items-center gap-2 mb-2">
+					<Badge variant="outline">Last message</Badge>
+				</div>
+				{getLastMessage() ? (
+					<div className="text-xs">
+						<div className="flex gap-2 items-center mb-1">
+							<span className="font-medium">
+								{getLastMessage()?.performative}
+							</span>
+							<span className="text-muted-foreground">
+								{getLastMessage()?.conversationId}
+							</span>
+						</div>
+						<p className="truncate">{getLastMessage()?.content}</p>
+					</div>
+				) : (
+					<span className="text-xs">No messages</span>
+				)}
 			</CardContent>
 			<CardFooter className="flex justify-between">
 				<Dialog>
@@ -121,21 +148,36 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 						<DialogHeader>
 							<DialogTitle>{agent.name}</DialogTitle>
 							<DialogDescription>
-								Here you can view agents messages as well as
-								send them.
+								Manage agent communications - view
+								incoming/outgoing messages and compose new ones.
 							</DialogDescription>
 						</DialogHeader>
 						<Tabs defaultValue="inbox">
 							<TabsList>
 								<TabsTrigger value="inbox">
-									<Inbox /> Inbox
+									<Inbox className="size-4" />
+									Inbox ({incomingMessages.length})
+								</TabsTrigger>
+								<TabsTrigger value="outbox">
+									<Send className="size-4" />
+									Outbox ({outgoingMessages.length})
 								</TabsTrigger>
 								<TabsTrigger value="compose">
-									<PenLine /> Compose
+									<PenLine className="size-4" />
+									Compose
 								</TabsTrigger>
 							</TabsList>
 							<TabsContent value="inbox">
-								<AgentInbox agent={agent} />
+								<AgentInbox
+									agent={agent}
+									messages={incomingMessages}
+								/>
+							</TabsContent>
+							<TabsContent value="outbox">
+								<AgentOutbox
+									agent={agent}
+									messages={outgoingMessages}
+								/>
 							</TabsContent>
 							<TabsContent value="compose">
 								<AgentMessageForm agent={agent} />

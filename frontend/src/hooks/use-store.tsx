@@ -88,10 +88,58 @@ export const agentTemplates: AgentTemplate[] = [
 	},
 ] as const;
 
+export const performatives = [
+	"ACCEPT_PROPOSAL",
+	"AGREE",
+	"CANCEL",
+	"CFP",
+	"CONFIRM",
+	"DISCONFIRM",
+	"FAILURE",
+	"INFORM",
+	"INFORM_IF",
+	"INFORM_REF",
+	"NOT_UNDERSTOOD",
+	"PROPOSE",
+	"QUERY_IF",
+	"QUERY_REF",
+	"REFUSE",
+	"REJECT_PROPOSAL",
+	"REQUEST",
+	"REQUEST_WHEN",
+	"REQUEST_WHENEVER",
+	"SUBSCRIBE",
+	"PROXY",
+	"PROPAGATE",
+	"UNKNOWN",
+] as const;
+
+export const performativeSchema = z.enum(performatives);
+
+export type Performative = z.infer<typeof performativeSchema>;
+type AID = string;
+
 export type Message = {
-	aid: string;
-	content: string;
+	sender: AID;
+	receivers: AID[];
+	content?: string;
 	timestamp: string;
+	performative: Performative;
+	conversationId: string;
+};
+
+export const getIncomingMessages = (
+	agentAid: AID,
+	messages: Message[]
+): Message[] => {
+	return messages.filter((message) => message.receivers.includes(agentAid));
+};
+
+export const getOutgoingMessages = (
+	agentAid: AID,
+	messages: Message[]
+): Message[] => {
+	return messages.filter((message) => message.sender === agentAid);
 };
 
 export type AgentStatus = "enabled" | "working" | "disabled";

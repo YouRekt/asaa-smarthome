@@ -17,41 +17,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { Agent } from "@/hooks/use-store";
+import {
+	performatives,
+	performativeSchema,
+	type Agent,
+} from "@/hooks/use-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 
-const performatives = [
-	"ACCEPT_PROPOSAL",
-	"AGREE",
-	"CANCEL",
-	"CFP",
-	"CONFIRM",
-	"DISCONFIRM",
-	"FAILURE",
-	"INFORM",
-	"INFORM_IF",
-	"INFORM_REF",
-	"NOT_UNDERSTOOD",
-	"PROPOSE",
-	"QUERY_IF",
-	"QUERY_REF",
-	"REFUSE",
-	"REJECT_PROPOSAL",
-	"REQUEST",
-	"REQUEST_WHEN",
-	"REQUEST_WHENEVER",
-	"SUBSCRIBE",
-	"PROXY",
-	"PROPAGATE",
-	"UNKNOWN",
-] as const;
-
 const FormSchema = z.object({
 	aid: z.string(),
-	performative: z.enum(performatives),
+	performative: performativeSchema,
 	conversationId: z.string(),
 	message: z.string(),
 });
