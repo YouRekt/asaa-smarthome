@@ -56,7 +56,7 @@ const defaultValues: ConfigurationFormValues = {
 };
 
 const ConfigPanel = () => {
-	const { areas, agents } = useStore();
+	const { areas, agents, setSystemStatus } = useStore();
 	const hasConfiguration = areas.length > 0 && agents.length > 0;
 	const totalAgents = agents.length;
 
@@ -69,6 +69,14 @@ const ConfigPanel = () => {
 		control: form.control,
 		name: "areas",
 	});
+
+	async function handleStartSystem() {
+		//TODO: POST request to start the system
+		setSystemStatus("starting");
+		setTimeout(() => {
+			setSystemStatus("running");
+		}, 1000); // Simulate a delay for starting the system
+	}
 
 	return (
 		<main className="flex-1 p-4 overflow-y-auto flex flex-col justify-center">
@@ -251,6 +259,7 @@ const ConfigPanel = () => {
 						<Button
 							className="w-full h-12 text-lg"
 							disabled={!hasConfiguration}
+							onClick={handleStartSystem}
 						>
 							<Play className="h-5 w-5 mr-2" />
 							Start Smart Home System
