@@ -1,0 +1,178 @@
+import ConfigurationFormAgents from "@/components/config-panel/configuration-form-agents";
+import { CounterInput } from "@/components/config-panel/counter-input";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AreaAttributesSchema, TemplateIdSchema } from "@/hooks/use-store";
+import { X } from "lucide-react";
+import { useFormContext, type UseFieldArrayReturn } from "react-hook-form";
+import { z } from "zod/v4";
+
+export const ConfigurationFormSchema = z.object({
+	areas: z.array(
+		z.object({
+			name: z.string().min(1, {
+				error: "Area name is required",
+			}),
+			attributes: z.record(AreaAttributesSchema, z.number()),
+			agents: z
+				.array(
+					z.object({
+						templateId: TemplateIdSchema,
+						count: z.number().min(0),
+					})
+				)
+				.check((ctx) => {
+					if (!ctx.value.some((agent) => agent.count > 0)) {
+						ctx.issues.push({
+							code: "too_small",
+							minimum: 1,
+							origin: "array",
+							inclusive: true,
+							message: "At least one agent is required",
+							input: ctx.value,
+						});
+					}
+				}),
+		})
+	),
+});
+
+export type ConfigurationFormValues = z.infer<typeof ConfigurationFormSchema>;
+
+const ConfigurationForm = ({
+	fieldArray,
+}: {
+	fieldArray: UseFieldArrayReturn<ConfigurationFormValues>;
+}) => {
+	const form = useFormContext<ConfigurationFormValues>();
+
+	const { fields: areas } = fieldArray;
+
+	function onSubmit(data: ConfigurationFormValues) {
+		console.log("Form submitted with data:", data);
+	}
+
+	return (
+		<form id="configuration-form" onSubmit={form.handleSubmit(onSubmit)}>
+			<ScrollArea className="h-[calc(75dvh)]">
+				<div className="mr-4 flex flex-col gap-4">
+					{areas.map((field, areaIndex) => {
+						return (
+							<Card key={field.id}>
+								<CardHeader>
+									<CardTitle>
+										<FormField
+											control={form.control}
+											name={`areas.${areaIndex}.name`}
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														Room Name
+													</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="Living Room"
+															{...field}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</CardTitle>
+									<CardDescription>
+										Configure agents for this area
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="flex flex-col gap-4">
+									<FormField
+										key={field.id}
+										control={form.control}
+										name={`areas.${areaIndex}.attributes.temperature`}
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>
+													Temperature
+												</FormLabel>
+												<FormDescription>
+													Set the default temperature
+													for this area.
+												</FormDescription>
+												<FormControl>
+													<CounterInput
+														value={field.value}
+														onValueChange={
+															field.onChange
+														}
+														min={0}
+														step={0.1}
+														format={(value) =>
+															`${value} °C`
+														}
+													/>
+												</FormControl>
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name={`areas.${areaIndex}.agents`}
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Agents</FormLabel>
+												<FormDescription>
+													Select agents for this area
+													(at least one required)
+												</FormDescription>
+												<FormControl>
+													<ConfigurationFormAgents
+														areaIndex={areaIndex}
+														{...field}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</CardContent>
+								<CardFooter>
+									{areas.length > 1 && (
+										<Button
+											type="button"
+											size="icon"
+											variant="ghost"
+											onClick={() =>
+												fieldArray.remove(areaIndex)
+											}
+										>
+											<X />
+										</Button>
+									)}
+								</CardFooter>
+							</Card>
+						);
+					})}
+				</div>
+			</ScrollArea>
+		</form>
+	);
+};
+
+export default ConfigurationForm;
