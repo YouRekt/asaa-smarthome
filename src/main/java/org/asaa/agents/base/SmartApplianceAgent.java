@@ -28,8 +28,6 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
 
     @Setter
     protected boolean isEnabled = false;
-    @Setter
-    protected boolean isWorking = false;
     protected int idleDraw = 0;
     protected int activeDraw = 0;
 
@@ -49,7 +47,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     }
 
     public void updateStatus() {
-        agentCommunicationController.setAgentStatus(getLocalName(),isEnabled,isWorking, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
+        agentCommunicationController.setAgentStatus(getLocalName(),isEnabled, getCurrentTask() != null, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
     }
 
     public void handleToggle(String message) {

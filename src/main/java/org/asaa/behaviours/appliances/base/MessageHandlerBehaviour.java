@@ -78,7 +78,6 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 break;
             case "enable-active":
                 agent.getLogger().info("Coordinator AGREED: {}", msg.getContent());
-                agent.setWorking(true);
                 String replyWith = msg.getInReplyTo();
                 Runnable callback = agent.onPowerGrantedCallbacks.remove(replyWith);
                 if (callback != null) {
@@ -124,9 +123,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 }
                 agent.setCfpInProgress(true);
                 int canFree = 0, prio = agent.getPriority();
-                if (agent.isWorking()) {
-                    if (agent.getCurrentTask() == null)
-                        agent.getLogger().error("Power relief CFP: Agent is working without any task assigned!!!");
+                if (agent.getCurrentTask() != null) {
                     if (agent.getCurrentTask().isResumable()) {
                         canFree = agent.getActiveDraw();
                         prio = agent.getPriority() % 100;
@@ -146,7 +143,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                     prio = agent.getPriority() % 100 + 200;
                 }
 
-                agent.getLogger().info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", agent.getLocalName(), canFree, prio, (agent.isWorking() ? "yes" : "no"));
+                agent.getLogger().info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", agent.getLocalName(), canFree, prio, (agent.getCurrentTask() != null ? "yes" : "no"));
                 ACLMessage propose = msg.createReply();
                 propose.setPerformative(ACLMessage.PROPOSE);
                 propose.setContent(canFree + "," + prio);
