@@ -3,7 +3,7 @@ package org.asaa.agents.base;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
-import org.asaa.behaviours.sensor.MessageHandlerBehaviour;
+import org.asaa.behaviours.sensors.MessageHandlerBehaviour;
 
 import java.util.ArrayList;
 import java.util.List;

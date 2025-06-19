@@ -1,4 +1,4 @@
-package org.asaa.behaviours.coordinators;
+package org.asaa.behaviours.coordinators.CoordinatorAgent;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;

@@ -1,4 +1,4 @@
-package org.asaa.behaviours.coordinators;
+package org.asaa.behaviours.coordinators.CoordinatorAgent;
 
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;

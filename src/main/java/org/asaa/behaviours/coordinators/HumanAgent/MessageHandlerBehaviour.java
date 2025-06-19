@@ -1,4 +1,4 @@
-package org.asaa.behaviours.human;
+package org.asaa.behaviours.coordinators.HumanAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.coordinators.HumanAgent;

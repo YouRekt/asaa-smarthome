@@ -1,4 +1,4 @@
-package org.asaa.behaviours.sensor;
+package org.asaa.behaviours.sensors;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.base.SensorAgent;

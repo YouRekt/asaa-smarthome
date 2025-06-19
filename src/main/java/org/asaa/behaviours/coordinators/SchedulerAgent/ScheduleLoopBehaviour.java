@@ -1,4 +1,4 @@
-package org.asaa.behaviours.scheduler;
+package org.asaa.behaviours.coordinators.SchedulerAgent;
 
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
