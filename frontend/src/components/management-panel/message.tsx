@@ -4,7 +4,7 @@ import type {
 	Message as MessageType,
 	Performative,
 } from "@/hooks/use-store";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp } from "lucide-react";
 
 type MessageProps = {
@@ -147,7 +147,7 @@ const Message = ({
 
 				{/* Timestamp */}
 				<span className="text-xs text-muted-foreground">
-					{formatDate(message.timestamp)}
+					{message.timestamp}
 				</span>
 			</div>
 

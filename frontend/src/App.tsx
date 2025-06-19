@@ -3,6 +3,7 @@ import ManagementPanel from "@/components/management-panel/management-panel";
 import { useStomp } from "@/hooks/use-stomp";
 import {
 	useStore,
+	type AgentError,
 	type AgentStatus,
 	type Environment,
 	type Message,
@@ -25,6 +26,7 @@ const App = () => {
 		setSystemStatus,
 		updateAgentStatus,
 		updateAreaAttributes,
+		addError,
 	} = useStore();
 
 	useEffect(() => {
@@ -37,6 +39,7 @@ const App = () => {
 
 		subscribe(ENVIRONMENT, (message) => {
 			console.log("Environment update:", message);
+
 			// Extract environment data without areas
 			const { areas, ...environmentData } = message;
 			setEnvironment(environmentData as Environment);
@@ -63,7 +66,8 @@ const App = () => {
 
 		subscribe(ERROR, (message) => {
 			console.error("Error update:", message);
-			// Here dont update the store, just log the error
+			// Add error to store
+			addError(message as AgentError);
 		});
 
 		subscribe(STATUS, (message) => {
@@ -82,6 +86,7 @@ const App = () => {
 		subscribe,
 		updateAgentStatus,
 		updateAreaAttributes,
+		addError,
 	]);
 
 	return (

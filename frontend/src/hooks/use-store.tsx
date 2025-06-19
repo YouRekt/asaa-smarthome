@@ -46,6 +46,13 @@ export type Agent = {
 	status: AgentStatus;
 };
 
+// New Error type
+export type AgentError = {
+	timestamp: string;
+	sender: string;
+	message: string;
+};
+
 export const TemplateIdSchema = z.enum([
 	"Temperature Sensor",
 	"Motion Sensor",
@@ -164,11 +171,20 @@ export const getOutgoingMessages = (
 	);
 };
 
+// New helper function for agent errors
+export const getAgentErrors = (
+	agentAid: AID,
+	errors: AgentError[]
+): AgentError[] => {
+	return errors.filter((error) => error.sender === agentAid);
+};
+
 type State = {
 	systemStatus: SystemStatus;
 	areas: Area[];
 	agents: Agent[];
 	messages: Message[];
+	errors: AgentError[]; // New errors array
 	selectedArea: string;
 	environment?: Environment;
 };
@@ -187,15 +203,24 @@ type Actions = {
 		areaName: string,
 		attributes: Partial<Record<AreaAttributes, number>>
 	) => void;
+	addError: (error: AgentError) => void; // New error action
+	clearErrors: () => void; // New clear errors action
+	resetAllState: () => void;
+};
+
+const initialState: State = {
+	systemStatus: "stopped",
+	areas: [],
+	agents: [],
+	messages: [],
+	errors: [], // Initialize errors
+	selectedArea: "Kitchen",
+	environment: undefined,
 };
 
 export const useStore = create<State & Actions>()(
 	immer((set) => ({
-		systemStatus: "stopped",
-		areas: [],
-		agents: [],
-		messages: [],
-		selectedArea: "Kitchen",
+		...initialState,
 		setSystemStatus: (status) =>
 			set((state) => {
 				state.systemStatus = status;
@@ -251,6 +276,25 @@ export const useStore = create<State & Actions>()(
 						}
 					});
 				}
+			}),
+		addError: (error) =>
+			set((state) => {
+				state.errors.push(error);
+			}),
+		clearErrors: () =>
+			set((state) => {
+				state.errors = [];
+			}),
+		resetAllState: () =>
+			set((state) => {
+				// Reset all state to initial values
+				state.systemStatus = "stopped";
+				state.areas = [];
+				state.agents = [];
+				state.messages = [];
+				state.errors = []; // Reset errors
+				state.selectedArea = "Kitchen";
+				state.environment = undefined;
 			}),
 	}))
 );

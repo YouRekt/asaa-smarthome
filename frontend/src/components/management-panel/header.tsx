@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useStomp } from "@/hooks/use-stomp";
 import { useStore } from "@/hooks/use-store";
@@ -6,7 +7,9 @@ import {
 	CheckCircle,
 	CircleDollarSign,
 	Clock,
+	LogOut,
 	Thermometer,
+	User,
 	Wifi,
 	WifiOff,
 	Zap,
@@ -14,7 +17,7 @@ import {
 
 const Header = () => {
 	const { areas, selectedArea, environment } = useStore();
-	const { isConnected } = useStomp();
+	const { isConnected, publish } = useStomp();
 
 	const currentRoom = areas.find((area) => area.name === selectedArea);
 
@@ -36,6 +39,34 @@ const Header = () => {
 		  100
 		: 0;
 
+	// Check if human is already in the current room
+	const isHumanInCurrentRoom = Boolean(
+		environment?.humanLocation &&
+			environment.humanLocation !== "null" &&
+			environment.humanLocation.toLowerCase() ===
+				selectedArea.toLowerCase()
+	);
+
+	// Check if human is in any room (not null and not "null")
+	const isHumanInHouse =
+		environment?.humanLocation && environment.humanLocation !== "null";
+
+	const handleMoveHuman = () => {
+		if (isConnected && currentRoom) {
+			publish("/app/human-location", {
+				area: currentRoom.name.toLowerCase(),
+			});
+		}
+	};
+
+	const handleLeaveHouse = () => {
+		if (isConnected) {
+			publish("/app/human-location", {
+				area: "null",
+			});
+		}
+	};
+
 	return (
 		<header className="bg-card border-b">
 			<div className="px-4 sm:px-6 lg:px-8">
@@ -44,6 +75,35 @@ const Header = () => {
 						<h1 className="text-2xl font-semibold text-card-foreground ml-12 md:ml-0">
 							{currentRoom?.name}
 						</h1>
+
+						{/* Human Control Buttons */}
+						<div className="flex items-center gap-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleMoveHuman}
+								disabled={!isConnected || isHumanInCurrentRoom}
+								className="flex items-center gap-2"
+							>
+								<User className="size-4" />
+								{isHumanInCurrentRoom
+									? "Human is here"
+									: "Move human here"}
+							</Button>
+
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleLeaveHouse}
+								disabled={!isConnected || !isHumanInHouse}
+								className="flex items-center gap-2"
+							>
+								<LogOut className="size-4" />
+								{isHumanInHouse
+									? "Leave house"
+									: "Human not home"}
+							</Button>
+						</div>
 
 						<div className="flex items-center gap-2">
 							{isConnected ? (

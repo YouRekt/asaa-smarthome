@@ -1,3 +1,4 @@
+import AgentErrors from "@/components/management-panel/agent-errors";
 import AgentInbox from "@/components/management-panel/agent-inbox";
 import AgentMessageForm from "@/components/management-panel/agent-message-form";
 import AgentOutbox from "@/components/management-panel/agent-outbox";
@@ -21,13 +22,15 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+	getAgentErrors,
 	getIncomingMessages,
 	getOutgoingMessages,
 	useStore,
 	type Agent,
 } from "@/hooks/use-store";
-import { cn } from "@/lib/utils";
+import { cn, parseTimestamp } from "@/lib/utils";
 import {
+	AlertTriangle,
 	Cpu,
 	Inbox,
 	Pause,
@@ -42,17 +45,18 @@ import {
 import { useCallback } from "react";
 
 const AgentCard = ({ agent }: { agent: Agent }) => {
-	const { messages } = useStore();
+	const { messages, errors } = useStore();
 
 	const incomingMessages = getIncomingMessages(agent.aid, messages);
 	const outgoingMessages = getOutgoingMessages(agent.aid, messages);
+	const agentErrors = getAgentErrors(agent.aid, errors);
 
 	const getLastMessage = () => {
 		const allAgentMessages = [...incomingMessages, ...outgoingMessages];
 		return allAgentMessages.sort(
 			(a, b) =>
-				new Date(b.timestamp).getTime() -
-				new Date(a.timestamp).getTime()
+				parseTimestamp(b.timestamp).getTime() -
+				parseTimestamp(a.timestamp).getTime()
 		)[0];
 	};
 
@@ -60,6 +64,12 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 		if (!agent.status.isEnabled) return "bg-red-500";
 		if (!agent.status.isWorking) return "bg-blue-500";
 		return "bg-green-500";
+	}, [agent.status.isEnabled, agent.status.isWorking]);
+
+	const getAgentStatusNameColor = useCallback(() => {
+		if (!agent.status.isEnabled) return "text-red-500";
+		if (!agent.status.isWorking) return "text-blue-500";
+		return "text-green-500";
 	}, [agent.status.isEnabled, agent.status.isWorking]);
 
 	const getAgentStatusBadgeColor = useCallback(() => {
@@ -95,8 +105,8 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 						className={cn(
 							"flex items-center gap-2",
 							agent.type === "appliance"
-								? "text-blue-600"
-								: "text-green-600"
+								? getAgentStatusNameColor()
+								: "text-primary"
 						)}
 					>
 						{agent.type === "appliance" ? <Cpu /> : <Radio />}
@@ -132,6 +142,14 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 							<Badge variant="outline" className="text-xs">
 								↑ {outgoingMessages.length}
 							</Badge>
+							{agentErrors.length > 0 && (
+								<Badge
+									variant="outline"
+									className="text-xs text-red-600"
+								>
+									⚠ {agentErrors.length}
+								</Badge>
+							)}
 						</div>
 					</div>
 
@@ -215,12 +233,15 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 									</Badge>
 								</div>
 							</DialogTitle>
-							<DialogDescription>
-								Manage agent communications - view
-								incoming/outgoing messages and compose new ones.
+							<div className="space-y-2">
+								<DialogDescription>
+									Manage agent communications - view
+									incoming/outgoing messages and compose new
+									ones.
+								</DialogDescription>
 								{agent.status.isTaskInterruptible !==
 									undefined && (
-									<div className="mt-2 text-xs">
+									<div className="text-xs text-muted-foreground">
 										Task:{" "}
 										{agent.status.isTaskInterruptible
 											? "Interruptible"
@@ -229,7 +250,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 											" & Resumable"}
 									</div>
 								)}
-							</DialogDescription>
+							</div>
 						</DialogHeader>
 						<Tabs defaultValue="inbox">
 							<TabsList>
@@ -240,6 +261,10 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 								<TabsTrigger value="outbox">
 									<Send className="size-4" />
 									Outbox ({outgoingMessages.length})
+								</TabsTrigger>
+								<TabsTrigger value="errors">
+									<AlertTriangle className="size-4" />
+									Errors ({agentErrors.length})
 								</TabsTrigger>
 								<TabsTrigger value="compose">
 									<PenLine className="size-4" />
@@ -257,6 +282,9 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 									agent={agent}
 									messages={outgoingMessages}
 								/>
+							</TabsContent>
+							<TabsContent value="errors">
+								<AgentErrors errors={agentErrors} />
 							</TabsContent>
 							<TabsContent value="compose">
 								<AgentMessageForm agent={agent} />

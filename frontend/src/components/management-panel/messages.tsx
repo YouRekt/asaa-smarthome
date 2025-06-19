@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStore } from "@/hooks/use-store";
-import { useEffect, useRef } from "react";
+import { parseTimestamp } from "@/lib/utils";
 
 const Messages = () => {
 	const { areas, selectedArea, messages, agents } = useStore();
@@ -32,13 +32,6 @@ const Messages = () => {
 		);
 	});
 
-	const scrollRef = useRef<HTMLDivElement>(null);
-	useEffect(() => {
-		scrollRef.current?.scrollIntoView({
-			behavior: "smooth",
-		});
-	}, [currentRoomMessages]);
-
 	return (
 		<Card>
 			<CardHeader>
@@ -55,20 +48,25 @@ const Messages = () => {
 								No messages yet
 							</p>
 						) : (
-							currentRoomMessages.map((message, index) => {
-								const senderAgent = agents.find(
-									(agent) => message.sender === agent.aid
-								);
-								return (
-									<Message
-										key={`${message.sender}-${message.timestamp}-${index}`}
-										message={message}
-										agent={senderAgent}
-									/>
-								);
-							})
+							currentRoomMessages
+								.sort(
+									(a, b) =>
+										parseTimestamp(b.timestamp).getTime() -
+										parseTimestamp(a.timestamp).getTime()
+								)
+								.map((message, index) => {
+									const senderAgent = agents.find(
+										(agent) => message.sender === agent.aid
+									);
+									return (
+										<Message
+											key={`${message.sender}-${message.timestamp}-${index}`}
+											message={message}
+											agent={senderAgent}
+										/>
+									);
+								})
 						)}
-						<div ref={scrollRef} />
 					</div>
 				</ScrollArea>
 			</CardContent>
