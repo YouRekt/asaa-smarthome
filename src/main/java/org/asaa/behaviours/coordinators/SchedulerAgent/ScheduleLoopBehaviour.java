@@ -73,6 +73,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
             msg.addReceiver(agent.getCoordinatorAgent());
             msg.setConversationId("human-not-home-lights");
             msg.setContent(randomArea.getValue().getName());
+            agent.sendMessage(msg);
         }
 
         if (currentTime.toLocalDate().isAfter(previousTime.toLocalDate())) {
