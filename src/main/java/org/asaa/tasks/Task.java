@@ -9,9 +9,11 @@ import org.asaa.behaviours.appliances.base.RequestPowerBehaviour;
 /**
  * Simple abstract class that is the base of the task that a SmartApplianceAgent can be performing
  */
-public abstract class Task {
+public abstract class Task implements Comparable<Task> {
     private final SmartApplianceAgent agent;
 
+    @Getter
+    protected int priority = 1;
     @Getter
     @Setter
     protected boolean resumable;
@@ -44,6 +46,7 @@ public abstract class Task {
     protected void onPowerGranted() {
         agent.getLogger().info("{} has been granted power", this.getClass().getSimpleName());
         agent.setCurrentTask(this);
+        agent.getTasks().add(this);
         execute();
     }
 
@@ -76,7 +79,9 @@ public abstract class Task {
         }
     }
 
-    public void wake() {}
+    public void wake() {
+        agent.getLogger().warn("No wake defined for task {}", this.getClass().getSimpleName());
+    }
 
     protected void end(boolean success) {
         if (success) {
@@ -86,5 +91,11 @@ public abstract class Task {
         }
         agent.setCurrentTask(null);
         agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active"));
+        agent.getTasks().poll().start();
+    }
+
+    @Override
+    public int compareTo(Task o) {
+        return Integer.compare(priority, o.priority);
     }
 }
