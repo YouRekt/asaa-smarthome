@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TimePicker } from "@/components/ui/time-picker";
 import {
 	agentTemplates,
 	AreaAttributesSchema,
@@ -33,6 +34,9 @@ import { useFormContext, type UseFieldArrayReturn } from "react-hook-form";
 import { z } from "zod/v4";
 
 export const ConfigurationFormSchema = z.object({
+	simulationStartTime: z.date(),
+	maxPowerCapacity: z.number().int().min(0),
+	credits: z.number().int().min(0),
 	areas: z
 		.array(
 			z.object({
@@ -177,6 +181,75 @@ const ConfigurationForm = ({
 		<form id="configuration-form" onSubmit={form.handleSubmit(onSubmit)}>
 			<ScrollArea className="h-[calc(75dvh)]">
 				<div className="mr-4 flex flex-col gap-4">
+					<div className="flex gap-4 justify-between">
+						<FormField
+							control={form.control}
+							name="simulationStartTime"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Simulation Start Time</FormLabel>
+									<FormControl>
+										<TimePicker
+											date={field.value}
+											setDate={field.onChange}
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="maxPowerCapacity"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>
+										Max Power Capacity (W)
+									</FormLabel>
+									<FormControl>
+										<Input
+											type="number"
+											min={0}
+											step={1}
+											{...field}
+											value={field.value.toString()}
+											onChange={(e) =>
+												field.onChange(
+													Number(e.target.value)
+												)
+											}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="credits"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Credits</FormLabel>
+									<FormControl>
+										<Input
+											type="number"
+											min={0}
+											step={1}
+											{...field}
+											value={field.value.toString()}
+											onChange={(e) =>
+												field.onChange(
+													Number(e.target.value)
+												)
+											}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
 					{areas.map((field, areaIndex) => {
 						return (
 							<Card key={field.id}>
