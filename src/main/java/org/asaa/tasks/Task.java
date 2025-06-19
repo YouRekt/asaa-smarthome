@@ -66,7 +66,7 @@ public abstract class Task {
         }
     }
 
-    public void interrupt() {
+    public void interrupt(boolean suppressErrors) {
         if (interruptible && !interrupted) {
             agent.getLogger().warn("{} interrupted", this.getClass().getSimpleName());
             interrupted = true;

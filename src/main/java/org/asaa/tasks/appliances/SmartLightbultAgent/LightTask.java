@@ -58,12 +58,12 @@ public final class LightTask extends Task {
     }
 
     @Override
-    public void interrupt() {
+    public void interrupt(boolean suppressErrors) {
         if (!interrupted && interruptible && lightBehaviour != null) {
             agent.removeBehaviour(lightBehaviour);
             lightBehaviour = null;
             agent.getLogger().info("Light turned off, {}ms of remaining time discarded", remainingTime);
         }
-        super.interrupt();
+        super.interrupt(suppressErrors);
     }
 }

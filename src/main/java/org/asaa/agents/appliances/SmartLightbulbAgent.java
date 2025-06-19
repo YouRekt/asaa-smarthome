@@ -21,7 +21,7 @@ public final class SmartLightbulbAgent extends SmartApplianceAgent {
         if (currentTask == null) {
             new LightTask(this, Long.parseLong(message)).start();
         } else {
-            currentTask.interrupt();
+            currentTask.interrupt(message != null && !message.isEmpty());
         }
     }
 }

@@ -50,7 +50,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 break;
             case "interrupt-task":
                 if (agent.getCurrentTask() != null) {
-                    agent.getCurrentTask().interrupt();
+                    agent.getCurrentTask().interrupt(false);
                 }
                 break;
             default:
