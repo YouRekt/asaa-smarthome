@@ -6,8 +6,9 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 
 const SystemStatus = () => {
-	const { systemStatus, setSystemStatus } = useStore();
+	const { systemStatus, setSystemStatus, resetAllState } = useStore();
 	const { isConnected } = useStomp();
+
 	const getSystemStatusColor = useCallback(() => {
 		switch (systemStatus) {
 			case "running":
@@ -34,16 +35,31 @@ const SystemStatus = () => {
 	}, [systemStatus]);
 
 	async function handleStopSystem() {
-		if (isConnected) {
-			const response = await fetch("system/stop", {
-				method: "POST",
-			});
-			if (!response.ok) {
-				toast.error("Failed to stop the system");
-				return;
+		try {
+			// Set stopping status first
+			setSystemStatus("stopping");
+
+			if (isConnected) {
+				const response = await fetch("system/stop", {
+					method: "POST",
+				});
+				if (!response.ok) {
+					toast.error("Failed to stop the system");
+					// Revert status if the API call failed
+					setSystemStatus("running");
+					return;
+				}
 			}
+
+			// Reset all state when system stops
+			resetAllState();
+			toast.success("System stopped successfully");
+		} catch (error) {
+			console.error("Error stopping system:", error);
+			toast.error("Failed to stop the system");
+			// Revert status if there was an error
+			setSystemStatus("running");
 		}
-		setSystemStatus("stopped");
 	}
 
 	return (

@@ -1,6 +1,7 @@
 import Message from "@/components/management-panel/message";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Agent, Message as MessageType } from "@/hooks/use-store";
+import { parseTimestamp } from "@/lib/utils";
 import { ArrowUp } from "lucide-react";
 
 const AgentOutbox = ({
@@ -28,8 +29,8 @@ const AgentOutbox = ({
 				{messages
 					.sort(
 						(a, b) =>
-							new Date(b.timestamp).getTime() -
-							new Date(a.timestamp).getTime()
+							parseTimestamp(b.timestamp).getTime() -
+							parseTimestamp(a.timestamp).getTime()
 					)
 					.map((message, index) => (
 						<Message
