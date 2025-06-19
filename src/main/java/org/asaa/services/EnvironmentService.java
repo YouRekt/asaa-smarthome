@@ -70,8 +70,8 @@ public class EnvironmentService {
 
     public void startSimulation() {
         if (future != null && future.isDone()) return;
-        simulationTime = simulationStartTime;
         if (!configProvided) {
+            simulationTime = simulationStartTime;
             Area kitchen = new Area("kitchen");
             kitchen.setAttribute("temperature", 21.0);
             addArea("kitchen", kitchen);

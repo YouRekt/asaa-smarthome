@@ -51,6 +51,12 @@ public class ApplicationController {
             areas.put(areaEntry.getName(), area);
         }
 
+        environmentService.setCredits(config.getCredits());
+
+        environmentService.setMAX_POWER_CAPACITY(config.getMaxPowerCapacity());
+
+        environmentService.setSimulationTime(config.getSimulationStartTime());
+
         jadeService.configureAgentsFromDTO(config.getAgents());
 
         environmentService.setAreas(areas);

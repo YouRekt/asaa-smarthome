@@ -43,6 +43,9 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 const defaultValues: ConfigurationFormValues = {
+	simulationStartTime: new Date(),
+	maxPowerCapacity: 500,
+	credits: 1000,
 	areas: [
 		{
 			name: "Kitchen",
@@ -74,37 +77,68 @@ const ConfigPanel = () => {
 	});
 
 	async function handleStartSystem() {
-		//TODO: POST request to start the system
-		const configResponse = await fetch("/system/config", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				areas: areas.map((area) => ({
-					name: area.name.toLowerCase(), // Convert to lowercase for backend
-					attributes: area.attributes,
-				})),
-				agents: agents.map((agent) => ({
-					aid: agent.aid,
-					name: agent.name,
-					area: agent.area.toLowerCase(), // Convert to lowercase for backend
-				})),
-			}),
-		});
-		if (!configResponse.ok) {
-			toast.error("Failed to upload the configuration");
-			return;
-		}
+		// Get the current form values to include the additional fields
+		const formValues = form.getValues();
 
-		const response = await fetch("/system/start", {
-			method: "POST",
-		});
-		if (!response.ok) {
+		try {
+			setSystemStatus("starting");
+
+			if (!isConnected) {
+				toast.error("WebSocket connection not available");
+				setSystemStatus("stopped");
+				return;
+			}
+
+			console.log(formValues.simulationStartTime.toISOString());
+
+			// Send configuration with all form fields
+			const configResponse = await fetch("/system/config", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					// Include the additional form fields
+					simulationStartTime:
+						formValues.simulationStartTime?.toISOString(),
+					maxPowerCapacity: formValues.maxPowerCapacity,
+					credits: formValues.credits,
+					// Existing areas and agents
+					areas: areas.map((area) => ({
+						name: area.name.toLowerCase(),
+						attributes: area.attributes,
+					})),
+					agents: agents.map((agent) => ({
+						aid: agent.aid,
+						name: agent.name,
+						area: agent.area.toLowerCase(),
+					})),
+				}),
+			});
+
+			if (!configResponse.ok) {
+				toast.error("Failed to upload the configuration");
+				setSystemStatus("stopped");
+				return;
+			}
+
+			const response = await fetch("/system/start", {
+				method: "POST",
+			});
+
+			if (!response.ok) {
+				toast.error("Failed to start the system");
+				setSystemStatus("stopped");
+				return;
+			}
+
+			setSystemStatus("running");
+			toast.success("System started successfully");
+		} catch (error) {
+			console.error("Error starting system:", error);
 			toast.error("Failed to start the system");
-			return;
+			setSystemStatus("stopped");
 		}
-		setSystemStatus("running");
 	}
 
 	return (
