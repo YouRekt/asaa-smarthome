@@ -22,6 +22,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
     @Setter
     protected Task currentTask = null;
+    protected PriorityQueue<Task> tasks = new PriorityQueue<>();
 
     @Setter
     private boolean cfpInProgress = false;

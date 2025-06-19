@@ -27,7 +27,7 @@ public class RelinquishPowerBehaviour extends OneShotBehaviour {
         agent.sendMessage(inform);
         if (convId.equals("disable-passive") || convId.equals("disable-passive-cfp"))
             agent.setEnabled(false);
-        else if (!convId.equals("enable-active") && !convId.equals("enable-active-cfp"))
+        else if (!convId.equals("disable-active") && !convId.equals("disable-active-cfp"))
             agent.getLogger().warn("Invalid convId {}", convId);
     }
 }
