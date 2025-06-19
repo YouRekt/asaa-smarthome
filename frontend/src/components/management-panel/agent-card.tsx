@@ -33,12 +33,15 @@ import {
 	AlertTriangle,
 	Cpu,
 	Inbox,
+	MoveDown,
+	MoveUp,
 	Pause,
 	PenLine,
 	Play,
 	Radio,
 	Send,
 	Shield,
+	TriangleAlert,
 	Zap,
 	ZapOff,
 } from "lucide-react";
@@ -51,14 +54,13 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 	const outgoingMessages = getOutgoingMessages(agent.aid, messages);
 	const agentErrors = getAgentErrors(agent.aid, errors);
 
-	const getLastMessage = () => {
-		const allAgentMessages = [...incomingMessages, ...outgoingMessages];
-		return allAgentMessages.sort(
+	const getLastMessage = useCallback(() => {
+		return incomingMessages.sort(
 			(a, b) =>
 				parseTimestamp(b.timestamp).getTime() -
 				parseTimestamp(a.timestamp).getTime()
 		)[0];
-	};
+	}, [incomingMessages]);
 
 	const getAgentStatusIndicatorColor = useCallback(() => {
 		if (!agent.status.isEnabled) return "bg-red-500";
@@ -137,17 +139,18 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 						</span>
 						<div className="flex gap-2">
 							<Badge variant="outline" className="text-xs">
-								↓ {incomingMessages.length}
+								<MoveDown /> {incomingMessages.length}
 							</Badge>
 							<Badge variant="outline" className="text-xs">
-								↑ {outgoingMessages.length}
+								<MoveUp /> {outgoingMessages.length}
 							</Badge>
 							{agentErrors.length > 0 && (
 								<Badge
 									variant="outline"
 									className="text-xs text-red-600"
 								>
-									⚠ {agentErrors.length}
+									<TriangleAlert />
+									{agentErrors.length}
 								</Badge>
 							)}
 						</div>
@@ -157,16 +160,16 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 					<div className="flex flex-wrap gap-2 text-xs">
 						<div className="flex items-center gap-1">
 							{getCurrentPowerDraw() > 0 ? (
-								<Zap className="size-3 text-yellow-500" />
+								<Zap className="size-4 text-yellow-500" />
 							) : (
-								<ZapOff className="size-3 text-muted-foreground" />
+								<ZapOff className="size-4 text-muted-foreground" />
 							)}
 							<span>{getCurrentPowerDraw()}W</span>
 						</div>
 
 						{agent.status.priority !== undefined && (
 							<div className="flex items-center gap-1">
-								<Shield className="size-3 text-blue-500" />
+								<Shield className="size-4 text-blue-500" />
 								<span>P{agent.status.priority}</span>
 							</div>
 						)}
@@ -174,14 +177,14 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 						{agent.status.isTaskInterruptible !== undefined && (
 							<div className="flex items-center gap-1">
 								{agent.status.isTaskInterruptible ? (
-									<Pause className="size-3 text-orange-500" />
+									<Pause className="size-4 text-orange-500" />
 								) : (
-									<Play className="size-3 text-green-500" />
+									<Play className="size-4 text-green-500" />
 								)}
 								<span>
 									{agent.status.isTaskInterruptible
-										? "Int"
-										: "Fixed"}
+										? "Interruptible"
+										: "Non-interruptible"}
 								</span>
 							</div>
 						)}
