@@ -20,7 +20,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
                     new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()).start();
                 } else {
                     agent.getLogger().warn("cooling-task@inform: Cooling Task already running");
-                    agent.agentCommunicationController.sendError(agent.getName(), "cooling-task@inform: Cooling Task already running");
+                    agent.agentCommunicationController.sendError(agent.getLocalName(), "cooling-task@inform: Cooling Task already running");
                 }
                 break;
             case "def-reply":

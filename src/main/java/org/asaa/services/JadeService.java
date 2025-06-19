@@ -10,6 +10,7 @@ import org.asaa.dto.ConfigDTO;
 import org.asaa.exceptions.AgentContainerException;
 import org.asaa.exceptions.JadePlatformInitializationException;
 import org.asaa.util.AgentConfig;
+import org.asaa.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -181,6 +182,8 @@ public class JadeService {
                 if (agentConfigs.isEmpty()) {
                     addDefaultAgents();
                 }
+                Util.ContainerIP = container.getPlatformName();
+                logger.info("Platform Name {}", Util.ContainerIP);
                 runAgents(container);
 
             } catch (final InterruptedException | ExecutionException e) {
