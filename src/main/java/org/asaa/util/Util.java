@@ -6,6 +6,8 @@ import jade.lang.acl.ACLMessage;
 import java.util.*;
 
 public class Util {
+    public static String ContainerIP = null;
+
     public static String ConvertACLPerformativeToString(int performative) {
         return switch (performative) {
             case ACLMessage.ACCEPT_PROPOSAL -> "ACCEPT_PROPOSAL";

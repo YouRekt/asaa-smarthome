@@ -82,7 +82,7 @@ public abstract class Task {
         if (success) {
             agent.environmentService.addPerformedTask();
         } else {
-            agent.agentCommunicationController.sendError(agent.getName(), this.getClass().getSimpleName() + " failed");
+            agent.agentCommunicationController.sendError(agent.getLocalName(), this.getClass().getSimpleName() + " failed");
         }
         agent.setCurrentTask(null);
         agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active"));

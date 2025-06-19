@@ -22,7 +22,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         if (msg != null) {
             if (!agent.isEnabled() && (msg.getConversationId() == null || !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief") || msg.getConversationId().equals("toggle") || msg.getConversationId().equals("disable-passive") || msg.getConversationId().equals("disable-active")))) {
                 agent.getLogger().warn("{} is not enabled. Ignoring message perf={} convId={} content={}", agent.getLocalName(), Util.ConvertACLPerformativeToString(msg.getPerformative()), msg.getConversationId(), msg.getContent());
-                agent.agentCommunicationController.sendError(agent.getName(), "Message sent to a disabled agent");
+                agent.agentCommunicationController.sendError(agent.getLocalName(), "Message sent to a disabled agent");
                 return;
             }
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
@@ -95,16 +95,16 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         switch (msg.getConversationId()) {
             case "enable-passive":
                 agent.getLogger().warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
-                agent.agentCommunicationController.sendError(agent.getName(), "Passive power on refused");
+                agent.agentCommunicationController.sendError(agent.getLocalName(), "Passive power on refused");
                 break;
             case "enable-active":
                 agent.getLogger().warn("Coordinator REFUSED enable-active:{}", msg.getContent());
-                agent.agentCommunicationController.sendError(agent.getName(), "Active power on refused");
+                agent.agentCommunicationController.sendError(agent.getLocalName(), "Active power on refused");
                 String replyWith = msg.getInReplyTo();
                 Runnable callback = agent.onPowerGrantedCallbacks.remove(replyWith);
                 if (callback != null) {
                     agent.getLogger().warn("Callback cancelled tied with request {}", replyWith);
-                    agent.agentCommunicationController.sendError(agent.getName(), "Callback action was cancelled: request " + replyWith);
+                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Callback action was cancelled: request " + replyWith);
                 }
                 break;
             default:

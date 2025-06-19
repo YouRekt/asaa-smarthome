@@ -21,7 +21,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
                     new MakeCoffeeTask(agent).start();
                 } else {
                     agent.getLogger().warn("{}@request: Make Coffee Task already running", msg.getConversationId());
-                    agent.agentCommunicationController.sendError(agent.getName(), msg.getConversationId() + "@request: Make Coffee Task already running");
+                    agent.agentCommunicationController.sendError(agent.getLocalName(), msg.getConversationId() + "@request: Make Coffee Task already running");
                 }
                 break;
             default:
