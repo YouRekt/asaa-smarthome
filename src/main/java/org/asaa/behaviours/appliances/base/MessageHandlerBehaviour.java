@@ -61,6 +61,13 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     @Override
     protected void handleInform(ACLMessage msg) {
         switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
+            case "retard":
+                if(agent.getCurrentTask() != null) {
+                    agent.getLogger().error("Task is not null");
+                    return;
+                }
+                agent.addBehaviour(new RelinquishPowerBehaviour(agent,agent.getIdleDraw(),"disable-passive"));
+                break;
             case " ":
                 agent.getLogger().error("CONVERSATION ID WAS NULL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 break;
@@ -123,7 +130,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 }
                 agent.setCfpInProgress(true);
                 int canFree = 0, prio = agent.getPriority();
-                if (agent.getCurrentTask() != null) {
+                if (agent.getCurrentTask() != null && !agent.getCurrentTask().isPaused()) {
                     if (agent.getCurrentTask().isResumable()) {
                         canFree = agent.getActiveDraw();
                         prio = agent.getPriority() % 100;

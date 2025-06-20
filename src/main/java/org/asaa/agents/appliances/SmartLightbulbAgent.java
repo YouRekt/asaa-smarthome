@@ -18,10 +18,15 @@ public final class SmartLightbulbAgent extends SmartApplianceAgent {
 
     @Override
     public void handleToggle(String message) {
-        if (currentTask == null) {
-            new LightTask(this, Long.parseLong(message)).start();
+        if (isEnabled) {
+            if (currentTask == null) {
+                new LightTask(this, Long.parseLong(message)).start();
+            } else {
+                logger.error("LightTask is already running {}",message);
+                currentTask.interrupt(message != null && !message.isEmpty());
+            }
         } else {
-            currentTask.interrupt(message != null && !message.isEmpty());
+            super.handleToggle(message);
         }
     }
 }

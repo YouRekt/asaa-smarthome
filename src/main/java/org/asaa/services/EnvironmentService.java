@@ -128,11 +128,14 @@ public class EnvironmentService {
         - After planning out our home schema, open doors with rooms with substantial temperature differences
           can affect the temperature of the kitchen
          */
-        if (Duration.between(cyclicEvents.get("kitchen-temp"), simulationTime).toMinutes() >= 30) {
-            cyclicEvents.put("kitchen-temp", simulationTime);
-            double newTemp = TemperatureSimulator.simulateRoomTemperature((double)getArea("kitchen").getAttribute("temperature"), simulationTime.getHour(), 14, 21.0, 25.0);
-            getArea("kitchen").setAttribute("temperature", 23.0);
-            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", 23.0));
+        if (Duration.between(cyclicEvents.get("temp-change"), simulationTime).toMinutes() >= 30) {
+            cyclicEvents.put("temp-change", simulationTime);
+
+            areas.values().forEach((area) -> {
+                double newTemp = TemperatureSimulator.simulateRoomTemperature((double)area.getAttribute("temperature"), simulationTime.getHour(), 12, 15.0, 30.0);
+                area.setAttribute("temperature", newTemp);
+                logger.info("{} temperature updated to: {} °C",area.getName(),String.format("%.2f", newTemp));
+            });
         }
     }
 
@@ -219,7 +222,7 @@ public class EnvironmentService {
     }
 
     private void initializeCyclicEvents() {
-        cyclicEvents.put("kitchen-temp", simulationStartTime);
+        cyclicEvents.put("temp-change", simulationStartTime);
     }
 
     public void addArea(String name, Area area) {

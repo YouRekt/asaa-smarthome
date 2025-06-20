@@ -71,6 +71,7 @@ public final class CoordinatorAgent extends SpringAwareAgent {
         List<AID> receivers = new ArrayList<>();
 
         List<AID> fridgeAgents = getAgentListAIDForArea("FridgeAgent", "kitchen");
+        logger.error(fridgeAgents.toString());
         AID fridgeAgent = (!fridgeAgents.isEmpty()) ? fridgeAgents.getFirst() : null;
         if (fridgeAgent == null) {
             logger.warn("Morning Routine | Fridge agent not found in kitchen");

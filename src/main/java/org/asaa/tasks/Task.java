@@ -21,6 +21,7 @@ public abstract class Task implements Comparable<Task> {
     @Setter
     protected boolean interruptible;
 
+    @Getter
     protected boolean paused = false;
     protected boolean interrupted = false;
     protected boolean awaitingWake = false;
@@ -46,7 +47,6 @@ public abstract class Task implements Comparable<Task> {
     protected void onPowerGranted() {
         agent.getLogger().info("{} has been granted power", this.getClass().getSimpleName());
         agent.setCurrentTask(this);
-        agent.getTasks().add(this);
         execute();
     }
 
@@ -73,7 +73,7 @@ public abstract class Task implements Comparable<Task> {
         if (interruptible && !interrupted) {
             agent.getLogger().warn("{} interrupted", this.getClass().getSimpleName());
             interrupted = true;
-            end(false);
+            end(suppressErrors);
         } else {
             agent.getLogger().warn("{} has already been, or can not be, interrupted", this.getClass().getSimpleName());
         }
@@ -91,7 +91,6 @@ public abstract class Task implements Comparable<Task> {
         }
         agent.setCurrentTask(null);
         agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active"));
-        agent.getTasks().poll().start();
     }
 
     @Override

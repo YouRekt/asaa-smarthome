@@ -28,7 +28,10 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
                 if (agent.getCurrentTemperature() > agent.getTargetTemperature() && agent.getCurrentTask() == null) {
                     new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()).start();
                 } else if (agent.getCurrentTask() != null) {
-                    agent.getCurrentTask().wake();
+                    if(!agent.getCurrentTask().isPaused())
+                        agent.getCurrentTask().wake();
+                    else
+                        agent.getCurrentTask().resume();
                 }
                 break;
             default:

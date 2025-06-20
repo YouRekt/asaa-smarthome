@@ -19,20 +19,16 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
     protected final List<Runnable> runnables = new ArrayList<>();
     protected final Map<String, Behaviour> behaviours = new HashMap<>();
+    protected final long awaitEnablePeriod = 1000;
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
     @Setter
     protected Task currentTask = null;
-    protected PriorityQueue<Task> tasks = new PriorityQueue<>();
-
-    @Setter
-    private boolean cfpInProgress = false;
-
     @Setter
     protected boolean isEnabled = false;
     protected int idleDraw = 0;
     protected int activeDraw = 0;
-
-    protected final long awaitEnablePeriod = 1000;
+    @Setter
+    private boolean cfpInProgress = false;
 
     @Override
     protected void setup() {
@@ -48,10 +44,14 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     }
 
     public void updateStatus() {
-        agentCommunicationController.setAgentStatus(getLocalName(),isEnabled, getCurrentTask() != null, getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(),activeDraw,idleDraw,priority);
+        agentCommunicationController.setAgentStatus(getLocalName(), isEnabled, getCurrentTask() != null && !getCurrentTask().isPaused(), getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(), activeDraw, idleDraw, priority);
     }
 
     public void handleToggle(String message) {
-        logger.warn("I have been toggled, but I do not have a handleToggle defined");
+        if (isEnabled) {
+            logger.warn("I have been toggled, but I do not have a handleToggle defined");
+        } else {
+            addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+        }
     }
 }
