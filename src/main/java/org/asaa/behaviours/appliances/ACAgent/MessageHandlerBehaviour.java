@@ -15,30 +15,31 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
     @Override
     protected void handleInform(ACLMessage msg) {
         switch (msg.getConversationId()) {
-            case "cooling-task":
-                if (agent.getCurrentTask() == null) {
-                    new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()).start();
+
+            case "cooling-task": {
+                if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
+                    CoolingTask task = new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature());
+                    agent.getTaskBehaviourQueue().add(task);
+                    agent.getLogger().info("Cooling task added to queue.");
                 } else {
-                    agent.getLogger().warn("cooling-task@inform: Cooling Task already running");
-                    agent.agentCommunicationController.sendError(agent.getLocalName(), "cooling-task@inform: Cooling Task already running");
+                    agent.getLogger().warn("Cooling task already running.");
+                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Cooling task already running.");
                 }
                 break;
-            case "def-reply":
-                agent.setCurrentTemperature(Double.parseDouble(msg.getContent()));
-                if (agent.getCurrentTemperature() > agent.getTargetTemperature() && agent.getCurrentTask() == null) {
-                    new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature()).start();
-                } else if (agent.getCurrentTask() != null) {
-                    if(!agent.getCurrentTask().isPaused())
-                        agent.getCurrentTask().wake();
-                    else
-                        agent.getCurrentTask().resume();
-                }
+            }
+
+            case "def-reply": {
+                double updatedTemp = Double.parseDouble(msg.getContent());
+                agent.setCurrentTemperature(updatedTemp);
                 break;
+            }
+
             default:
                 super.handleInform(msg);
                 break;
         }
     }
+
 
     @Override
     protected void handleRequest(ACLMessage msg) {
