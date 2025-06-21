@@ -108,7 +108,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     }
 
     /**
-     * The returned value tells us weather the execution has been finished. This can come in handy when the task has
+     * The returned value tells us whether the execution has been finished. This can come in handy when the task has
      * several stages or an error occurs during execution of the task.
      *
      * @return Flag telling weather the execution of the task has finished or should it be continued when the task is

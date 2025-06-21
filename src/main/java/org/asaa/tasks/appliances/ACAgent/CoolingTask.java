@@ -49,6 +49,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
             if (System.currentTimeMillis() >= nextWakeTime) {
                 awaitingDelay = false; // Delay has passed
             } else {
+                block(nextWakeTime - System.currentTimeMillis());
                 return false; // Still waiting
             }
         }

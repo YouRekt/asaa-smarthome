@@ -45,7 +45,6 @@ public class JadeService {
         List<AgentConfig> configs = new ArrayList<>();
 
         for (ConfigDTO.AgentEntry entry : agentEntries) {
-            logger.error(entry.toString());
             String packageName = getPackageNameFromAgentName(entry.getName());
             String className = getClassNameFromAgentName(entry.getName());
             Object[] args = new Object[]{entry.getArea()};
