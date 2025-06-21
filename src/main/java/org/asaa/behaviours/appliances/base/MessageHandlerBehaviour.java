@@ -128,6 +128,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
 //                    agent.getLogger().warn("Callback cancelled tied with request {}", replyWith);
 //                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Callback action was cancelled: request " + replyWith);
 //                }
+                agent.getCurrentTaskBehaviour().setStatus(TaskBehaviour.Status.powerRefused);
                 break;
             default:
                 break;

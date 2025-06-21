@@ -132,11 +132,17 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
             case powerGranted:
                 status = Status.running;
                 break;
+            case powerRefused:
+                // TODO: Inlcude some delays between rerequesting
+                agent.addBehaviour(new RequestPowerBehaviour(agent, powerUsage, priority, "enable-active", ""));
+                status = Status.waitingForPower;
+                break;
             case running:
                 if (execute()) {
                     status = Status.finished;
                 }
                 break;
+            case waitingForPower:
             case paused:
                 block(500);
                 break;
@@ -152,7 +158,6 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
                 queue.add(resumeWith(basePriority + 1));
                 status = Status.finished;
                 break;
-            case waitingForPower:
             case criticalError:
             case finished:
             default:
@@ -180,6 +185,6 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     }
 
     public enum Status {
-        waitingForPower, powerGranted, running, paused, error, criticalError, finished
+        waitingForPower, powerGranted, running, paused, error, criticalError, finished, powerRefused
     }
 }
