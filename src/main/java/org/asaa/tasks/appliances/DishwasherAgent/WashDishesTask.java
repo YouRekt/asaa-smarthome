@@ -1,68 +1,59 @@
 package org.asaa.tasks.appliances.DishwasherAgent;
 
-import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.appliances.DishwasherAgent;
-import org.asaa.tasks.Task;
+import org.asaa.behaviours.appliances.TaskBehaviour;
 
-public final class WashDishesTask extends Task {
-    private final DishwasherAgent agent;
-    private TickerBehaviour washBehaviour;
-    private final long updateDelay;
-    private final long noninterruptibleStartTime;
-    private final long noninterruptibleEndTime;
-    private long fullWashTime;
-    private long remainingWashTime;
-    private long washStartTime;
+public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {
+    private final long endTime;
+    private final long nonResumableStartTime;
+    private final long nonResumableEndTime;
 
-    public WashDishesTask(DishwasherAgent agent, long updateDelay, double noninterruptibleStartPercent, double noninterruptibleEndPercent, long fullWashTime) {
-        super(agent, true, false);
-        this.agent = agent;
-        this.updateDelay = updateDelay;
-        this.noninterruptibleStartTime = (long)(noninterruptibleStartPercent * fullWashTime);
-        this.noninterruptibleEndTime = (long)(noninterruptibleEndPercent * fullWashTime);
-        this.fullWashTime = fullWashTime;
-        this.remainingWashTime = fullWashTime;
+    private final long duration;
+    private final double nonResumableStartPercent;
+    private final double nonResumableEndPercent;
+
+    public WashDishesTask(DishwasherAgent agent, long duration, double nonResumableStartPercent, double nonResumableEndPercent) {
+        super(agent, "wash-dishes-task", 1, true, false);
+        this.endTime = System.currentTimeMillis() + duration;
+        this.nonResumableStartTime = (long)(endTime * nonResumableStartPercent);
+        this.nonResumableEndTime = (long)(endTime * nonResumableEndPercent);
+        this.duration = duration;
+        this.nonResumableStartPercent = nonResumableStartPercent;
+        this.nonResumableEndPercent = nonResumableEndPercent;
+    }
+
+    private WashDishesTask(DishwasherAgent agent, int priority, long duration, double nonResumableStartPercent, double nonResumableEndPercent) {
+        super(agent, "wash-dishes-task", priority, true, false);
+        this.endTime = System.currentTimeMillis() + duration;
+        this.nonResumableStartTime = (long)(endTime * nonResumableStartPercent);
+        this.nonResumableEndTime = (long)(endTime * nonResumableEndPercent);
+        this.duration = duration;
+        this.nonResumableStartPercent = nonResumableStartPercent;
+        this.nonResumableEndPercent = nonResumableEndPercent;
     }
 
     @Override
-    protected void execute() {
-        if (remainingWashTime <= 0) {
-            agent.getLogger().info("Nothing to do: no remaining time");
-            end(true);
-        }
-        washStartTime = System.currentTimeMillis();
-        fullWashTime = remainingWashTime;
-
-        washBehaviour = new TickerBehaviour(agent, updateDelay) {
-            @Override
-            protected void onTick() {
-                remainingWashTime = Math.max(0, fullWashTime - System.currentTimeMillis() + washStartTime);
-//                agent.getLogger().info("Wash Dishes Task: {}ms remain", remainingWashTime);
-                if (remainingWashTime <= 0) {
-                    agent.getLogger().info("Wash complete!");
-                    end(true);
-                    agent.removeBehaviour(this);
-                } else if (remainingWashTime <= noninterruptibleStartTime && remainingWashTime >= noninterruptibleEndTime && resumable) {
-                    agent.getLogger().info("Wash Dishes Task entering an unpausable phase!");
-                    resumable = false;
-                } else if (remainingWashTime < noninterruptibleEndTime && !resumable) {
-                    agent.getLogger().info("Dishwasher may be paused again");
-                    resumable = true;
-                }
-            }
-        };
-        agent.addBehaviour(washBehaviour);
-        agent.getLogger().info("Wash {} for {}ms", (remainingWashTime != fullWashTime ? "resumed" : "started"), remainingWashTime);
+    protected TaskBehaviour<?> resumeWith(int priority) {
+        return new WashDishesTask(agent, priority, duration, nonResumableStartPercent, nonResumableEndPercent);
     }
 
     @Override
-    public void pause(boolean isCfpCall) {
-        if (!paused && resumable && washBehaviour != null) {
-            remainingWashTime = Math.max(0, fullWashTime - System.currentTimeMillis() + washStartTime);
-            agent.removeBehaviour(washBehaviour);
-            washBehaviour = null;
-            agent.getLogger().info("Wash paused, {}ms left", remainingWashTime);
+    protected boolean execute() {
+        long currentTime = System.currentTimeMillis();
+
+        if (endTime <= currentTime) {
+            agent.getLogger().info("Wash complete!");
+            return true;
         }
-        super.pause(isCfpCall);
+
+        if (nonResumableStartTime <= currentTime && nonResumableEndTime >= currentTime && pausable) {
+            agent.getLogger().info("Dishwasher can not be paused now for {}ms", nonResumableEndTime - currentTime);
+            pausable = false;
+        } else if (nonResumableEndTime <= currentTime && !pausable) {
+            agent.getLogger().info("Dishwasher may be paused again");
+            pausable = true;
+        }
+
+        return false;
     }
 }

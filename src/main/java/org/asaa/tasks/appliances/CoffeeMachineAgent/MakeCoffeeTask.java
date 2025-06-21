@@ -1,28 +1,23 @@
 package org.asaa.tasks.appliances.CoffeeMachineAgent;
 
-import jade.core.behaviours.WakerBehaviour;
 import org.asaa.agents.appliances.CoffeeMachineAgent;
-import org.asaa.tasks.Task;
+import org.asaa.behaviours.appliances.TaskBehaviour;
 
-public final class MakeCoffeeTask extends Task {
-    private final CoffeeMachineAgent agent;
-    private final long duration = 10000;
+public class MakeCoffeeTask extends TaskBehaviour<CoffeeMachineAgent> {
+    private final long endTime;
 
-    public MakeCoffeeTask(CoffeeMachineAgent agent) {
-        super(agent, false, false);
-
-        this.agent = agent;
+    public MakeCoffeeTask(CoffeeMachineAgent agent, long duration) {
+        super(agent, "make-coffee-task", 1, false, false);
+        this.endTime = System.currentTimeMillis() + duration;
     }
 
     @Override
-    protected void execute() {
-        agent.getLogger().info("Making coffee");
-        agent.addBehaviour(new WakerBehaviour(agent, duration) {
-            @Override
-            protected void onWake() {
-                agent.getLogger().info("Coffee made! Enjoy");
-                end(true);
-            }
-        });
+    protected boolean execute() {
+        if (endTime <= System.currentTimeMillis()) {
+            agent.getLogger().info("Coffee has been made! Enjoy!");
+            return true;
+        }
+
+        return false;
     }
 }
