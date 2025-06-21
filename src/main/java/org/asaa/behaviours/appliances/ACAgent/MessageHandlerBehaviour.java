@@ -2,6 +2,7 @@ package org.asaa.behaviours.appliances.ACAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.ACAgent;
+import org.asaa.behaviours.appliances.TaskBehaviour;
 import org.asaa.tasks.appliances.ACAgent.CoolingTask;
 
 public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
@@ -15,7 +16,6 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
     @Override
     protected void handleInform(ACLMessage msg) {
         switch (msg.getConversationId()) {
-
             case "cooling-task": {
                 if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
                     CoolingTask task = new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature());
@@ -31,6 +31,23 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
             case "def-reply": {
                 double updatedTemp = Double.parseDouble(msg.getContent());
                 agent.setCurrentTemperature(updatedTemp);
+
+                agent.getLogger().info("Received updated temperature: {}°C", updatedTemp);
+
+                // Check if a cooling task should be started
+                if (updatedTemp > agent.getTargetTemperature()) {
+                    TaskBehaviour<?> current = agent.getCurrentTaskBehaviour();
+
+                    if (current == null || current.done()) {
+                        CoolingTask task = new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature());
+                        agent.getTaskBehaviourQueue().add(task);
+                        agent.getLogger().info("CoolingTask added to queue due to high temperature.");
+                    } else if (current instanceof CoolingTask) {
+                        agent.getLogger().debug("CoolingTask is already running.");
+                        // Optionally trigger a state update if needed
+                    }
+                }
+
                 break;
             }
 

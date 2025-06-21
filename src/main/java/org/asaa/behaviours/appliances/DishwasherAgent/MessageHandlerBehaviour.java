@@ -2,7 +2,6 @@ package org.asaa.behaviours.appliances.DishwasherAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.DishwasherAgent;
-import org.asaa.tasks.appliances.DishwasherAgent.WashDishesTask;
 
 public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final DishwasherAgent agent;
@@ -17,9 +16,9 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
         switch (msg.getConversationId()) {
             case "enable-callback":
                 agent.getLogger().info("Received enable-callback message");
-                if (agent.getCurrentTask() != null) {
-                    agent.getCurrentTask().resume();
-                }
+//                if (agent.getCurrentTask() != null) {
+//                    agent.getCurrentTask().resume();
+//                }
                 break;
             default:
                 super.handleInform(msg);
@@ -31,9 +30,10 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
     protected void handleRequest(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "wash-dishes-task":
-                if (agent.getCurrentTask() == null) {
-                    new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()).start();
-                }
+                // TODO: Implement using new system
+//                if (agent.getCurrentTask() == null) {
+//                    new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()).start();
+//                }
                 break;
             default:
                 super.handleRequest(msg);
