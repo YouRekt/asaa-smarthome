@@ -15,13 +15,13 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behaviour implements Comparable<TaskBehaviour<?>> {
     protected final T agent;
-    protected final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
     private final String taskName;
     private final Random random = new Random();
+    private final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
     @Getter
-    private final boolean pausable;
+    protected boolean pausable;
     @Getter
-    private final boolean interruptible;
+    protected boolean interruptible;
     @Getter
     @Setter
     protected int priority;
@@ -38,6 +38,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
         this.pausable = pausable;
         this.interruptible = interruptible;
         this.priority = priority;
+        this.powerUsage = agent.getActiveDraw();
     }
 
     protected void registerError(String error, TaskBehaviour<?> resolutionBehaviour) {
