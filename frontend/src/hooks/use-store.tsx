@@ -51,6 +51,7 @@ export type AgentError = {
 	timestamp: string;
 	sender: string;
 	message: string;
+	resolved: boolean;
 };
 
 export const TemplateIdSchema = z.enum([

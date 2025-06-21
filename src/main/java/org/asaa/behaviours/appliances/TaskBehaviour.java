@@ -15,9 +15,9 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behaviour implements Comparable<TaskBehaviour<?>> {
     protected final T agent;
+    protected final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
     private final String taskName;
     private final Random random = new Random();
-    private final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
     @Getter
     private final boolean pausable;
     @Getter
@@ -32,7 +32,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     @Getter
     private String error = null;
 
-    protected TaskBehaviour(T agent, String taskName,int priority ,boolean pausable, boolean interruptible) {
+    protected TaskBehaviour(T agent, String taskName, int priority, boolean pausable, boolean interruptible) {
         this.agent = agent;
         this.taskName = taskName;
         this.pausable = pausable;
@@ -49,8 +49,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
         return Integer.compare(o.priority, priority);
     }
 
-    protected TaskBehaviour<?> resumeWith(int priority)
-    {
+    protected TaskBehaviour<?> resumeWith(int priority) {
         return null;
     }
 
@@ -59,16 +58,19 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
             error = Util.getRandomEntry(definedErrors).getKey(); // we can ignore this since the map SURELY will never be empty
             status = Status.error;
             agent.getLogger().error("Task {}: encountered {} error", taskName, error);
+            agent.agentCommunicationController.sendError(agent.getLocalName(), String.format("Task %s: encountered %s", taskName, error), true);
         }
     }
 
     public void simulateError(String error) {
+        agent.getLogger().error("Task {}: {}", taskName, definedErrors);
         if (definedErrors.containsKey(error)) {
             this.error = error;
             status = Status.error;
-            agent.getLogger().error("Task {}: encountered {} error", taskName, error);
+            agent.getLogger().error("Task {}: encountered {}", taskName, error);
+            agent.agentCommunicationController.sendError(agent.getLocalName(), String.format("Task %s: encountered %s", taskName, error), true);
         } else {
-            agent.getLogger().error("Task {}: Invalid error name specified.", taskName);
+            agent.getLogger().error("Task {}: Invalid error name \"{}\" specified.", taskName, error);
         }
     }
 
@@ -90,18 +92,20 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     }
 
     public void pause() {
-        if (pausable) {
+        if (pausable && status != Status.paused) {
             agent.addBehaviour(new RelinquishPowerBehaviour(agent, powerUsage, "disable-active"));
             status = Status.paused;
+            agent.getLogger().info("Task {}: paused", taskName);
         } else {
-            agent.getLogger().error("Task {}: Task is not pausable", taskName);
+            agent.getLogger().error("Task {}: Task is not pausable or is already paused", taskName);
         }
     }
 
     public void resume() {
-        if (status == Status.paused) {
+        if (pausable && status == Status.paused) {
             agent.addBehaviour(new RequestPowerBehaviour(agent, powerUsage, priority, "enable-active", ""));
             status = Status.waitingForPower;
+            agent.getLogger().info("Task {}: resumed", taskName);
         } else {
             agent.getLogger().error("Task {}: Cannot resume task that is not paused", taskName);
         }
@@ -133,7 +137,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
                 }
                 break;
             case paused:
-
+                block(500);
                 break;
             case error:
                 PriorityBlockingQueue<TaskBehaviour<?>> queue = agent.getTaskBehaviourQueue();
@@ -159,10 +163,12 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     public int onEnd() {
         agent.addBehaviour(new RelinquishPowerBehaviour(agent, powerUsage, "disable-active"));
         if (status == Status.finished) {
-            agent.environmentService.addPerformedTask();
+            if (error == null) {
+                agent.environmentService.addPerformedTask();
+            }
         } else if (status == Status.criticalError) {
             agent.environmentService.addPerformedTaskError();
-            agent.agentCommunicationController.sendError(agent.getLocalName(), taskName + " encountered a critical error that can't be resolved automatically.");
+            agent.agentCommunicationController.sendError(agent.getLocalName(), taskName + " encountered a critical error that can't be resolved automatically.", false);
         }
         return super.onEnd();
     }

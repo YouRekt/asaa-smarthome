@@ -23,7 +23,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         if (msg != null) {
             if (!agent.isEnabled() && (msg.getConversationId() == null || !(msg.getConversationId().equals("enable-passive") || msg.getConversationId().equals("enable-active") || msg.getConversationId().equals("power-relief") || msg.getConversationId().equals("toggle") || msg.getConversationId().equals("disable-passive") || msg.getConversationId().equals("disable-active")))) {
                 agent.getLogger().warn("{} is not enabled. Ignoring message perf={} convId={} content={}", agent.getLocalName(), Util.ConvertACLPerformativeToString(msg.getPerformative()), msg.getConversationId(), msg.getContent());
-                agent.agentCommunicationController.sendError(agent.getLocalName(), "Message sent to a disabled agent");
+                agent.agentCommunicationController.sendError(agent.getLocalName(), "Message sent to a disabled agent", false);
                 return;
             }
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
@@ -117,11 +117,11 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
         switch (msg.getConversationId()) {
             case "enable-passive":
                 agent.getLogger().warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
-                agent.agentCommunicationController.sendError(agent.getLocalName(), "Passive power on refused");
+                agent.agentCommunicationController.sendError(agent.getLocalName(), "Passive power on refused", false);
                 break;
             case "enable-active":
                 agent.getLogger().warn("Coordinator REFUSED enable-active:{}", msg.getContent());
-                agent.agentCommunicationController.sendError(agent.getLocalName(), "Active power on refused");
+                agent.agentCommunicationController.sendError(agent.getLocalName(), "Active power on refused", false);
 //                String replyWith = msg.getInReplyTo();
 //                Runnable callback = agent.onPowerGrantedCallbacks.remove(replyWith);
 //                if (callback != null) {

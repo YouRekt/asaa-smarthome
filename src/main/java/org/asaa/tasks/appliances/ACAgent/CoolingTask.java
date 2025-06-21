@@ -16,6 +16,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         super(agent, "cooling-task", 1, true, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
+        this.powerUsage = agent.getActiveDraw();
         registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false) {
             @Override
             protected boolean execute() {
@@ -29,6 +30,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         super(agent, "cooling-task", priority, true, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
+        this.powerUsage = agent.getActiveDraw();
     }
 
     @Override
@@ -52,6 +54,10 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
                 block(nextWakeTime - System.currentTimeMillis());
                 return false; // Still waiting
             }
+        }
+
+        if (!definedErrors.isEmpty()) {
+            simulateError();
         }
 
         // Apply cooling

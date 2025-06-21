@@ -23,7 +23,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
                     agent.getLogger().info("Cooling task added to queue.");
                 } else {
                     agent.getLogger().warn("Cooling task already running.");
-                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Cooling task already running.");
+                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Cooling task already running.", false);
                 }
                 break;
             }

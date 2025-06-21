@@ -121,12 +121,12 @@ public abstract class SpringAwareAgent extends Agent {
         AID chosenAgent = (findAgents(agentName, areaName, byType) == null) ? null : findAgents(agentName, areaName, byType).getFirst();
         if (chosenAgent == null) {
             logger.warn("No agent {} found", byType ? "of type " + agentName : agentName);
-            agentCommunicationController.sendError(getLocalName(), "No" + agentName + "found");
+            agentCommunicationController.sendError(getLocalName(), "No" + agentName + "found", false);
             return null;
         }
         if (!byType && !chosenAgent.getLocalName().equals(agentName)) {
             logger.error("Agent was not of the expected type!!! Found: {}, should be {}", chosenAgent.getLocalName(), agentName);
-            agentCommunicationController.sendError(getLocalName(), "Fatal: Agent was not of the expected type");
+            agentCommunicationController.sendError(getLocalName(), "Fatal: Agent was not of the expected type", false);
             return null;
         }
         logger.info("Found {} agent", agentName);
