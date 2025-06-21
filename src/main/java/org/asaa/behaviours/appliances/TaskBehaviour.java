@@ -17,7 +17,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     protected final T agent;
     private final String taskName;
     private final Random random = new Random();
-    private final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
+    protected final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
     @Getter
     protected boolean pausable;
     @Getter
