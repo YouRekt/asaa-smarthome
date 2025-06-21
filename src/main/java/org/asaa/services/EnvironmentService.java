@@ -130,7 +130,6 @@ public class EnvironmentService {
          */
         if (Duration.between(cyclicEvents.get("temp-change"), simulationTime).toMinutes() >= 30) {
             cyclicEvents.put("temp-change", simulationTime);
-
             areas.values().forEach((area) -> {
                 double newTemp = TemperatureSimulator.simulateRoomTemperature((double)area.getAttribute("temperature"), simulationTime.getHour(), 12, 15.0, 30.0);
                 area.setAttribute("temperature", newTemp);
@@ -222,7 +221,7 @@ public class EnvironmentService {
     }
 
     private void initializeCyclicEvents() {
-        cyclicEvents.put("temp-change", simulationStartTime);
+        cyclicEvents.put("temp-change", simulationTime);
     }
 
     public void addArea(String name, Area area) {
