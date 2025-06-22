@@ -90,7 +90,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 
 	const getCurrentPowerDraw = useCallback(() => {
 		if (agent.status.isWorking) {
-			return agent.status.activeDraw || 0;
+			return (agent.status.activeDraw || 0) + (agent.status.idleDraw || 0);
 		}
 		return agent.status.idleDraw || 0;
 	}, [
