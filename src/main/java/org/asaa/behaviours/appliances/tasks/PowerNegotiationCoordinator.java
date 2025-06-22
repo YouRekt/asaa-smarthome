@@ -92,9 +92,6 @@ public class PowerNegotiationCoordinator {
                     score += 100; // Extremely high penalty if not interruptible
                 }
                 break;
-            case RESCHEDULE:
-                score += 8; // Moderate penalty for rescheduling
-                break;
         }
 
         // Task type considerations
@@ -135,11 +132,16 @@ public class PowerNegotiationCoordinator {
 
     private double getUrgencyMultiplier(PowerRequest.Urgency urgency) {
         switch (urgency) {
-            case IMMEDIATE: return 3.0;
-            case HIGH: return 2.0;
-            case NORMAL: return 1.0;
-            case LOW: return 0.5;
-            default: return 1.0;
+            case IMMEDIATE:
+                return 3.0;
+            case HIGH:
+                return 2.0;
+            case NORMAL:
+                return 1.0;
+            case LOW:
+                return 0.5;
+            default:
+                return 1.0;
         }
     }
 
@@ -191,11 +193,7 @@ public class PowerNegotiationCoordinator {
         }
 
         // Don't pause non-pausable tasks
-        if (proposal.getAction() == PowerProposal.Action.PAUSE && !currentTask.isPausable()) {
-            return false;
-        }
-
-        return true;
+        return proposal.getAction() != PowerProposal.Action.PAUSE || currentTask.isPausable();
     }
 
     private double calculateTotalInterruptionCost(PowerRequest request, List<PowerProposal> proposals) {
@@ -229,7 +227,12 @@ class ScoredProposal {
         this.score = score;
     }
 
-    public PowerProposal getProposal() { return proposal; }
-    public double getScore() { return score; }
+    public PowerProposal getProposal() {
+        return proposal;
+    }
+
+    public double getScore() {
+        return score;
+    }
 }
 

@@ -1,15 +1,19 @@
 package org.asaa.behaviours.appliances.tasks;
 
-public class PowerProposalGenerator {
+import org.asaa.agents.base.SmartApplianceAgent;
 
-    public PowerProposal generateProposal(String agentId, TaskInfo currentTask,
+public class PowerProposalGenerator {
+    private SmartApplianceAgent agent;
+
+    public PowerProposal generateProposal(SmartApplianceAgent agent, String agentId, TaskInfo currentTask,
                                           int currentPowerUsage, PowerRequest cfpRequest) {
 
+        this.agent = agent;
         // Determine what action this agent can take
         PowerProposal.Action action = determineOptimalAction(currentTask, cfpRequest);
 
         // Calculate how much power can be freed
-        int powerAmount = calculateFreePower(currentTask, currentPowerUsage, action);
+        int powerAmount = calculateFreePower(currentPowerUsage, action);
 
         // Calculate impact score (how much this hurts the agent)
         double impactScore = calculateImpactScore(currentTask, action, cfpRequest);
@@ -22,8 +26,10 @@ public class PowerProposalGenerator {
 
     private PowerProposal.Action determineOptimalAction(TaskInfo currentTask, PowerRequest cfpRequest) {
         // Priority-based decision making
-        if (currentTask == null || !isTaskRunning(currentTask)) {
-            return PowerProposal.Action.RESCHEDULE; // No current task or task not running
+        if (currentTask == null || !isTaskRunning()) {
+            // Idle agents can only offer minimal power savings, so we'll return
+            // a proposal that's unlikely to be selected (handled by impact score)
+            return PowerProposal.Action.PAUSE; // Doesn't matter much since no real task to pause
         }
 
         // If current task has much lower priority, consider pausing/interrupting
@@ -49,32 +55,28 @@ public class PowerProposalGenerator {
             return PowerProposal.Action.INTERRUPT;
         }
 
-        // If we can't do anything with current task, see if we can reschedule
-        return PowerProposal.Action.RESCHEDULE;
+        // If we can't pause or interrupt, still need to return something
+        // This will be handled by a very high impact score
+        return PowerProposal.Action.INTERRUPT; // Will be rejected due to high impact
     }
 
-    private int calculateFreePower(TaskInfo currentTask, int currentPowerUsage, PowerProposal.Action action) {
-        switch (action) {
-            case PAUSE:
-            case INTERRUPT:
+    private int calculateFreePower(int currentPowerUsage, PowerProposal.Action action) {
+        if (!isTaskRunning())
+            return agent.getIdleDraw();
+        return switch (action) {
+            case PAUSE, INTERRUPT ->
                 // Can free all power currently being used
-                return currentPowerUsage;
-
-            case RESCHEDULE:
-                // If we're not running anything, we can offer our maximum power capacity
-                // This would be the power we would use if we started our task
-                return getMaxPowerCapacity(); // Agent should know its own max power
-
-            default:
-                return 0;
-        }
+                    currentPowerUsage;
+            default -> 0;
+        };
     }
 
     private double calculateImpactScore(TaskInfo currentTask, PowerProposal.Action action, PowerRequest cfpRequest) {
         double impact = 0.0;
 
-        if (currentTask == null) {
-            return 10.0; // Low impact - no current task
+        // If no current task (idle agent), very high impact score to make it unlikely to be selected
+        if (currentTask == null || !isTaskRunning()) {
+            return 1000.0; // Very high impact - idle agents offer minimal benefit
         }
 
         // Base impact based on current task priority
@@ -95,10 +97,6 @@ public class PowerProposalGenerator {
                 // Consider how much work would be lost
                 long runningTime = System.currentTimeMillis() - currentTask.getStartTime();
                 impact += (runningTime / 60000.0) * 5.0; // Add 5 points per minute of lost work
-                break;
-
-            case RESCHEDULE:
-                impact += 10.0; // Low impact - just delaying start
                 break;
         }
 
@@ -131,6 +129,9 @@ public class PowerProposalGenerator {
     }
 
     private long calculateTimeToFree(TaskInfo currentTask, PowerProposal.Action action) {
+        if (!isTaskRunning())
+            return 0;
+
         return switch (action) {
             case PAUSE ->
                 // Time to safely pause (save state, etc.)
@@ -138,9 +139,7 @@ public class PowerProposalGenerator {
             case INTERRUPT ->
                 // Time to safely interrupt (cleanup, save what we can)
                     estimateInterruptTime(currentTask);
-            case RESCHEDULE ->
-                // Immediate - no power to free right now
-                    0;
+
             default -> 0;
         };
     }
@@ -160,15 +159,9 @@ public class PowerProposalGenerator {
         return estimatePauseTime(currentTask) + 5000; // Add 5 seconds for cleanup
     }
 
-    private boolean isTaskRunning(TaskInfo currentTask) {
+    private boolean isTaskRunning() {
         // This would check the actual task state
         // Implementation depends on how you track task states
-        return currentTask != null && currentTask.getEstimatedRemainingTime() > 0;
-    }
-
-    private int getMaxPowerCapacity() {
-        // Each agent should know its maximum power consumption
-        // This is agent-specific and should be configurable
-        return -999; // Example value
+        return agent.getCurrentTaskBehaviour().getStatus() == TaskBehaviour.Status.running;
     }
 }

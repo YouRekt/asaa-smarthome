@@ -12,9 +12,6 @@ import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected final SmartApplianceAgent agent;
 
@@ -157,18 +154,22 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.REFUSE);
                     agent.sendMessage(reply);
+                    allowNextCfp();
                     return;
                 }
                 ObjectMapper mapper = new ObjectMapper();
                 try {
                     PowerRequest powerRequest = mapper.readValue(msg.getContent(),  PowerRequest.class);
                     PowerProposalGenerator proposalGenerator = new PowerProposalGenerator();
-                    PowerProposal proposal = proposalGenerator.generateProposal(agent.getAID().getLocalName(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getActiveDraw(), powerRequest);
+                    PowerProposal proposal = proposalGenerator.generateProposal(agent, agent.getAID().getLocalName(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getActiveDraw(), powerRequest);
                     ACLMessage propose = msg.createReply();
                     propose.setPerformative(proposal.getPowerAmount() < 0 ? ACLMessage.REFUSE : ACLMessage.PROPOSE);
                     propose.setContent(mapper.writeValueAsString(proposal));
                     agent.getLogger().info("Sending proposal: {}W, Action={}, TimeToFree={}", proposal.getPowerAmount(), proposal.getAction().name(), proposal.getTimeToFree());
                     agent.sendMessage(propose);
+                    if (proposal.getPowerAmount() < 0) {
+                        allowNextCfp();
+                    }
                 } catch (JsonProcessingException e) {
                     agent.getLogger().error("{}@handleCfp: JsonProcessingException {}", this.getClass().getSimpleName(), e.getMessage());
                 }

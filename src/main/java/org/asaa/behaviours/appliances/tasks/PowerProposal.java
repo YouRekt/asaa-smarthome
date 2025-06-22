@@ -11,14 +11,13 @@ public class PowerProposal {
     private String agentId;
     private int powerAmount;
     private TaskInfo currentTask;
-    private Action action; // PAUSE, INTERRUPT, RESCHEDULE
+    private Action action; // PAUSE, INTERRUPT
     private double impactScore; // How much this affects the agent
     private long timeToFree; // How long to free the power
 
     public enum Action {
         PAUSE,        // Pause and can resume later
-        INTERRUPT,    // Stop permanently (abort)
-        RESCHEDULE   // Delay start time
+        INTERRUPT    // Stop permanently (abort)
     }
 }
 
