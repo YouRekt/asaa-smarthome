@@ -36,7 +36,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
 //                    new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()).start();
 //                }
                 if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
-                    WashDishesTask task = new WashDishesTask(agent, 30000, 0.3,  0.7);
+                    WashDishesTask task = new WashDishesTask(agent, 30000, 0.7,  0.3);
                     agent.getTaskBehaviourQueue().add(task);
                     agent.getLogger().info("Wash dishes task added to queue");
                 } else {

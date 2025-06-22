@@ -18,10 +18,25 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         this.targetTemperature = targetTemperature;
         this.powerUsage = agent.getActiveDraw();
         registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false) {
+            private boolean awaitingDelay = false;
+            private final long delayMillis = 5000;
+            private long nextWakeTime;
+
             @Override
             protected boolean execute() {
-                agent.getLogger().info("Cooling task: error has been successfully resolved");
-                return true;
+                if (awaitingDelay) {
+                    if (System.currentTimeMillis() >= nextWakeTime) {
+                        agent.getLogger().info("Cooling task: error has been successfully resolved");
+                        return true;
+                    } else {
+                        block(nextWakeTime - System.currentTimeMillis());
+                        return false;
+                    }
+                }
+
+                nextWakeTime = System.currentTimeMillis() + delayMillis;
+                awaitingDelay = true;
+                return false;
             }
         });
     }
@@ -57,7 +72,8 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         }
 
         if (!definedErrors.isEmpty()) {
-            simulateError();
+            if (simulateError())
+                return false;
         }
 
         // Apply cooling

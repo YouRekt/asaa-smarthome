@@ -38,7 +38,7 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
                 if (updatedTemp > agent.getTargetTemperature()) {
                     TaskBehaviour<?> current = agent.getCurrentTaskBehaviour();
 
-                    if (current == null || current.done()) {
+                    if (current == null || (current.getError() == null && current.done())) {
                         CoolingTask task = new CoolingTask(agent, agent.getCoolingRate(), agent.getTargetTemperature());
                         agent.getTaskBehaviourQueue().add(task);
                         agent.getLogger().info("CoolingTask added to queue due to high temperature.");

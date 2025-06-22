@@ -143,7 +143,7 @@ public class EnvironmentService {
     }
 
     public String getFormattedSimulationTime() {
-        return simulationTime != null ? simulationTime.toString() : "SIM_TIME_UNSET";
+        return simulationTime != null ? simulationTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)) : "SIM_TIME_UNSET";
     }
 
     public synchronized int getPowerAvailability() {

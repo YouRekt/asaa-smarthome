@@ -51,7 +51,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         // Time-based events should go here, the schedulerAgent will send messages to coordinator (? - TBD).
 
         // At 8AM perform Morning Schedule
-        if (currentTime.getHour() >= 8 && !oneShotSchedules.get("routine-morning")) {
+        if (currentTime.getHour() >= 8 && currentTime.getHour() <= 9 && !oneShotSchedules.get("routine-morning")) {
             oneShotSchedules.put("routine-morning", true);
             agent.getLogger().info("Morning schedule started, message sent to coordinator");
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
