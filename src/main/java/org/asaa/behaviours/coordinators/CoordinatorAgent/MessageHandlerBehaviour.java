@@ -161,7 +161,7 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
             case "power-relief":
                 ObjectMapper mapper = new ObjectMapper();
                 try {
-                    PowerProposal powerProposal = mapper.readValue(msg.getConversationId(), PowerProposal.class);
+                    PowerProposal powerProposal = mapper.readValue(msg.getContent(), PowerProposal.class);
                     agent.getPowerNegotiationBehaviour().incrementReceivedMessages();
                     agent.getPowerNegotiationBehaviour().getProposals().add(powerProposal);
                     agent.getPowerNegotiationBehaviour().restart();
