@@ -1,7 +1,7 @@
-package org.asaa.tasks.appliances.ACAgent;
+package org.asaa.behaviours.appliances.ACAgent;
 
 import org.asaa.agents.appliances.ACAgent;
-import org.asaa.behaviours.appliances.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 
 public class CoolingTask extends TaskBehaviour<ACAgent> {
 

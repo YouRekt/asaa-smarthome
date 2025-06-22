@@ -2,7 +2,6 @@ package org.asaa.behaviours.appliances.CoffeeMachineAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.CoffeeMachineAgent;
-import org.asaa.tasks.appliances.CoffeeMachineAgent.MakeCoffeeTask;
 
 public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final CoffeeMachineAgent agent;

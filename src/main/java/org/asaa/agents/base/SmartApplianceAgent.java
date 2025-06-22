@@ -5,14 +5,14 @@ import jade.core.behaviours.Behaviour;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
-import org.asaa.behaviours.appliances.TaskBehaviour;
-import org.asaa.behaviours.appliances.TaskManagerBehaviour;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
+import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.TaskManagerBehaviour;
 import org.asaa.behaviours.appliances.base.AwaitEnableBehaviour;
 import org.asaa.behaviours.appliances.base.RequestPowerBehaviour;
 //import org.asaa.tasks.Task;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
 @Getter
@@ -39,7 +39,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected void setup() {
         super.setup();
 
-        addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+        addBehaviour(new RequestPowerBehaviour(this, "enable-passive", new PowerRequest(this.getAID().toString(), getIdleDraw())));
 
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
 
@@ -59,7 +59,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         if (isEnabled) {
             logger.warn("I have been toggled, but I do not have a handleToggle defined");
         } else {
-            addBehaviour(new RequestPowerBehaviour(this, idleDraw, priority, "enable-passive", ""));
+            addBehaviour(new RequestPowerBehaviour(this, "enable-passive", new PowerRequest(this.getAID().toString(), getIdleDraw())));
         }
     }
 }

@@ -2,7 +2,6 @@ package org.asaa.behaviours.appliances.DishwasherAgent;
 
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.DishwasherAgent;
-import org.asaa.tasks.appliances.DishwasherAgent.WashDishesTask;
 
 public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final DishwasherAgent agent;

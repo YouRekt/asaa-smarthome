@@ -1,7 +1,7 @@
-package org.asaa.tasks.appliances.CoffeeMachineAgent;
+package org.asaa.behaviours.appliances.CoffeeMachineAgent;
 
 import org.asaa.agents.appliances.CoffeeMachineAgent;
-import org.asaa.behaviours.appliances.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 
 public class MakeCoffeeTask extends TaskBehaviour<CoffeeMachineAgent> {
     private final long endTime;

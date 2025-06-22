@@ -1,11 +1,19 @@
 package org.asaa.behaviours.appliances.base;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.base.SmartApplianceAgent;
-import org.asaa.behaviours.appliances.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.PowerProposal;
+import org.asaa.behaviours.appliances.tasks.PowerProposalGenerator;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
+import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 import org.asaa.util.Util;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected final SmartApplianceAgent agent;
@@ -44,7 +52,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
 //                    agent.getCurrentTask().pause(false);
 //                }
                 if (agent.getCurrentTaskBehaviour() != null) {
-                    agent.getCurrentTaskBehaviour().pause();
+                    agent.getCurrentTaskBehaviour().pause(false);
                 }
                 break;
             case "resume-task":
@@ -145,36 +153,25 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                     return;
                 }
                 agent.setCfpInProgress(true);
-                int canFree = 0, prio = agent.getPriority();
-//                if (agent.getCurrentTask() != null && !agent.getCurrentTask().isPaused()) {
-                if (agent.getCurrentTaskBehaviour() != null && !(agent.getCurrentTaskBehaviour().getStatus() == TaskBehaviour.Status.paused)) {
-//                    if (agent.getCurrentTask().isResumable()) {
-                    if (agent.getCurrentTaskBehaviour().isPausable()) {
-                        canFree = agent.getActiveDraw();
-                        prio = agent.getPriority() % 100;
-                        agent.getLogger().warn("Power relief CFP: Currently working and resumable, will pause my current task on accept-proposal");
-//                    } else if (agent.getCurrentTask().isInterruptible()) {
-                    } else if (agent.getCurrentTaskBehaviour().isInterruptible()) {
-                        canFree = agent.getActiveDraw();
-                        agent.getLogger().warn("Power relief CFP: Currently working and interruptible, will interrupt my current task on accept-proposal");
-                    } else {
-                        ACLMessage reply = msg.createReply();
-                        reply.setPerformative(ACLMessage.REFUSE);
-                        agent.sendMessage(reply);
-                        allowNextCfp();
-                        return;
-                    }
-                } else if (agent.isEnabled()) {
-                    canFree = agent.getIdleDraw();
-                    prio = agent.getPriority() % 100 + 200;
+                if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
+                    ACLMessage reply = msg.createReply();
+                    reply.setPerformative(ACLMessage.REFUSE);
+                    agent.sendMessage(reply);
+                    return;
                 }
-
-//                agent.getLogger().info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", agent.getLocalName(), canFree, prio, (agent.getCurrentTask() != null ? "yes" : "no"));
-                agent.getLogger().info("Power relief CFP: {} canFree={}W, prio={}, isWorking={}", agent.getLocalName(), canFree, prio, (agent.getCurrentTaskBehaviour() != null ? "yes" : "no"));
-                ACLMessage propose = msg.createReply();
-                propose.setPerformative(ACLMessage.PROPOSE);
-                propose.setContent(canFree + "," + prio);
-                agent.sendMessage(propose);
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    PowerRequest powerRequest = mapper.readValue(msg.getContent(),  PowerRequest.class);
+                    PowerProposalGenerator proposalGenerator = new PowerProposalGenerator();
+                    PowerProposal proposal = proposalGenerator.generateProposal(agent.getAID().toString(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getActiveDraw(), powerRequest);
+                    ACLMessage propose = msg.createReply();
+                    propose.setPerformative(ACLMessage.PROPOSE);
+                    propose.setContent(mapper.writeValueAsString(proposal));
+                    agent.getLogger().info("Sending proposal: {}W, Action={}, TimeToFree={}", proposal.getPowerAmount(), proposal.getAction().name(), proposal.getTimeToFree());
+                    agent.sendMessage(propose);
+                } catch (JsonProcessingException e) {
+                    agent.getLogger().error("{}@handleCfp: JsonProcessingException {}", this.getClass().getSimpleName(), e.getMessage());
+                }
                 break;
             default:
                 break;
@@ -185,13 +182,14 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     protected void handleAcceptProposal(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "power-relief":
-                int freed = Integer.parseInt(msg.getContent());
 //                if (agent.getCurrentTask() != null && agent.getCurrentTask().isResumable()) {
 //                    agent.getCurrentTask().pause(true);
                 if (agent.getCurrentTaskBehaviour() != null && agent.getCurrentTaskBehaviour().isPausable()) {
-                    agent.getCurrentTaskBehaviour().pause();
+                    agent.getCurrentTaskBehaviour().pause(true);
+                } else if (agent.getCurrentTaskBehaviour() == null) {
+                    agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getIdleDraw(), "disable-passive-cfp"));
                 } else {
-                    agent.addBehaviour(new RelinquishPowerBehaviour(agent, freed, "disable-passive-cfp"));
+                    agent.getLogger().error("{}@handleAcceptProposal: Could not free power!! Most likely task changed state to unpausable after sending proposal", this.getClass().getSimpleName());
                 }
                 allowNextCfp();
                 break;

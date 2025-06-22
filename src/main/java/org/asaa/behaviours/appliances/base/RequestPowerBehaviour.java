@@ -1,34 +1,36 @@
 package org.asaa.behaviours.appliances.base;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.base.SmartApplianceAgent;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
 
 public class RequestPowerBehaviour extends OneShotBehaviour {
     private final SmartApplianceAgent agent;
-    private final int amount;
-    private final int priority;
     private final String convId;
-    private final String replyWith;
+    private final PowerRequest powerRequest;
 
-    public RequestPowerBehaviour(SmartApplianceAgent agent, int amount, int priority, String convId, String replyWith) {
+    public RequestPowerBehaviour(SmartApplianceAgent agent, String convId, PowerRequest powerRequest) {
         super(agent);
         this.agent = agent;
-        this.amount = amount;
-        this.priority = priority;
         this.convId = convId;
-        this.replyWith = replyWith;
+        this.powerRequest = powerRequest;
     }
 
     @Override
     public void action() {
-        ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-        cfp.addReceiver(agent.getCoordinatorAgent());
-        cfp.setConversationId(convId);
-        cfp.setContent(amount + "," + priority);
-        cfp.setReplyWith(replyWith);
-        agent.getLogger().info("Sent CFP for {}W, prio={}, convId={}", amount, priority, convId);
-        agent.environmentService.addPerformedTask();
-        agent.sendMessage(cfp);
+        ACLMessage req = new ACLMessage(ACLMessage.REQUEST);
+        req.addReceiver(agent.getCoordinatorAgent());
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            req.setContent(mapper.writeValueAsString(powerRequest));
+        } catch (JsonProcessingException e) {
+            agent.getLogger().error("{}@action: JsonProcessingException {}", this.getClass().getSimpleName(), e.getMessage());
+        }
+        req.setConversationId(convId);
+        agent.getLogger().info("Sent CFP for {}: {}W, prio={}, convId={}", powerRequest.getTaskInfo() == null ? "enable-passive" : powerRequest.getTaskInfo().getTaskId(), powerRequest.getPowerAmount(), powerRequest.getTaskInfo() == null ? "0" : powerRequest.getTaskInfo().getPriority(), convId);
+        agent.sendMessage(req);
     }
 }

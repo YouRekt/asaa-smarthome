@@ -1,7 +1,7 @@
-package org.asaa.tasks.appliances.DishwasherAgent;
+package org.asaa.behaviours.appliances.DishwasherAgent;
 
 import org.asaa.agents.appliances.DishwasherAgent;
-import org.asaa.behaviours.appliances.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 
 public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {
     private final long nonResumableStartTime;

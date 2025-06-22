@@ -3,9 +3,11 @@ package org.asaa.agents.coordinators;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import lombok.Getter;
+import lombok.Setter;
 import org.asaa.agents.base.SpringAwareAgent;
 import org.asaa.behaviours.coordinators.CoordinatorAgent.AgentScanningBehaviour;
 import org.asaa.behaviours.coordinators.CoordinatorAgent.MessageHandlerBehaviour;
+import org.asaa.behaviours.coordinators.CoordinatorAgent.PowerNegotiationBehaviour;
 import org.asaa.environment.Area;
 import org.asaa.util.Util;
 import org.slf4j.MDC;
@@ -15,8 +17,13 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 public final class CoordinatorAgent extends SpringAwareAgent {
+    @Setter
+    private PowerNegotiationBehaviour powerNegotiationBehaviour;
     private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
     private final Map<AID, List<AID>> appliancesAwaitingCallback = new HashMap<>();
+    private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
+    @Setter
+    private boolean cfpInProgress = false;
 
     @Override
     protected void setup() {
