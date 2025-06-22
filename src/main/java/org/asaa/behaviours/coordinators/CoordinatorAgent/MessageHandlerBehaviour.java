@@ -22,12 +22,7 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
 
     @Override
     public void action() {
-        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null
-                && !msg.getConversationId().equals("power-relief")
-                && !msg.getConversationId().equals("disable-passive-cfp")
-                && !msg.getConversationId().equals("disable-active-cfp"));
-
-        final ACLMessage msg = agent.receive(mt);
+        final ACLMessage msg = agent.receive();
         if (msg != null) {
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
             super.processMsg(msg);

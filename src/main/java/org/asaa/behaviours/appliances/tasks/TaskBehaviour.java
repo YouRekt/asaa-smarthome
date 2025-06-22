@@ -28,7 +28,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     protected int priority;
     protected int powerUsage;
     protected long estimatedRemainingTime = 0;
-    private TaskInfo.Type type;
+    private final TaskInfo.Type type;
     protected long startTime = -1;
     private boolean awaitingDelay = false;
     private long nextWakeTime = 0;
@@ -39,13 +39,14 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     private String error = null;
     private boolean isCfpCall = false;
 
-    protected TaskBehaviour(T agent, String taskName, int priority, boolean pausable, boolean interruptible) {
+    protected TaskBehaviour(T agent, String taskName, int priority, boolean pausable, boolean interruptible, TaskInfo.Type type) {
         this.agent = agent;
         this.taskName = taskName;
         this.pausable = pausable;
         this.interruptible = interruptible;
         this.priority = priority;
         this.powerUsage = agent.getActiveDraw();
+        this.type = type;
     }
 
     protected void registerError(String error, TaskBehaviour<?> resolutionBehaviour) {
@@ -116,7 +117,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
 
     public void resume() {
         if (pausable && status == Status.paused) {
-            agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().toString(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, false)));
+            agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, false)));
             status = Status.waitingForPower;
             agent.getLogger().info("Task {}: resumed", taskName);
         } else {
@@ -136,7 +137,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     @Override
     public void onStart() {
         agent.getLogger().info("Starting {}", taskName);
-        agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().toString(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, true)));
+        agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, true)));
     }
 
     @Override
@@ -158,7 +159,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
 
                 nextWakeTime = System.currentTimeMillis() + delayTime;
                 awaitingDelay = true;
-                agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().toString(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, true)));
+                agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, true)));
                 status = Status.waitingForPower;
                 break;
             case running:

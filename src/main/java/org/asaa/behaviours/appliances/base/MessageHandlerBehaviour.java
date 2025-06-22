@@ -163,9 +163,9 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 try {
                     PowerRequest powerRequest = mapper.readValue(msg.getContent(),  PowerRequest.class);
                     PowerProposalGenerator proposalGenerator = new PowerProposalGenerator();
-                    PowerProposal proposal = proposalGenerator.generateProposal(agent.getAID().toString(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getActiveDraw(), powerRequest);
+                    PowerProposal proposal = proposalGenerator.generateProposal(agent.getAID().getLocalName(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getActiveDraw(), powerRequest);
                     ACLMessage propose = msg.createReply();
-                    propose.setPerformative(ACLMessage.PROPOSE);
+                    propose.setPerformative(proposal.getPowerAmount() < 0 ? ACLMessage.REFUSE : ACLMessage.PROPOSE);
                     propose.setContent(mapper.writeValueAsString(proposal));
                     agent.getLogger().info("Sending proposal: {}W, Action={}, TimeToFree={}", proposal.getPowerAmount(), proposal.getAction().name(), proposal.getTimeToFree());
                     agent.sendMessage(propose);

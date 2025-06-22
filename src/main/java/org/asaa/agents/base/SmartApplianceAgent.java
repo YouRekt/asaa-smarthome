@@ -39,7 +39,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     protected void setup() {
         super.setup();
 
-        addBehaviour(new RequestPowerBehaviour(this, "enable-passive", new PowerRequest(this.getAID().toString(), getIdleDraw())));
+        addBehaviour(new RequestPowerBehaviour(this, "enable-passive", new PowerRequest(this.getAID().getLocalName(), getIdleDraw())));
 
         addBehaviour(new AwaitEnableBehaviour(this, awaitEnablePeriod, runnables, behaviours));
 
@@ -59,7 +59,7 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
         if (isEnabled) {
             logger.warn("I have been toggled, but I do not have a handleToggle defined");
         } else {
-            addBehaviour(new RequestPowerBehaviour(this, "enable-passive", new PowerRequest(this.getAID().toString(), getIdleDraw())));
+            addBehaviour(new RequestPowerBehaviour(this, "enable-passive", new PowerRequest(this.getAID().getLocalName(), getIdleDraw())));
         }
     }
 }

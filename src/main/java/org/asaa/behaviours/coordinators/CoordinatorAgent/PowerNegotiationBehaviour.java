@@ -90,10 +90,11 @@ public class PowerNegotiationBehaviour extends Behaviour {
                 NegotiationResult result = powerNegotiationCoordinator.negotiatePowerAllocation(powerRequest, proposals, agent.environmentService.getPowerAvailability());
                 switch (result.getOutcome()) {
                     case ACCEPT:
+                        agent.getLogger().info("{}@processProposals ACCEPT", this.getClass().getSimpleName());
                         for (var proposal : proposals) {
                             powerRelieved += result.getAcceptedProposals().contains(proposal) ? proposal.getPowerAmount() : 0;
                             ACLMessage proposalReply = new ACLMessage(result.getAcceptedProposals().contains(proposal) ? ACLMessage.ACCEPT_PROPOSAL : ACLMessage.REJECT_PROPOSAL);
-                            proposalReply.addReceiver(new AID(proposal.getAgentId(), AID.ISGUID));
+                            proposalReply.addReceiver(new AID(proposal.getAgentId(), AID.ISLOCALNAME));
                             proposalReply.setConversationId("power-relief");
                             proposalReply.setReplyByDate(new Date(System.currentTimeMillis() + responseTimeout));
                             agent.sendMessage(proposalReply);
@@ -102,8 +103,9 @@ public class PowerNegotiationBehaviour extends Behaviour {
                         state = State.waitForConfirmation;
                         break;
                     case REFUSE:
+                        agent.getLogger().info("{}@processProposals REFUSE", this.getClass().getSimpleName());
                         ACLMessage proposalsReply = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
-                        proposals.forEach(p -> proposalsReply.addReceiver(new AID(p.getAgentId(), AID.ISGUID)));
+                        proposals.forEach(p -> proposalsReply.addReceiver(new AID(p.getAgentId(), AID.ISLOCALNAME)));
                         proposalsReply.setConversationId("power-relief");
                         agent.sendMessage(proposalsReply);
                         respondToOriginalRequest(false);
@@ -125,7 +127,6 @@ public class PowerNegotiationBehaviour extends Behaviour {
                 block();
                 break;
             case finished:
-                allowNextCfp.run();
                 break;
             default:
                 agent.getLogger().error("{}@action: Unknown state {}", this.getClass().getSimpleName(), state);
@@ -136,6 +137,12 @@ public class PowerNegotiationBehaviour extends Behaviour {
     @Override
     public boolean done() {
         return state == State.finished;
+    }
+
+    @Override
+    public int onEnd() {
+        allowNextCfp.run();
+        return super.onEnd();
     }
 
     public void incrementReceivedMessages() {
