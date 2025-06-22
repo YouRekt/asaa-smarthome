@@ -216,7 +216,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 					<DialogTrigger asChild>
 						<Button variant="outline">View</Button>
 					</DialogTrigger>
-					<DialogContent className="max-h-dvh max-w-dvw">
+					<DialogContent className="max-h-dvh max-w-dvw min-w-fit">
 						<DialogHeader>
 							<DialogTitle className="flex items-center gap-2">
 								{agent.name}
@@ -236,7 +236,7 @@ const AgentCard = ({ agent }: { agent: Agent }) => {
 									</Badge>
 								</div>
 							</DialogTitle>
-							<div className="space-y-2">
+							<div className="flex flex-col gap-2">
 								<DialogDescription>
 									Manage agent communications - view
 									incoming/outgoing messages and compose new
