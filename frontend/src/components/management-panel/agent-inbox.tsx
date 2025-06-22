@@ -25,7 +25,7 @@ const AgentInbox = ({
 
 	return (
 		<ScrollArea className="h-96">
-			<div className="space-y-4 p-4">
+			<div className="flex flex-col gap-4 p-4">
 				{messages
 					.sort(
 						(a, b) =>
