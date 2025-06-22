@@ -1,98 +1,91 @@
 package org.asaa.tasks.appliances.ACAgent;
 
-import jade.core.behaviours.WakerBehaviour;
 import org.asaa.agents.appliances.ACAgent;
-import org.asaa.behaviours.appliances.RelinquishPowerBehaviour;
-import org.asaa.tasks.Task;
+import org.asaa.behaviours.appliances.TaskBehaviour;
 
-public final class CoolingTask extends Task {
-    private final ACAgent agent;
-    private final long delayMillis;
+public class CoolingTask extends TaskBehaviour<ACAgent> {
+
+    private final long delayMillis = 1000;
     private final double coolingRate;
     private final double targetTemperature;
 
+    private boolean awaitingDelay = false;
+    private long nextWakeTime = 0;
+
     public CoolingTask(ACAgent agent, double coolingRate, double targetTemperature) {
-        this.agent = agent;
+        super(agent, "cooling-task", 1, true, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
-        this.delayMillis = 1000;
-        resumable = true;
-        interruptible = true;
-    }
+        this.powerUsage = agent.getActiveDraw();
+        registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false) {
+            private boolean awaitingDelay = false;
+            private final long delayMillis = 5000;
+            private long nextWakeTime;
 
-    @Override
-    public void start() {
-        agent.getLogger().info("Cooling task started");
-        super.start(agent);
-        coolAndWait();
-    }
-
-    private void coolAndWait() {
-        if (paused || interrupted)
-            return;
-
-        agent.environmentService.getArea(agent.getAreaName()).setAttribute("temperature", (Double)agent.environmentService.getArea(agent.getAreaName()).getAttribute("temperature") - coolingRate);
-        agent.getLogger().info("Cooling task step: before - {}, after - {}", String.format("%.2f", agent.getCurrentTemperature()), String.format("%.2f", (Double)agent.environmentService.getArea(agent.getAreaName()).getAttribute("temperature")));
-
-        agent.addBehaviour(new WakerBehaviour(agent, delayMillis) {
             @Override
-            protected void onWake() {
-                if (paused || interrupted)
-                    return;
+            protected boolean execute() {
+                if (awaitingDelay) {
+                    if (System.currentTimeMillis() >= nextWakeTime) {
+                        agent.getLogger().info("Cooling task: error has been successfully resolved");
+                        return true;
+                    } else {
+                        block(nextWakeTime - System.currentTimeMillis());
+                        return false;
+                    }
+                }
 
-                agent.requestTemperature();
-                awaitingWake = true;
+                nextWakeTime = System.currentTimeMillis() + delayMillis;
+                awaitingDelay = true;
+                return false;
             }
         });
     }
 
+    private CoolingTask(ACAgent agent, int priority, double coolingRate, double targetTemperature) {
+        super(agent, "cooling-task", priority, true, true);
+        this.coolingRate = coolingRate;
+        this.targetTemperature = targetTemperature;
+        this.powerUsage = agent.getActiveDraw();
+    }
+
     @Override
-    public void pause() {
-        if (!paused) {
-            agent.getLogger().info("Cooling task paused");
-            paused = true;
-            agent.addBehaviour(new RelinquishPowerBehaviour(agent, agent.getActiveDraw(), "disable-active"));
-        } else {
-            agent.getLogger().warn("Cooling task was already paused");
+    public TaskBehaviour<ACAgent> resumeWith(int priority) {
+        return new CoolingTask(agent, priority, coolingRate, targetTemperature);
+    }
+
+    @Override
+    protected boolean execute() {
+        double currentTemp = agent.getCurrentTemperature();
+
+        if (currentTemp <= targetTemperature) {
+            agent.getLogger().info("Target temperature reached. Done.");
+            return true;
         }
-    }
 
-    @Override
-    public void resume() {
-        if (paused) {
-            agent.getLogger().info("Cooling task resumed");
-            paused = false;
-            start();
-        }
-    }
-
-    @Override
-    public void interrupt() {
-        agent.getLogger().warn("Cooling task interrupted");
-        interrupted = true;
-        end(agent);
-    }
-
-    @Override
-    public void wake() {
-        if (awaitingWake) {
-            agent.getLogger().info("Cooling task received wake call");
-            awaitingWake = false;
-            if (agent.getCurrentTemperature() > targetTemperature) {
-                coolAndWait();
+        if (awaitingDelay) {
+            if (System.currentTimeMillis() >= nextWakeTime) {
+                awaitingDelay = false; // Delay has passed
             } else {
-                end(agent);
+                block(nextWakeTime - System.currentTimeMillis());
+                return false; // Still waiting
             }
         }
-    }
 
-    @Override
-    public boolean isResumable() {
-        return true;
-    }
+        if (!definedErrors.isEmpty()) {
+            if (simulateError())
+                return false;
+        }
 
-    @Override
-    public boolean isInterruptible() {
-        return true;
+        // Apply cooling
+        double newTemp = currentTemp - coolingRate;
+        agent.environmentService.getArea(agent.getAreaName()).setAttribute("temperature", newTemp);
+        agent.getLogger().info("Cooling: before = {}, after = {}", String.format("%.2f", currentTemp), String.format("%.2f", newTemp));
+
+        // Schedule next cycle (delay)
+        agent.requestTemperature(); // will eventually update current temperature
+        awaitingDelay = true;
+        nextWakeTime = System.currentTimeMillis() + delayMillis;
+
+        return false; // not finished
     }
 }

@@ -29,6 +29,8 @@ public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
     private final Map<String, LocalDateTime> cyclicEvents = new HashMap<>();
     @Getter
+    private final LocalDateTime simulationStartTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
+    @Getter
     @Setter
     private Area humanLocation;
     @Getter
@@ -69,7 +71,7 @@ public class EnvironmentService {
     public void startSimulation() {
         if (future != null && future.isDone()) return;
         if (!configProvided) {
-            simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
+            simulationTime = simulationStartTime;
             Area kitchen = new Area("kitchen");
             kitchen.setAttribute("temperature", 21.0);
             addArea("kitchen", kitchen);
@@ -91,10 +93,10 @@ public class EnvironmentService {
             Area beforeRoom = new Area("before room");
             beforeRoom.setAttribute("temperature", 19.0);
             addArea("before room", beforeRoom);
-            humanLocation = kitchen;
-            initializePriceMaps();
-            initializeCyclicEvents();
         }
+        humanLocation = areas.entrySet().iterator().next().getValue();
+        initializePriceMaps();
+        initializeCyclicEvents();
         executor = Executors.newSingleThreadScheduledExecutor();
         future = executor.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
     }
@@ -126,11 +128,13 @@ public class EnvironmentService {
         - After planning out our home schema, open doors with rooms with substantial temperature differences
           can affect the temperature of the kitchen
          */
-        if (Duration.between(cyclicEvents.get("kitchen-temp"), simulationTime).toMinutes() >= 30) {
-            cyclicEvents.put("kitchen-temp", simulationTime);
-            double newTemp = TemperatureSimulator.simulateRoomTemperature((double)getArea("kitchen").getAttribute("temperature"), simulationTime.getHour(), 14, 21.0, 25.0);
-            getArea("kitchen").setAttribute("temperature", 23.0);
-            logger.info("Kitchen temperature updated to: {} °C", String.format("%.2f", 23.0));
+        if (Duration.between(cyclicEvents.get("temp-change"), simulationTime).toMinutes() >= 30) {
+            cyclicEvents.put("temp-change", simulationTime);
+            areas.values().forEach((area) -> {
+                double newTemp = TemperatureSimulator.simulateRoomTemperature((double)area.getAttribute("temperature"), simulationTime.getHour(), 12, 15.0, 30.0);
+                area.setAttribute("temperature", newTemp);
+                logger.info("{} temperature updated to: {} °C",area.getName(),String.format("%.2f", newTemp));
+            });
         }
     }
 
@@ -139,7 +143,7 @@ public class EnvironmentService {
     }
 
     public String getFormattedSimulationTime() {
-        return simulationTime != null ? simulationTime.toString() : "SIM_TIME_UNSET";
+        return simulationTime != null ? simulationTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)) : "SIM_TIME_UNSET";
     }
 
     public synchronized int getPowerAvailability() {
@@ -217,7 +221,7 @@ public class EnvironmentService {
     }
 
     private void initializeCyclicEvents() {
-        cyclicEvents.put("kitchen-temp", LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45)));
+        cyclicEvents.put("temp-change", simulationTime);
     }
 
     public void addArea(String name, Area area) {

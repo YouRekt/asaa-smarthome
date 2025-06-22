@@ -1,158 +1,98 @@
+import Layout from "@/components/management-panel/layout";
+import ManagementPanel from "@/components/management-panel/management-panel";
+import { useStomp } from "@/hooks/use-stomp";
+import {
+	useStore,
+	type AgentError,
+	type AgentStatus,
+	type Environment,
+	type Message,
+	type SystemStatus,
+} from "@/hooks/use-store";
 import { useEffect } from "react";
-import EnvironmentViewer from "@/components/environment-viewer";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { FloorPlan } from "@/components/floor-plan";
-import useStore from "@/hooks/use-store";
-import useStomp from "@/hooks/use-stomp";
-import { Client } from "@stomp/stompjs";
-import { Errors } from "@/components/errors";
-import { Messages } from "@/components/messages";
-import { Agents } from "@/components/agents";
 
-export default function App() {
+const SYSTEM = "/topic/system" as const;
+const ENVIRONMENT = "/topic/environment" as const;
+const AGENTS = "/topic/agent" as const;
+const MESSAGES = "/topic/agent-message" as const;
+const ERROR = "/topic/agent-error" as const;
+const STATUS = "/topic/agent-status" as const;
+
+const App = () => {
+	const { connect, disconnect, subscribe } = useStomp();
 	const {
 		setEnvironment,
-		setSelectedRoom,
-		setIsRunning,
-		isRunning,
-		selectedRoom,
-		addAgent,
-		setError,
-		selectedAgent,
-		setAgentMessage,
-		deselectAgent,
-		clearAll,
-		showErrors,
-		setShowErrors,
-		errors,
-		setAgentStatus,
-		environment,
-		setLatestMessage,
+		addMessage,
+		setSystemStatus,
+		updateAgentStatus,
+		updateAreaAttributes,
+		addError,
 	} = useStore();
 
-	const { setClient, sendMessage } = useStomp();
-
 	useEffect(() => {
-		const stompClient = new Client({
-			brokerURL: "ws://localhost:8080/ws",
-			reconnectDelay: 5000,
-			onConnect: () => {
-				stompClient.subscribe("/topic/environment", (message) => {
-					const data = JSON.parse(message.body);
-					setEnvironment(data);
-				});
-				stompClient.subscribe("/topic/agent", (message) => {
-					const data = JSON.parse(message.body);
-					addAgent(data);
-				});
-				stompClient.subscribe("/topic/agent-message", (message) => {
-					const data = JSON.parse(message.body);
-					setAgentMessage(data.aid, data.timestamp, data.message);
-					setLatestMessage(data.aid, data.timestamp, data.message);
-				});
-				stompClient.subscribe("/topic/agent-error", (message) => {
-					const data = JSON.parse(message.body);
-					setError(data.aid, data.timestamp, data.message);
-				});
-				stompClient.subscribe("/topic/agent-status", (message) => {
-					const data = JSON.parse(message.body);
-					setAgentStatus(data);
-				});
-			},
+		connect();
+
+		subscribe(SYSTEM, (message) => {
+			console.log("System status update:", message);
+			setSystemStatus(message.status as SystemStatus);
 		});
 
-		setClient(stompClient);
-		stompClient.activate();
+		subscribe(ENVIRONMENT, (message) => {
+			console.log("Environment update:", message);
 
-		return () => {
-			stompClient.deactivate();
-		};
+			// Extract environment data without areas
+			const { areas, ...environmentData } = message;
+			setEnvironment(environmentData as Environment);
+
+			// Update area attributes separately
+			if (areas && Array.isArray(areas)) {
+				areas.forEach((area) => {
+					if (area.name && area.attributes) {
+						updateAreaAttributes(area.name, area.attributes);
+					}
+				});
+			}
+		});
+
+		subscribe(AGENTS, (message) => {
+			console.log("Agents update:", message);
+			// Here dont update the store, just log the agents
+		});
+
+		subscribe(MESSAGES, (message) => {
+			console.log("Messages update:", message);
+			addMessage(message as Message);
+		});
+
+		subscribe(ERROR, (message) => {
+			console.error("Error update:", message);
+			// Add error to store
+			addError(message as AgentError);
+		});
+
+		subscribe(STATUS, (message) => {
+			console.log("Status update:", message);
+			const { aid, ...status } = message;
+			updateAgentStatus(status as AgentStatus, aid as string);
+		});
+
+		return () => disconnect();
 	}, [
-		addAgent,
-		setAgentMessage,
-		setAgentStatus,
-		setClient,
+		addMessage,
+		connect,
+		disconnect,
 		setEnvironment,
-		setError,
-		setLatestMessage,
+		setSystemStatus,
+		subscribe,
+		updateAgentStatus,
+		updateAreaAttributes,
+		addError,
 	]);
 
-	const handleRoomClick = (id: string) => {
-		setSelectedRoom(id);
-		sendMessage("/app/human-location", { area: id });
-	};
-
-	const handleStart = async () => {
-		const response = await fetch("/system/start", {
-			method: "POST",
-		});
-		if (!response.ok) {
-			toast.error("Failed to start the system");
-			return;
-		}
-		setIsRunning(true);
-		toast.success("System started");
-	};
-
-	const handleStop = async () => {
-		const response = await fetch("/system/stop", {
-			method: "POST",
-		});
-		if (!response.ok) {
-			toast.error("Failed to stop the system");
-			return;
-		}
-		clearAll();
-
-		toast.success("System stopped");
-	};
-
 	return (
-		<div className="h-dvh">
-			<nav className="flex items-center justify-center gap-4 p-4 border-b h-16">
-				<h1 className="text-2xl font-bold mr-16">Smart Home</h1>
-				<Button
-					className="bg-green-500 hover:bg-green-600"
-					disabled={isRunning}
-					onClick={handleStart}
-				>
-					Start
-				</Button>
-				<Button
-					className="bg-red-500 hover:bg-red-600"
-					disabled={!isRunning}
-					onClick={handleStop}
-				>
-					Stop
-				</Button>
-				<Button
-					disabled={Object.keys(errors).length === 0}
-					onClick={() => setShowErrors(!showErrors)}
-				>
-					{showErrors ? "Hide Errors" : "Show Errors"}
-				</Button>
-			</nav>
-			<div className="h-[calc(100dvh-4rem)] flex relative">
-				<FloorPlan
-					onClick={handleRoomClick}
-					humanLocation={environment?.humanLocation || "kitchen"}
-				/>
-				<div className="border-l p-4 flex flex-col gap-4">
-					<h2 className="text-xl font-semibold mb-2">
-						{selectedRoom ? `${selectedRoom}` : "Select a room"}
-					</h2>
-					<EnvironmentViewer />
-					<Agents />
-				</div>
-				{selectedAgent && (
-					<div className="flex flex-col gap-4">
-						<Button onClick={() => deselectAgent()}>Hide</Button>
-						<Messages />
-					</div>
-				)}
-				{showErrors && <Errors />}
-			</div>
-		</div>
+		<Layout>
+			<ManagementPanel />
+		</Layout>
 	);
-}
+};
+export default App;

@@ -2,16 +2,11 @@ package org.asaa.util;
 
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import org.asaa.agents.SpringAwareAgent;
+
+import java.util.*;
 
 public class Util {
-    public static void SendMessage(SpringAwareAgent agent, String content, AID receiver, int performative, String conversationId) {
-        ACLMessage msg = new ACLMessage(performative);
-        msg.addReceiver(receiver);
-        msg.setContent(content);
-        msg.setConversationId(conversationId);
-        agent.sendMessage(msg);
-    }
+    public static String ContainerIP = null;
 
     public static String ConvertACLPerformativeToString(int performative) {
         return switch (performative) {
@@ -68,5 +63,46 @@ public class Util {
             case "PROPAGATE" -> ACLMessage.PROPAGATE;
             default -> ACLMessage.UNKNOWN;
         };
+    }
+
+    public static <K, V> Map.Entry<K, V> getRandomEntry(Map<K, V> map) {
+        if (map.isEmpty())
+            return null;
+
+        List<Map.Entry<K, V>> entries = new ArrayList<>(map.entrySet());
+        int randomIndex = new Random().nextInt(entries.size());
+        return entries.get(randomIndex);
+    }
+
+    public static <T> T getRandomEntry(List<T> list) {
+        if (list == null || list.isEmpty())
+            return null;
+
+        int randomIndex = new Random().nextInt(list.size());
+        return list.get(randomIndex);
+    }
+
+    public static class IteratorAdapter<T> implements Iterator<T> {
+        private final jade.util.leap.Iterator it;
+        private final Class<T> type;
+
+        public IteratorAdapter(jade.util.leap.Iterator it, Class<T> type) {
+            this.it = it;
+            this.type = type;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        @Override
+        public T next() {
+            Object obj = it.next();
+            if (!type.isInstance(obj)) {
+                throw new ClassCastException("Expected type: " + type + ", but got: " + obj.getClass());
+            }
+            return type.cast(obj);
+        }
     }
 }

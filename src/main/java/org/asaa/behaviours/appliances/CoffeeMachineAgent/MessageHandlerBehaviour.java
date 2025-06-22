@@ -4,7 +4,7 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.appliances.CoffeeMachineAgent;
 import org.asaa.tasks.appliances.CoffeeMachineAgent.MakeCoffeeTask;
 
-public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.MessageHandlerBehaviour {
+public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base.MessageHandlerBehaviour {
     private final CoffeeMachineAgent agent;
 
     public MessageHandlerBehaviour(CoffeeMachineAgent agent) {
@@ -17,11 +17,20 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.Mess
         switch (msg.getConversationId()) {
             case "make-coffee-task":
             case "action-morning":
-                if (agent.getCurrentTask() == null) {
-                    agent.requestStartTask(new MakeCoffeeTask(agent));
+                // TODO: Implement using new system
+//                if (agent.getCurrentTask() == null) {
+//                    new MakeCoffeeTask(agent).start();
+//                } else {
+//                    agent.getLogger().warn("{}@request: Make Coffee Task already running", msg.getConversationId());
+//                    agent.agentCommunicationController.sendError(agent.getLocalName(), msg.getConversationId() + "@request: Make Coffee Task already running");
+//                }
+                if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
+                    MakeCoffeeTask task = new MakeCoffeeTask(agent, 10000);
+                    agent.getTaskBehaviourQueue().add(task);
+                    agent.getLogger().info("Make Coffee Task added to queue");
                 } else {
-                    agent.getLogger().warn("{}@request: Make Coffee Task already running", msg.getConversationId());
-                    agent.agentCommunicationController.sendError(agent.getName(), msg.getConversationId() + "@request: Make Coffee Task already running");
+                    agent.getLogger().warn("Make Coffee Task already running");
+                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Make Coffee Task already running", false);
                 }
                 break;
             default:
