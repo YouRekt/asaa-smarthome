@@ -41,6 +41,7 @@ public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {
 
     @Override
     protected boolean execute() {
+        estimatedRemainingTime = remainingWashTime;
         if (remainingWashTime <= 0) {
             agent.getLogger().info("Wash complete!");
             return true;

@@ -19,8 +19,8 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         this.targetTemperature = targetTemperature;
         this.powerUsage = agent.getActiveDraw();
         registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false, TaskInfo.Type.OPTIMIZATION) {
-            private boolean awaitingDelay = false;
             private final long delayMillis = 5000;
+            private boolean awaitingDelay = false;
             private long nextWakeTime;
 
             @Override
@@ -58,6 +58,8 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
     protected boolean execute() {
         double currentTemp = agent.getCurrentTemperature();
 
+        estimatedRemainingTime = (long) Math.ceil((currentTemp - targetTemperature) / coolingRate) * delayMillis;
+
         if (currentTemp <= targetTemperature) {
             agent.getLogger().info("Target temperature reached. Done.");
             return true;
@@ -73,8 +75,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         }
 
         if (!definedErrors.isEmpty()) {
-            if (simulateError())
-                return false;
+            if (simulateError()) return false;
         }
 
         // Apply cooling

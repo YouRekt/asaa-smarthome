@@ -27,9 +27,9 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     @Setter
     protected int priority;
     protected int powerUsage;
-    protected long estimatedRemainingTime = 0;
+    protected long estimatedRemainingTime;
     private final TaskInfo.Type type;
-    protected long startTime = -1;
+    protected long startTime;
     private boolean awaitingDelay = false;
     private long nextWakeTime = 0;
     @Getter
@@ -140,11 +140,14 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
         agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, true)));
     }
 
+    protected void onPowerGranted() {}
+
     @Override
     public void action() {
         switch (status) {
             case powerGranted:
                 startTime = System.currentTimeMillis();
+                onPowerGranted();
                 status = Status.running;
                 break;
             case powerRefused:

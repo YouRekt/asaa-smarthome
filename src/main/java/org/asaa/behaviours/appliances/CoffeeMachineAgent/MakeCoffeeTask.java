@@ -14,6 +14,7 @@ public class MakeCoffeeTask extends TaskBehaviour<CoffeeMachineAgent> {
 
     @Override
     protected boolean execute() {
+        estimatedRemainingTime = endTime - System.currentTimeMillis();
         if (endTime <= System.currentTimeMillis()) {
             agent.getLogger().info("Coffee has been made! Enjoy!");
             return true;
