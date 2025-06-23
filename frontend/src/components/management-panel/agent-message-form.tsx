@@ -170,6 +170,7 @@ const AgentMessageForm = ({ agent }: { agent: Agent }) => {
 							<Select
 								onValueChange={field.onChange}
 								defaultValue={field.value}
+								{...field}
 							>
 								<FormControl>
 									<SelectTrigger>
