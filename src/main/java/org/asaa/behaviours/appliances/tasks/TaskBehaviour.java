@@ -232,7 +232,7 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
             if (error == null) {
                 agent.environmentService.addPerformedTask();
             }
-        } else if (status == Status.criticalError) {
+        } else if (status == Status.criticalError || error != null) {
             agent.environmentService.addPerformedTaskError();
             agent.agentCommunicationController.sendError(agent.getLocalName(), taskName + " encountered a critical error that can't be resolved automatically.", false);
         }

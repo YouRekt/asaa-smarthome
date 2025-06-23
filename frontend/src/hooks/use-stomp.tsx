@@ -10,9 +10,6 @@ enableMapSet();
 
 const stompConfig: RxStompConfig = {
 	brokerURL: "ws://localhost:8080/ws",
-	debug: (msg) => {
-		console.log(new Date().toISOString(), msg);
-	},
 	heartbeatIncoming: 0,
 	heartbeatOutgoing: 20000,
 	reconnectDelay: 200,
@@ -121,7 +118,6 @@ export const useStomp = create<StompState & StompActions>()(
 			}
 
 			rxStomp.publish({ destination, body: JSON.stringify(body) });
-			console.log(`Published to ${destination}:`, body);
 		},
 	}))
 );

@@ -56,7 +56,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 break;
             case "interrupt-task":
                 if (agent.getCurrentTaskBehaviour() != null) {
-                    agent.getCurrentTaskBehaviour().interrupt(false, false);
+                    agent.getCurrentTaskBehaviour().interrupt(true, false);
                 }
                 break;
             default:
@@ -121,7 +121,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                         )));
                     }
                 });
-                agent.getCurrentTaskBehaviour().setStatus(TaskBehaviour.Status.powerRefused);
+                agent.getCurrentTaskBehaviour().setStatus(TaskBehaviour.Status.waitingForPower);
                 break;
             case "enable-active":
                 agent.agentCommunicationController.sendError(agent.getLocalName(), "Active power on refused", false);

@@ -89,8 +89,6 @@ const ConfigPanel = () => {
 				return;
 			}
 
-			console.log(formValues.simulationStartTime.toISOString());
-
 			// Send configuration with all form fields
 			const configResponse = await fetch("/system/config", {
 				method: "POST",
@@ -269,11 +267,6 @@ const ConfigPanel = () => {
 											<Button
 												type="submit"
 												form="configuration-form"
-												onClick={() =>
-													console.log(
-														form.formState.errors
-													)
-												}
 											>
 												Save Configuration
 											</Button>
