@@ -13,7 +13,6 @@ import { useEffect } from "react";
 
 const SYSTEM = "/topic/system" as const;
 const ENVIRONMENT = "/topic/environment" as const;
-const AGENTS = "/topic/agent" as const;
 const MESSAGES = "/topic/agent-message" as const;
 const ERROR = "/topic/agent-error" as const;
 const STATUS = "/topic/agent-status" as const;
@@ -33,13 +32,10 @@ const App = () => {
 		connect();
 
 		subscribe(SYSTEM, (message) => {
-			console.log("System status update:", message);
 			setSystemStatus(message.status as SystemStatus);
 		});
 
 		subscribe(ENVIRONMENT, (message) => {
-			console.log("Environment update:", message);
-
 			// Extract environment data without areas
 			const { areas, ...environmentData } = message;
 			setEnvironment(environmentData as Environment);
@@ -54,24 +50,16 @@ const App = () => {
 			}
 		});
 
-		subscribe(AGENTS, (message) => {
-			console.log("Agents update:", message);
-			// Here dont update the store, just log the agents
-		});
-
 		subscribe(MESSAGES, (message) => {
-			console.log("Messages update:", message);
 			addMessage(message as Message);
 		});
 
 		subscribe(ERROR, (message) => {
-			console.error("Error update:", message);
 			// Add error to store
 			addError(message as AgentError);
 		});
 
 		subscribe(STATUS, (message) => {
-			console.log("Status update:", message);
 			const { aid, ...status } = message;
 			updateAgentStatus(status as AgentStatus, aid as string);
 		});

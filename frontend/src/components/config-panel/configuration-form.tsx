@@ -171,10 +171,6 @@ const ConfigurationForm = ({
 
 		// Update the store
 		addConfiguration(transformedAreas, transformedAgents);
-
-		console.log("Form submitted with data:", data);
-		console.log("Transformed areas:", transformedAreas);
-		console.log("Transformed agents:", transformedAgents);
 	}
 
 	return (
