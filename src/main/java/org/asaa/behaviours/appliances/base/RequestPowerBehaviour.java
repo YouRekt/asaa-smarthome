@@ -8,9 +8,9 @@ import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.tasks.PowerRequest;
 
 public class RequestPowerBehaviour extends OneShotBehaviour {
+    private final PowerRequest powerRequest;
     private final SmartApplianceAgent agent;
     private final String convId;
-    private final PowerRequest powerRequest;
 
     public RequestPowerBehaviour(SmartApplianceAgent agent, String convId, PowerRequest powerRequest) {
         super(agent);

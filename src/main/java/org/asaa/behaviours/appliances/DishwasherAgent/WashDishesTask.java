@@ -6,14 +6,15 @@ import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.appliances.tasks.TaskInfo;
 
 public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {
-    private final long nonResumableStartTime;
-    private final long nonResumableEndTime;
     private final double nonResumableStartPercent;
     private final double nonResumableEndPercent;
+    private final long nonResumableStartTime;
+    private final long nonResumableEndTime;
+
+    private boolean firstCycle = true;
     private long fullWashTime;
     private long remainingWashTime;
     private long washStartTime;
-    private boolean firstCycle = true;
 
     public WashDishesTask(DishwasherAgent agent, long fullWashTime, double nonResumableStartPercent, double nonResumableEndPercent) {
         super(agent, "wash-dishes-task", agent.getPriority(), true, false, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.LOW, true);

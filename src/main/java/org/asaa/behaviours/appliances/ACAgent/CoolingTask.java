@@ -6,10 +6,9 @@ import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.appliances.tasks.TaskInfo;
 
 public class CoolingTask extends TaskBehaviour<ACAgent> {
-
-    private final long delayMillis = 1000;
     private final double coolingRate;
     private final double targetTemperature;
+    private final long delayMillis = 1000;
 
     private boolean awaitingDelay = false;
     private long nextWakeTime = 0;

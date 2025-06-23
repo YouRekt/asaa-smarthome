@@ -45,25 +45,16 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 agent.handleToggle(msg.getContent());
                 break;
             case "pause-task":
-//                if (agent.getCurrentTask() != null) {
-//                    agent.getCurrentTask().pause(false);
-//                }
                 if (agent.getCurrentTaskBehaviour() != null) {
                     agent.getCurrentTaskBehaviour().pause(false);
                 }
                 break;
             case "resume-task":
-//                if (agent.getCurrentTask() != null) {
-//                    agent.getCurrentTask().resume();
-//                }
                 if (agent.getCurrentTaskBehaviour() != null) {
                     agent.getCurrentTaskBehaviour().resume();
                 }
                 break;
             case "interrupt-task":
-//                if (agent.getCurrentTask() != null) {
-//                    agent.getCurrentTask().interrupt(false);
-//                }
                 if (agent.getCurrentTaskBehaviour() != null) {
                     agent.getCurrentTaskBehaviour().interrupt(false, false);
                 }
@@ -77,10 +68,6 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     protected void handleInform(ACLMessage msg) {
         switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
             case "disable":
-//                if (agent.getCurrentTask() != null) {
-//                    agent.getLogger().error("Task is not null");
-//                    return;
-//                }
                 if (agent.getCurrentTaskBehaviour() != null) {
                     agent.getLogger().error("Task is not null");
                     return;
@@ -111,12 +98,6 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 break;
             case "enable-active":
                 agent.getLogger().info("Coordinator AGREED: {}", msg.getContent());
-//                String replyWith = msg.getInReplyTo();
-//                Runnable callback = agent.onPowerGrantedCallbacks.remove(replyWith);
-//                if (callback != null) {
-//                    agent.getLogger().debug("Callback triggered: {}", callback);
-//                    callback.run();
-//                }
                 agent.getCurrentTaskBehaviour().setStatus(TaskBehaviour.Status.powerGranted);
                 break;
             default:
@@ -145,12 +126,6 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
             case "enable-active":
                 agent.agentCommunicationController.sendError(agent.getLocalName(), "Active power on refused", false);
                 agent.getLogger().warn("Coordinator REFUSED enable-active:{}", msg.getContent());
-//                String replyWith = msg.getInReplyTo();
-//                Runnable callback = agent.onPowerGrantedCallbacks.remove(replyWith);
-//                if (callback != null) {
-//                    agent.getLogger().warn("Callback cancelled tied with request {}", replyWith);
-//                    agent.agentCommunicationController.sendError(agent.getLocalName(), "Callback action was cancelled: request " + replyWith);
-//                }
                 agent.getCurrentTaskBehaviour().setStatus(TaskBehaviour.Status.powerRefused);
                 break;
             default:
@@ -199,8 +174,6 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     protected void handleAcceptProposal(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "power-relief":
-//                if (agent.getCurrentTask() != null && agent.getCurrentTask().isResumable()) {
-//                    agent.getCurrentTask().pause(true);
                 if (agent.getCurrentTaskBehaviour() != null && agent.getCurrentTaskBehaviour().isPausable()) {
                     agent.getCurrentTaskBehaviour().pause(true);
                 } else if (agent.getCurrentTaskBehaviour() == null) {

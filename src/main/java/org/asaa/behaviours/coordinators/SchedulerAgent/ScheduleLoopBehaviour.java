@@ -13,10 +13,10 @@ import java.util.*;
 
 public class ScheduleLoopBehaviour extends TickerBehaviour {
     private final EnvironmentService env;
-    private final Random rand = new Random();
     private final Map<String, Boolean> oneShotSchedules = new HashMap<>();
     private final Map<String, LocalDateTime> cyclicSchedules = new HashMap<>();
     private final SchedulerAgent agent;
+
     private LocalDateTime previousTime;
     private LocalDateTime currentTime;
 

@@ -8,10 +8,10 @@ import org.asaa.behaviours.appliances.DishwasherAgent.WashDishesTask;
 
 @Getter
 public final class DishwasherAgent extends SmartApplianceAgent {
-    private final long fullWashTime = 30000;
-    private final long updateDelay = 200;
     private final double noninterruptibleStartPercent = 0.75;
     private final double noninterruptibleEndPercent = 0.4;
+    private final long fullWashTime = 30000;
+    private final long updateDelay = 200;
 
     @Override
     protected void setup() {

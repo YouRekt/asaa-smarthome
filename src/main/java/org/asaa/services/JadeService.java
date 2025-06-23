@@ -28,8 +28,10 @@ import static java.lang.String.format;
 public class JadeService {
     private static final ExecutorService jadeExecutor = Executors.newCachedThreadPool();
     private static final Logger logger = LoggerFactory.getLogger(JadeService.class);
-    private ContainerController container;
+
     private final List<AgentConfig> agentConfigs = new ArrayList<>();
+
+    private ContainerController container;
 
     public void configureAgents(List<AgentConfig> configs) {
         this.agentConfigs.clear();

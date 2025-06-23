@@ -30,6 +30,7 @@ public abstract class SpringAwareAgent extends Agent {
     public EnvironmentService environmentService;
     public AgentCommunicationController agentCommunicationController;
     public AgentPresenceController agentPresenceController;
+
     @Getter
     protected Logger logger;
 

@@ -15,11 +15,17 @@ import java.util.Random;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behaviour implements Comparable<TaskBehaviour<?>> {
-    protected final T agent;
     protected final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
-    private final String taskName;
-    private final Random random = new Random();
+    protected final T agent;
+
+    private final boolean canBeScheduled;
     private final long delayTime = 5000;
+    private final int maxRetries = 3;
+    private final PowerRequest.Urgency urgency;
+    private final Random random = new Random();
+    private final String taskName;
+    private final TaskInfo.Type type;
+
     @Getter
     protected boolean pausable;
     @Getter
@@ -29,20 +35,17 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     protected int priority;
     protected int powerUsage;
     protected long estimatedRemainingTime;
-    private final TaskInfo.Type type;
-    private final PowerRequest.Urgency urgency;
-    private final boolean canBeScheduled;
-    private final int maxRetries = 3;
-    private int currentRetries = 0;
     protected long startTime;
+
     private boolean awaitingDelay = false;
+    private boolean isCfpCall = false;
+    private int currentRetries = 0;
     private long nextWakeTime = 0;
     @Getter
     @Setter
     private Status status = Status.waitingForPower;
     @Getter
     private String error = null;
-    private boolean isCfpCall = false;
 
     protected TaskBehaviour(T agent, String taskName, int priority, boolean pausable, boolean interruptible, TaskInfo.Type type, PowerRequest.Urgency urgency, boolean canBeScheduled) {
         this.agent = agent;

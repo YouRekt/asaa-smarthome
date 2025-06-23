@@ -15,12 +15,12 @@ import org.asaa.controllers.AgentPresenceController;
 import java.util.*;
 
 public class AgentScanningBehaviour extends Behaviour {
+    private boolean awaitingDelay = false;
     private final CoordinatorAgent agent;
     private final EnvironmentService environmentService;
     private final AgentPresenceController agentPresenceController;
     private final long period;
     private long nextWakeTime = 0;
-    private boolean awaitingDelay = false;
 
     public AgentScanningBehaviour(CoordinatorAgent agent, long period) {
         this.agent = agent;

@@ -17,21 +17,21 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 @Getter
 public abstract class SmartApplianceAgent extends PhysicalAgent {
-//    public final Map<String, Runnable> onPowerGrantedCallbacks = new ConcurrentHashMap<>();
-    protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
     protected final List<Runnable> runnables = new ArrayList<>();
-    protected final Map<String, Behaviour> behaviours = new HashMap<>();
     protected final long awaitEnablePeriod = 1000;
+    protected final Map<String, List<AID>> subscribedSensors = new HashMap<>();
+    protected final Map<String, Behaviour> behaviours = new HashMap<>();
+
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
-//    @Setter
-//    protected Task currentTask = null;
-    @Setter
-    protected TaskBehaviour<?> currentTaskBehaviour = null;
-    protected PriorityBlockingQueue<TaskBehaviour<?>> taskBehaviourQueue = new PriorityBlockingQueue<>();
+
     @Setter
     protected boolean isEnabled = false;
-    protected int idleDraw = 0;
     protected int activeDraw = 0;
+    protected int idleDraw = 0;
+    protected PriorityBlockingQueue<TaskBehaviour<?>> taskBehaviourQueue = new PriorityBlockingQueue<>();
+    @Setter
+    protected TaskBehaviour<?> currentTaskBehaviour = null;
+
     @Setter
     private boolean cfpInProgress = false;
 
@@ -51,7 +51,6 @@ public abstract class SmartApplianceAgent extends PhysicalAgent {
     }
 
     public void updateStatus() {
-//        agentCommunicationController.setAgentStatus(getLocalName(), isEnabled, getCurrentTask() != null && !getCurrentTask().isPaused(), getCurrentTask() == null || getCurrentTask().isInterruptible(), getCurrentTask() == null || getCurrentTask().isResumable(), activeDraw, idleDraw, priority);
         agentCommunicationController.setAgentStatus(getLocalName(), isEnabled, currentTaskBehaviour != null && currentTaskBehaviour.getStatus() == TaskBehaviour.Status.running, currentTaskBehaviour == null || currentTaskBehaviour.isInterruptible(), currentTaskBehaviour == null || currentTaskBehaviour.isPausable(), activeDraw, idleDraw, priority);
     }
 

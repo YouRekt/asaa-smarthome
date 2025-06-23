@@ -15,10 +15,6 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
     protected void handleRequest(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "wash-dishes-task":
-                // TODO: Implement using new system
-//                if (agent.getCurrentTask() == null) {
-//                    new WashDishesTask(agent, agent.getUpdateDelay(), agent.getNoninterruptibleStartPercent(), agent.getNoninterruptibleEndPercent(), agent.getFullWashTime()).start();
-//                }
                 if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
                     WashDishesTask task = new WashDishesTask(agent, 30000, 0.7,  0.3);
                     agent.getTaskBehaviourQueue().add(task);

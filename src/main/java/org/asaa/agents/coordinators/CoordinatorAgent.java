@@ -17,13 +17,13 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 public final class CoordinatorAgent extends SpringAwareAgent {
-    @Setter
-    private PowerNegotiationBehaviour powerNegotiationBehaviour;
     private final Map<Area, Map<String, List<AID>>> physicalAgents = new HashMap<>();
     private final Map<AID, Integer> appliancesAwaitingPower = new HashMap<>();
     private final Queue<ACLMessage> pendingCfpQueue = new LinkedList<>();
     @Setter
     private boolean cfpInProgress = false;
+    @Setter
+    private PowerNegotiationBehaviour powerNegotiationBehaviour;
 
     @Override
     protected void setup() {
