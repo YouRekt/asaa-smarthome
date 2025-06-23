@@ -17,7 +17,7 @@ public final class DishwasherAgent extends SmartApplianceAgent {
     protected void setup() {
         idleDraw = 5;
         activeDraw = 275;
-        priority = 150;
+        priority = 80;
 
         runnables.add(() -> this.addBehaviour(new WakerBehaviour(this, 5000) {
             @Override

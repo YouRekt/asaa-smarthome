@@ -12,21 +12,6 @@ public class MessageHandlerBehaviour extends org.asaa.behaviours.appliances.base
     }
 
     @Override
-    protected void handleInform(ACLMessage msg) {
-        switch (msg.getConversationId()) {
-            case "enable-callback":
-                agent.getLogger().info("Received enable-callback message");
-//                if (agent.getCurrentTask() != null) {
-//                    agent.getCurrentTask().resume();
-//                }
-                break;
-            default:
-                super.handleInform(msg);
-                break;
-        }
-    }
-
-    @Override
     protected void handleRequest(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "wash-dishes-task":

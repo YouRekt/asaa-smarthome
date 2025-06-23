@@ -3,10 +3,10 @@ package org.asaa.behaviours.appliances.base;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.asaa.agents.base.SmartApplianceAgent;
 import org.asaa.behaviours.appliances.tasks.PowerProposal;
-import org.asaa.behaviours.appliances.tasks.PowerProposalGenerator;
 import org.asaa.behaviours.appliances.tasks.PowerRequest;
 import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
@@ -76,7 +76,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     @Override
     protected void handleInform(ACLMessage msg) {
         switch ((msg.getConversationId() == null ? " " : msg.getConversationId())) {
-            case "retard":
+            case "disable":
 //                if (agent.getCurrentTask() != null) {
 //                    agent.getLogger().error("Task is not null");
 //                    return;
@@ -89,6 +89,13 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 break;
             case " ":
                 agent.getLogger().error("CONVERSATION ID WAS NULL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                break;
+            case "power-released":
+                agent.getLogger().info("Received power-released, attempting to unpause");
+                if (agent.getCurrentTaskBehaviour() != null && agent.getCurrentTaskBehaviour().getStatus() == TaskBehaviour.Status.paused) {
+                    agent.getCurrentTaskBehaviour().resume();
+                    agent.getCurrentTaskBehaviour().restart();
+                }
                 break;
             default:
                 break;
@@ -121,12 +128,23 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
     protected void handleRefuse(ACLMessage msg) {
         switch (msg.getConversationId()) {
             case "enable-passive":
-                agent.getLogger().warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
                 agent.agentCommunicationController.sendError(agent.getLocalName(), "Passive power on refused", false);
+                agent.getLogger().warn("Coordinator REFUSED enable-passive: {}", msg.getContent());
+                break;
+            case "enable-active-later":
+                agent.getLogger().info("Coordinator REFUSED enable-active: reschedule at {}", msg.getContent());
+                agent.addBehaviour(new WakerBehaviour(agent, Long.parseLong(msg.getContent())) {
+                    @Override
+                    protected void onWake() {
+                        agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getLocalName(), agent.getActiveDraw(), agent.getCurrentTaskBehaviour().getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, true
+                        )));
+                    }
+                });
+                agent.getCurrentTaskBehaviour().setStatus(TaskBehaviour.Status.powerRefused);
                 break;
             case "enable-active":
-                agent.getLogger().warn("Coordinator REFUSED enable-active:{}", msg.getContent());
                 agent.agentCommunicationController.sendError(agent.getLocalName(), "Active power on refused", false);
+                agent.getLogger().warn("Coordinator REFUSED enable-active:{}", msg.getContent());
 //                String replyWith = msg.getInReplyTo();
 //                Runnable callback = agent.onPowerGrantedCallbacks.remove(replyWith);
 //                if (callback != null) {
@@ -150,7 +168,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                     return;
                 }
                 agent.setCfpInProgress(true);
-                if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().done()) {
+                if (agent.getCurrentTaskBehaviour() == null || agent.getCurrentTaskBehaviour().getStatus() != TaskBehaviour.Status.running) {
                     ACLMessage reply = msg.createReply();
                     reply.setPerformative(ACLMessage.REFUSE);
                     agent.sendMessage(reply);
@@ -159,9 +177,7 @@ public abstract class MessageHandlerBehaviour extends BaseMessageHandlerBehaviou
                 }
                 ObjectMapper mapper = new ObjectMapper();
                 try {
-                    PowerRequest powerRequest = mapper.readValue(msg.getContent(),  PowerRequest.class);
-                    PowerProposalGenerator proposalGenerator = new PowerProposalGenerator();
-                    PowerProposal proposal = proposalGenerator.generateProposal(agent, agent.getAID().getLocalName(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getActiveDraw(), powerRequest);
+                    PowerProposal proposal = new PowerProposal(agent.getLocalName(), agent.getActiveDraw(), agent.getCurrentTaskBehaviour().getTaskInfo(), agent.getCurrentTaskBehaviour().isPausable() ? PowerProposal.Action.PAUSE : PowerProposal.Action.INTERRUPT, 0, agent.getCurrentTaskBehaviour().getTaskInfo().getEstimatedRemainingTime());
                     ACLMessage propose = msg.createReply();
                     propose.setPerformative(proposal.getPowerAmount() < 0 ? ACLMessage.REFUSE : ACLMessage.PROPOSE);
                     propose.setContent(mapper.writeValueAsString(proposal));

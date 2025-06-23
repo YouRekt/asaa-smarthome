@@ -1,6 +1,7 @@
 package org.asaa.behaviours.appliances.ACAgent;
 
 import org.asaa.agents.appliances.ACAgent;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
 import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.appliances.tasks.TaskInfo;
 
@@ -14,11 +15,11 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
     private long nextWakeTime = 0;
 
     public CoolingTask(ACAgent agent, double coolingRate, double targetTemperature) {
-        super(agent, "cooling-task", 1, true, true, TaskInfo.Type.USER_COMFORT);
+        super(agent, "cooling-task", agent.getPriority(), true, true, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.NORMAL, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
         this.powerUsage = agent.getActiveDraw();
-        registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false, TaskInfo.Type.OPTIMIZATION) {
+        registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false, TaskInfo.Type.MAINTENANCE, PowerRequest.Urgency.HIGH, true) {
             private final long delayMillis = 5000;
             private boolean awaitingDelay = false;
             private long nextWakeTime;
@@ -43,7 +44,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
     }
 
     private CoolingTask(ACAgent agent, int priority, double coolingRate, double targetTemperature) {
-        super(agent, "cooling-task", priority, true, true, TaskInfo.Type.USER_COMFORT);
+        super(agent, "cooling-task", priority, true, true, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.NORMAL, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
         this.powerUsage = agent.getActiveDraw();

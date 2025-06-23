@@ -12,7 +12,7 @@ public class PowerProposal {
     private int powerAmount;
     private TaskInfo currentTask;
     private Action action; // PAUSE, INTERRUPT
-    private double impactScore; // How much this affects the agent
+    private double bonusImpactScore; // How much this affects the agent
     private long timeToFree; // How long to free the power
 
     public enum Action {

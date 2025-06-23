@@ -150,7 +150,7 @@ public class PowerNegotiationBehaviourLegacy extends CyclicBehaviour {
             accepted.add(proposal.getKey());
             if (proposal.getValue().priority() < 100) awaitingCallback.add(proposal.getKey());
         }
-        agent.getAppliancesAwaitingCallback().put(cfpMessage.getSender(), awaitingCallback);
+        //agent.getAppliancesAwaitingPower().put(cfpMessage.getSender(), awaitingCallback);
 
         for (var proposal : cfpProposals.entrySet()) {
             ACLMessage proposalReply = new ACLMessage(cfpRelievedPower >= cfpShortage ? (accepted.contains(proposal.getKey()) ? ACLMessage.ACCEPT_PROPOSAL : ACLMessage.REJECT_PROPOSAL) : ACLMessage.REJECT_PROPOSAL);

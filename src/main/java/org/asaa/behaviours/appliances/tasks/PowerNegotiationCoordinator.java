@@ -7,19 +7,40 @@ import java.util.Map;
 
 public class PowerNegotiationCoordinator {
 
-    private static final double PAUSE_PREFERENCE_MULTIPLIER = 0.5;
-    private static final double INTERRUPT_PENALTY_MULTIPLIER = 2.0;
-    private static final double TIME_URGENCY_FACTOR = 0.1;
+    // Sensible impact score ranges (eyeball-friendly values)
+    // Base impact: 10-100 (task type importance)
+    // Action penalties: 5-50 (disruption cost)
+    // Priority modifiers: ±50 (priority differences)
+    // Final range: ~10-200 points
 
-    public NegotiationResult negotiatePowerAllocation(PowerRequest request,
-                                                      List<PowerProposal> proposals,
-                                                      double availablePower) {
+    private static final double ALMOST_DONE_THRESHOLD_MINUTES = 3.0;
+    private static final double ALMOST_DONE_WAIT_PENALTY = 30.0; // High penalty for interrupting almost-done tasks
+    private static final double BASE_SCHEDULING_BENEFIT = 100.0; // Should be higher than typical interruption costs
+
+    // Task type base impact scores (higher = more important, harder to interrupt)
+    private static final Map<TaskInfo.Type, Double> TASK_TYPE_IMPACT = Map.of(
+            TaskInfo.Type.CRITICAL_SAFETY, 100.0,
+            TaskInfo.Type.USER_COMFORT, 60.0,
+            TaskInfo.Type.MAINTENANCE, 40.0,
+            TaskInfo.Type.OPTIMIZATION, 20.0,
+            TaskInfo.Type.ENTERTAINMENT, 10.0
+    );
+
+    // Action base costs (higher = more disruptive)
+    private static final Map<PowerProposal.Action, Double> ACTION_COSTS = Map.of(
+            PowerProposal.Action.PAUSE, 15.0,
+            PowerProposal.Action.INTERRUPT, 40.0
+    );
+
+    public NegotiationResult negotiatePowerAllocation(PowerRequest request, List<PowerProposal> proposals, int availablePower) {
 
         // First, check if we should delay/schedule the request instead
-        if (shouldScheduleRequest(request, proposals)) {
-            return new NegotiationResult(NegotiationResult.Outcome.SCHEDULE_LATER,
-                    calculateOptimalScheduleTime(request, proposals),
-                    new ArrayList<>());
+        if (shouldScheduleRequest(request, proposals, availablePower)) {
+            return new NegotiationResult(
+                    NegotiationResult.Outcome.SCHEDULE_LATER,
+                    calculateOptimalScheduleTime(request, proposals, availablePower),
+                    new ArrayList<>()
+            );
         }
 
         // Calculate scores for all proposals
@@ -28,11 +49,11 @@ public class PowerNegotiationCoordinator {
         // Sort by score (lower is better - less impact)
         scoredProposals.sort(Comparator.comparingDouble(ScoredProposal::getScore));
 
-        // Select optimal combination
+        // Select an optimal combination
         return selectOptimalProposalCombination(request, scoredProposals, availablePower);
     }
 
-    private boolean shouldScheduleRequest(PowerRequest request, List<PowerProposal> proposals) {
+    private boolean shouldScheduleRequest(PowerRequest request, List<PowerProposal> proposals, int availablePower) {
         // Don't schedule if it's urgent or can't be scheduled
         if (request.getUrgency() == PowerRequest.Urgency.IMMEDIATE || !request.isCanBeScheduled()) {
             return false;
@@ -40,6 +61,7 @@ public class PowerNegotiationCoordinator {
 
         // Check if any current tasks will finish soon
         long nearTermFinishTime = proposals.stream()
+                .filter(p -> p.getCurrentTask() != null)
                 .mapToLong(p -> p.getCurrentTask().getEstimatedRemainingTime())
                 .filter(time -> time > 0 && time < request.getMaxWaitTime())
                 .min()
@@ -47,11 +69,11 @@ public class PowerNegotiationCoordinator {
 
         // If we can wait and there are tasks finishing soon, consider scheduling
         if (nearTermFinishTime < request.getMaxWaitTime()) {
-            // Calculate if waiting is better than interrupting/pausing
-            double currentInterruptionCost = calculateTotalInterruptionCost(request, proposals);
+            // Calculate if waiting is better than interrupting
+            double actualInterruptionCost = calculateActualInterruptionCost(request, proposals, availablePower);
             double schedulingBenefit = calculateSchedulingBenefit(request, nearTermFinishTime);
 
-            return schedulingBenefit > currentInterruptionCost;
+            return schedulingBenefit > actualInterruptionCost;
         }
 
         return false;
@@ -69,85 +91,62 @@ public class PowerNegotiationCoordinator {
     }
 
     private double calculateProposalScore(PowerRequest request, PowerProposal proposal) {
-        double score = 0.0;
         TaskInfo currentTask = proposal.getCurrentTask();
         TaskInfo requestTask = request.getTaskInfo();
 
-        // Base priority difference (negative if proposal task has higher priority)
-        double priorityDifference = requestTask.getPriority() - currentTask.getPriority();
-        score += priorityDifference * 10; // Weight priority heavily
-
-        // Action type penalty
-        switch (proposal.getAction()) {
-            case PAUSE:
-                if (currentTask.isPausable()) {
-                    score += 5 * PAUSE_PREFERENCE_MULTIPLIER; // Prefer pausable tasks
-                } else {
-                    score += 50; // High penalty if not actually pausable
-                }
-                break;
-            case INTERRUPT:
-                score += 20 * INTERRUPT_PENALTY_MULTIPLIER; // Heavy penalty for interruption
-                if (!currentTask.isInterruptible()) {
-                    score += 100; // Extremely high penalty if not interruptible
-                }
-                break;
+        // If no current task (idle agent), very low impact
+        if (currentTask == null) {
+            return 5.0; // Idle agents are always best choice
         }
 
-        // Task type considerations
-        score += calculateTaskTypeScore(currentTask.getType(), requestTask.getType());
+        double score = 0.0;
 
-        // Time considerations
-        double timeRemaining = currentTask.getEstimatedRemainingTime();
-        if (timeRemaining > 0) {
-            // Prefer tasks that are almost done (less waste)
-            score += (timeRemaining / 60000.0) * TIME_URGENCY_FACTOR; // Convert to minutes
+        // 1. Base task type impact (higher = more important = harder to interrupt)
+        score += TASK_TYPE_IMPACT.getOrDefault(currentTask.getType(), 30.0);
+
+        // 2. Action cost (higher = more disruptive)
+        score += ACTION_COSTS.getOrDefault(proposal.getAction(), 25.0);
+
+        // 3. Priority difference (favor interrupting lower priority tasks)
+        double priorityDiff = requestTask.getPriority() - currentTask.getPriority();
+        if (priorityDiff > 0) {
+            score -= priorityDiff * 0.5; // Reduce score for lower priority current tasks
+        } else {
+            score += Math.abs(priorityDiff) * 0.5; // Increase score for higher priority current tasks
         }
 
-        // Impact score from the proposal itself
-        score += proposal.getImpactScore();
+        // 4. "Almost done" penalty - heavily penalize interrupting tasks almost finished
+        double timeRemainingMinutes = currentTask.getEstimatedRemainingTime() / 60000.0;
+        if (timeRemainingMinutes > 0 && timeRemainingMinutes <= ALMOST_DONE_THRESHOLD_MINUTES) {
+            // The closer to completion, the higher the penalty
+            double completionPercentage = 1.0 - (timeRemainingMinutes / ALMOST_DONE_THRESHOLD_MINUTES);
+            score += ALMOST_DONE_WAIT_PENALTY * completionPercentage;
+        }
 
-        // Urgency of the requesting task
-        score -= getUrgencyMultiplier(request.getUrgency()) * 5;
+        // 5. Urgency of requesting task (reduce score for urgent requests)
+        score -= getUrgencyMultiplier(request.getUrgency()) * 10.0;
 
-        return score;
-    }
+        // 6. Action feasibility penalties
+        if (proposal.getAction() == PowerProposal.Action.PAUSE && !currentTask.isPausable()) {
+            score += 200.0; // Massive penalty for impossible actions
+        }
+        if (proposal.getAction() == PowerProposal.Action.INTERRUPT && !currentTask.isInterruptible()) {
+            score += 200.0; // Massive penalty for impossible actions
+        }
 
-    private double calculateTaskTypeScore(TaskInfo.Type currentType, TaskInfo.Type requestType) {
-        // Define task type hierarchy
-        Map<TaskInfo.Type, Integer> typeImportance = Map.of(
-                TaskInfo.Type.CRITICAL_SAFETY, 100,
-                TaskInfo.Type.USER_COMFORT, 60,
-                TaskInfo.Type.MAINTENANCE, 40,
-                TaskInfo.Type.OPTIMIZATION, 20,
-                TaskInfo.Type.ENTERTAINMENT, 10
-        );
-
-        int currentImportance = typeImportance.getOrDefault(currentType, 30);
-        int requestImportance = typeImportance.getOrDefault(requestType, 30);
-
-        // Negative score if we're interrupting something more important
-        return (currentImportance - requestImportance) * 0.5;
+        return Math.max(score, 1.0); // Minimum score of 1
     }
 
     private double getUrgencyMultiplier(PowerRequest.Urgency urgency) {
-        switch (urgency) {
-            case IMMEDIATE:
-                return 3.0;
-            case HIGH:
-                return 2.0;
-            case NORMAL:
-                return 1.0;
-            case LOW:
-                return 0.5;
-            default:
-                return 1.0;
-        }
+        return switch (urgency) {
+            case IMMEDIATE -> 3.0;
+            case HIGH -> 2.0;
+            case NORMAL -> 1.0;
+            case LOW -> 0.5;
+        };
     }
 
-    private NegotiationResult selectOptimalProposalCombination(PowerRequest request,
-                                                               List<ScoredProposal> scoredProposals,
-                                                               double availablePower) {
+    private NegotiationResult selectOptimalProposalCombination(PowerRequest request, List<ScoredProposal> scoredProposals, double availablePower) {
         double powerNeeded = request.getPowerAmount() - availablePower;
         List<PowerProposal> selectedProposals = new ArrayList<>();
         double powerToBeFreed = 0.0;
@@ -177,6 +176,12 @@ public class PowerNegotiationCoordinator {
 
     private boolean isProposalAcceptable(PowerRequest request, PowerProposal proposal) {
         TaskInfo currentTask = proposal.getCurrentTask();
+
+        // Idle agents are always acceptable
+        if (currentTask == null) {
+            return true;
+        }
+
         TaskInfo requestTask = request.getTaskInfo();
 
         // Never interrupt critical safety tasks unless the request is also critical safety
@@ -196,28 +201,63 @@ public class PowerNegotiationCoordinator {
         return proposal.getAction() != PowerProposal.Action.PAUSE || currentTask.isPausable();
     }
 
-    private double calculateTotalInterruptionCost(PowerRequest request, List<PowerProposal> proposals) {
-        return proposals.stream()
-                .mapToDouble(p -> calculateProposalScore(request, p))
-                .sum();
+    /**
+     * Calculate the actual cost of the interruption plan that would be executed
+     * (Fixed version - only considers agents that would actually be selected)
+     */
+    private double calculateActualInterruptionCost(PowerRequest request, List<PowerProposal> proposals, double availablePower) {
+        List<ScoredProposal> scoredProposals = scoreProposals(request, proposals);
+        scoredProposals.sort(Comparator.comparingDouble(ScoredProposal::getScore));
+
+        double powerNeeded = request.getPowerAmount() - availablePower;
+        double powerToBeFreed = 0.0;
+        double totalCost = 0.0;
+
+        // Calculate cost of the agents we'd actually interrupt
+        for (ScoredProposal scoredProposal : scoredProposals) {
+            if (powerToBeFreed >= powerNeeded) {
+                break;
+            }
+
+            if (isProposalAcceptable(request, scoredProposal.getProposal())) {
+                totalCost += scoredProposal.getScore();
+                powerToBeFreed += scoredProposal.getProposal().getPowerAmount();
+            }
+        }
+
+        return totalCost;
     }
 
-    private double calculateSchedulingBenefit(PowerRequest request, long waitTime) {
-        double urgencyPenalty = getUrgencyMultiplier(request.getUrgency()) * (waitTime / 60000.0);
-        return Math.max(0, 50 - urgencyPenalty); // Base benefit minus urgency penalty
+    private double calculateSchedulingBenefit(PowerRequest request, long waitTimeMs) {
+        double waitTimeMinutes = waitTimeMs / 60000.0;
+        double urgencyPenalty = getUrgencyMultiplier(request.getUrgency()) * waitTimeMinutes * 5.0;
+
+        // Base benefit minus penalty for waiting
+        return Math.max(0, BASE_SCHEDULING_BENEFIT - urgencyPenalty);
     }
 
-    private long calculateOptimalScheduleTime(PowerRequest request, List<PowerProposal> proposals) {
-        // Find the earliest time when enough power might be available
-        return proposals.stream()
-                .mapToLong(p -> p.getCurrentTask().getEstimatedRemainingTime())
-                .filter(time -> time > 0)
-                .min()
-                .orElse(request.getMaxWaitTime());
+    private long calculateOptimalScheduleTime(PowerRequest request, List<PowerProposal> proposals, int availablePower) {
+        double powerNeeded = request.getPowerAmount() - availablePower;
+
+        // Sort tasks by completion time
+        List<PowerProposal> sortedByTime = proposals.stream()
+                .filter(p -> p.getCurrentTask() != null && p.getCurrentTask().getEstimatedRemainingTime() > 0)
+                .sorted(Comparator.comparingLong(p -> p.getCurrentTask().getEstimatedRemainingTime()))
+                .toList();
+
+        double accumulatedPower = 0;
+        for (PowerProposal proposal : sortedByTime) {
+            accumulatedPower += proposal.getPowerAmount();
+            if (accumulatedPower >= powerNeeded) {
+                return proposal.getCurrentTask().getEstimatedRemainingTime() + 150;
+            }
+        }
+
+        return request.getMaxWaitTime(); // Fallback if not enough power even after all tasks
     }
 }
 
-// Helper classes
+// Helper class
 class ScoredProposal {
     private final PowerProposal proposal;
     private final double score;
@@ -235,4 +275,3 @@ class ScoredProposal {
         return score;
     }
 }
-

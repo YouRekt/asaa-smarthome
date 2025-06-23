@@ -29,8 +29,6 @@ public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
     private final Map<String, LocalDateTime> cyclicEvents = new HashMap<>();
     @Getter
-    private final LocalDateTime simulationStartTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
-    @Getter
     @Setter
     private Area humanLocation;
     @Getter
@@ -71,7 +69,7 @@ public class EnvironmentService {
     public void startSimulation() {
         if (future != null && future.isDone()) return;
         if (!configProvided) {
-            simulationTime = simulationStartTime;
+            simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
             Area kitchen = new Area("kitchen");
             kitchen.setAttribute("temperature", 21.0);
             addArea("kitchen", kitchen);

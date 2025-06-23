@@ -9,11 +9,6 @@ import org.slf4j.MDC;
 @Getter
 public abstract class PhysicalAgent extends SpringAwareAgent {
     protected AID coordinatorAgent;
-    /* Priority sheet:
-    0   <= p < 100 - awaits callback upon being turned off while working
-    100 <= p < 200 - default priority sorting (lower - lower priority - turns off first)
-    200 <= p < 300 - isEnabled but not working, lowest prio turn off (low energy save anyway)
-     */
     @Setter
     protected int priority = 0;
     protected String areaName;

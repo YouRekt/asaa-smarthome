@@ -1,6 +1,7 @@
 package org.asaa.behaviours.appliances.DishwasherAgent;
 
 import org.asaa.agents.appliances.DishwasherAgent;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
 import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.appliances.tasks.TaskInfo;
 
@@ -15,7 +16,7 @@ public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {
     private boolean firstCycle = true;
 
     public WashDishesTask(DishwasherAgent agent, long fullWashTime, double nonResumableStartPercent, double nonResumableEndPercent) {
-        super(agent, "wash-dishes-task", 1, true, false, TaskInfo.Type.USER_COMFORT);
+        super(agent, "wash-dishes-task", agent.getPriority(), true, false, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.LOW, true);
         this.fullWashTime = fullWashTime;
         this.remainingWashTime = fullWashTime;
         this.nonResumableStartTime = (long) (this.fullWashTime * nonResumableStartPercent);
@@ -25,7 +26,7 @@ public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {
     }
 
     private WashDishesTask(DishwasherAgent agent, int priority, long fullWashTime, double nonResumableStartPercent, double nonResumableEndPercent) {
-        super(agent, "wash-dishes-task", priority, true, false, TaskInfo.Type.USER_COMFORT);
+        super(agent, "wash-dishes-task", priority, true, false, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.LOW, true);
         this.fullWashTime = fullWashTime;
         this.remainingWashTime = fullWashTime;
         this.nonResumableStartTime = (long) (this.fullWashTime * nonResumableStartPercent);

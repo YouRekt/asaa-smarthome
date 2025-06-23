@@ -2,8 +2,8 @@ package org.asaa.behaviours.coordinators.CoordinatorAgent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 import org.asaa.agents.coordinators.CoordinatorAgent;
 import org.asaa.behaviours.appliances.tasks.PowerProposal;
 import org.asaa.behaviours.appliances.tasks.PowerRequest;
@@ -67,6 +67,10 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
                     agent.getLogger().error("{}@handleRequest: JsonProcessingException {}", this.getClass().getSimpleName(), e.getMessage());
                 }
                 break;
+            case "add-to-await-power-list":
+                agent.getAppliancesAwaitingPower().put(msg.getSender(), Integer.parseInt(msg.getContent()));
+                agent.getLogger().info("Adding agent {} to appliances awaiting power list", msg.getSender().getLocalName());
+                break;
             default:
                 break;
         }
@@ -91,17 +95,29 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
             case "disable-active":
                 returnedPower = Integer.parseInt(msg.getContent());
                 agent.environmentService.modifyPowerConsumption(-returnedPower);
-                if (!agent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
-                    ACLMessage callback = new ACLMessage(ACLMessage.INFORM);
-                    callback.setConversationId("enable-callback");
-                    callback.setContent(msg.getSender().getName());
-                    agent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
-                    agent.getLogger().info("Sending out {} callbacks after {} returned power", agent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
-                    agent.sendMessage(callback);
-                    agent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
+                if (!agent.getAppliancesAwaitingPower().isEmpty()) {
+                    int availablePower = agent.environmentService.getPowerAvailability();
+                    List<AID> candidates = new ArrayList<>();
+
+                    // TODO: Add priority sorting - pass TaskInfo instead of Integer into the map and improve the logic here
+                    for (var entry : agent.getAppliancesAwaitingPower().entrySet()) {
+                        agent.getLogger().info("Comparing {} to {}, req={} avail={}", entry.getKey().getLocalName(), msg.getSender().getLocalName(), entry.getValue(), availablePower);
+                        if (entry.getValue() <= availablePower && !Objects.equals(entry.getKey().getLocalName(), msg.getSender().getLocalName())) {
+                            candidates.add(entry.getKey());
+                            availablePower -= entry.getValue();
+                        }
+                    }
+
+                    if (!candidates.isEmpty()) {
+                        ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+                        message.setConversationId("power-released");
+                        candidates.forEach(message::addReceiver);
+                        agent.getLogger().info("Notifying {} agents of {}W returned power", candidates.size(), returnedPower);
+                        candidates.forEach(agent.getAppliancesAwaitingPower()::remove);
+                        agent.sendMessage(message);
+                    }
                 }
-                ACLMessage reply = msg.createReply();
-                reply.setPerformative(ACLMessage.CONFIRM);
+                ACLMessage reply = msg.createReply(ACLMessage.CONFIRM);
                 reply.setContent(msg.getContent());
                 agent.sendMessage(reply);
                 break;

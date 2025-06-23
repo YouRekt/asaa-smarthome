@@ -24,11 +24,11 @@ public class PowerNegotiationBehaviour extends Behaviour {
     private final PowerRequest powerRequest;
     private final int powerShortage;
     private final Runnable allowNextCfp;
-    private int powerRelieved;
     private final PowerNegotiationCoordinator powerNegotiationCoordinator = new PowerNegotiationCoordinator();
     @Getter
     private final List<PowerProposal> proposals = new ArrayList<>();
     private final long responseTimeout = 5000L;
+    private int powerRelieved;
     @Getter
     @Setter
     private State state = State.collectProposals;
@@ -41,6 +41,10 @@ public class PowerNegotiationBehaviour extends Behaviour {
             agent.getLogger().warn("Reply-by for cfp expired, received {} responses, sent {}", receivedMessages, sentMessages);
             if (state == State.collectProposals)
                 state = State.processProposals;
+            else if (state == State.waitForConfirmation) {
+                respondToOriginalRequest(false);
+            }
+            PowerNegotiationBehaviour.this.restart();
         }
     };
 
@@ -63,7 +67,6 @@ public class PowerNegotiationBehaviour extends Behaviour {
             sentMessages = (int) agent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream()).filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream()).filter(a -> !a.equals(requestMessage.getSender())).count();
             agent.getPhysicalAgents().values().stream().flatMap(m -> m.entrySet().stream().filter(e -> !e.getKey().contains("Sensor")).flatMap(e -> e.getValue().stream())).filter(a -> !a.equals(requestMessage.getSender())).forEach(cfp::addReceiver);
             agent.sendMessage(cfp);
-            agent.getLogger().info("{}: Current state = {}", this.getClass().getSimpleName(), state);
             state = State.collectProposals;
             agent.addBehaviour(timeoutBehaviour);
         } catch (JsonProcessingException e) {
@@ -82,7 +85,6 @@ public class PowerNegotiationBehaviour extends Behaviour {
                 block();
                 break;
             case processProposals:
-                agent.getLogger().info("{}: Current state = {}", this.getClass().getSimpleName(), state);
                 agent.removeBehaviour(timeoutBehaviour);
                 sentMessages = 0;
                 receivedMessages = 0;
@@ -90,7 +92,7 @@ public class PowerNegotiationBehaviour extends Behaviour {
                 NegotiationResult result = powerNegotiationCoordinator.negotiatePowerAllocation(powerRequest, proposals, agent.environmentService.getPowerAvailability());
                 switch (result.getOutcome()) {
                     case ACCEPT:
-                        agent.getLogger().info("{}@processProposals ACCEPT", this.getClass().getSimpleName());
+                        agent.getLogger().info("{}@processProposals: ACCEPT", this.getClass().getSimpleName());
                         for (var proposal : proposals) {
                             powerRelieved += result.getAcceptedProposals().contains(proposal) ? proposal.getPowerAmount() : 0;
                             ACLMessage proposalReply = new ACLMessage(result.getAcceptedProposals().contains(proposal) ? ACLMessage.ACCEPT_PROPOSAL : ACLMessage.REJECT_PROPOSAL);
@@ -101,9 +103,10 @@ public class PowerNegotiationBehaviour extends Behaviour {
                             sentMessages += proposalReply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL ? 1 : 0;
                         }
                         state = State.waitForConfirmation;
+                        agent.addBehaviour(timeoutBehaviour);
                         break;
                     case REFUSE:
-                        agent.getLogger().info("{}@processProposals REFUSE", this.getClass().getSimpleName());
+                        agent.getLogger().info("{}@processProposals: REFUSE", this.getClass().getSimpleName());
                         ACLMessage proposalsReply = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
                         proposals.forEach(p -> proposalsReply.addReceiver(new AID(p.getAgentId(), AID.ISLOCALNAME)));
                         proposalsReply.setConversationId("power-relief");
@@ -111,12 +114,22 @@ public class PowerNegotiationBehaviour extends Behaviour {
                         respondToOriginalRequest(false);
                         break;
                     case SCHEDULE_LATER:
-                        agent.getLogger().error("{}@action: Not yet implemented", this.getClass().getSimpleName());
+                        agent.getLogger().info("{}@processProposals: SCHEDULE_LATER", this.getClass().getSimpleName());
+                        ACLMessage propReply = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
+                        proposals.forEach(p -> propReply.addReceiver(new AID(p.getAgentId(), AID.ISLOCALNAME)));
+                        propReply.setConversationId("power-relief");
+                        agent.sendMessage(propReply);
+
+                        ACLMessage reply = requestMessage.createReply();
+                        reply.setPerformative(ACLMessage.REFUSE);
+                        reply.setConversationId(reply.getConversationId() + "-later");
+                        reply.setContent(Long.toString(result.getScheduleTime()));
+                        agent.sendMessage(reply);
+                        state = State.finished;
                         break;
                     default:
                         break;
                 }
-                agent.getLogger().info("{}: Current state = {}", this.getClass().getSimpleName(), state);
                 break;
             case waitForConfirmation:
                 if (receivedMessages >= sentMessages) {
