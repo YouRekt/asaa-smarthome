@@ -19,7 +19,7 @@ const AgentErrors = ({ errors }: { errors: AgentErrorType[] }) => {
 
 	return (
 		<ScrollArea className="h-96">
-			<div className="space-y-4 p-4">
+			<div className="flex flex-col gap-4 p-4">
 				{errors
 					.sort(
 						(a, b) =>

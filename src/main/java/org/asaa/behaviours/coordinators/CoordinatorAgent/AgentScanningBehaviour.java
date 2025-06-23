@@ -1,7 +1,7 @@
 package org.asaa.behaviours.coordinators.CoordinatorAgent;
 
 import jade.core.AID;
-import jade.core.behaviours.TickerBehaviour;
+import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.Property;
@@ -14,20 +14,32 @@ import org.asaa.controllers.AgentPresenceController;
 
 import java.util.*;
 
-public class AgentScanningBehaviour extends TickerBehaviour {
+public class AgentScanningBehaviour extends Behaviour {
+    private boolean awaitingDelay = false;
     private final CoordinatorAgent agent;
     private final EnvironmentService environmentService;
     private final AgentPresenceController agentPresenceController;
+    private final long period;
+    private long nextWakeTime = 0;
 
     public AgentScanningBehaviour(CoordinatorAgent agent, long period) {
-        super(agent, period);
         this.agent = agent;
         this.environmentService = agent.environmentService;
         this.agentPresenceController = agent.agentPresenceController;
+        this.period = period;
     }
 
     @Override
-    protected void onTick() {
+    public void action() {
+        if (awaitingDelay) {
+            if (System.currentTimeMillis() < nextWakeTime) {
+                block(nextWakeTime - System.currentTimeMillis());
+                return;
+            } else {
+                awaitingDelay = false;
+            }
+        }
+
         Set<String> areas = environmentService.getAllAreaNames();
 
         for (String area : areas) {
@@ -85,5 +97,13 @@ public class AgentScanningBehaviour extends TickerBehaviour {
                 throw new InvalidServiceSpecification(e);
             }
         }
+
+        awaitingDelay = true;
+        nextWakeTime = System.currentTimeMillis() + period;
+    }
+
+    @Override
+    public boolean done() {
+        return false;
     }
 }

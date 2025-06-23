@@ -34,7 +34,7 @@
 [32m +}[m
 [32m++=======[m
 [32m+ import org.asaa.agents.appliances.CoffeeMachineAgent;[m
-[32m+ import org.asaa.behaviours.appliances.TaskBehaviour;[m
+[32m+ import org.asaa.behaviours.appliances.tasks.TaskBehaviour;[m
 [32m+ [m
 [32m+ public class MakeCoffeeTask extends TaskBehaviour<CoffeeMachineAgent> {[m
 [32m+     private final long endTime;[m
@@ -130,7 +130,7 @@
 [32m +        super.pause(isCfpCall);[m
 [32m++=======[m
 [32m+ import org.asaa.agents.appliances.DishwasherAgent;[m
-[32m+ import org.asaa.behaviours.appliances.TaskBehaviour;[m
+[32m+ import org.asaa.behaviours.appliances.tasks.TaskBehaviour;[m
 [32m+ [m
 [32m+ public class WashDishesTask extends TaskBehaviour<DishwasherAgent> {[m
 [32m+     private final long endTime;[m

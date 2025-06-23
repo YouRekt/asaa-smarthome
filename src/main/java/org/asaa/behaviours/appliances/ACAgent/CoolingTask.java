@@ -1,25 +1,26 @@
-package org.asaa.tasks.appliances.ACAgent;
+package org.asaa.behaviours.appliances.ACAgent;
 
 import org.asaa.agents.appliances.ACAgent;
-import org.asaa.behaviours.appliances.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
+import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
+import org.asaa.behaviours.appliances.tasks.TaskInfo;
 
 public class CoolingTask extends TaskBehaviour<ACAgent> {
-
-    private final long delayMillis = 1000;
     private final double coolingRate;
     private final double targetTemperature;
+    private final long delayMillis = 1000;
 
     private boolean awaitingDelay = false;
     private long nextWakeTime = 0;
 
     public CoolingTask(ACAgent agent, double coolingRate, double targetTemperature) {
-        super(agent, "cooling-task", 1, true, true);
+        super(agent, "cooling-task", agent.getPriority(), true, true, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.NORMAL, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
         this.powerUsage = agent.getActiveDraw();
-        registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false) {
-            private boolean awaitingDelay = false;
+        registerError("cooling-error", new TaskBehaviour<ACAgent>(agent, "cooling-error-resolver", priority, false, false, TaskInfo.Type.MAINTENANCE, PowerRequest.Urgency.HIGH, true) {
             private final long delayMillis = 5000;
+            private boolean awaitingDelay = false;
             private long nextWakeTime;
 
             @Override
@@ -42,7 +43,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
     }
 
     private CoolingTask(ACAgent agent, int priority, double coolingRate, double targetTemperature) {
-        super(agent, "cooling-task", priority, true, true);
+        super(agent, "cooling-task", priority, true, true, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.NORMAL, true);
         this.coolingRate = coolingRate;
         this.targetTemperature = targetTemperature;
         this.powerUsage = agent.getActiveDraw();
@@ -56,6 +57,8 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
     @Override
     protected boolean execute() {
         double currentTemp = agent.getCurrentTemperature();
+
+        estimatedRemainingTime = (long) Math.ceil((currentTemp - targetTemperature) / coolingRate) * delayMillis;
 
         if (currentTemp <= targetTemperature) {
             agent.getLogger().info("Target temperature reached. Done.");
@@ -72,8 +75,7 @@ public class CoolingTask extends TaskBehaviour<ACAgent> {
         }
 
         if (!definedErrors.isEmpty()) {
-            if (simulateError())
-                return false;
+            if (simulateError()) return false;
         }
 
         // Apply cooling

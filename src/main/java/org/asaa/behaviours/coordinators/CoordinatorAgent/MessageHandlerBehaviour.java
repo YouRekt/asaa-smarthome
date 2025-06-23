@@ -1,8 +1,12 @@
 package org.asaa.behaviours.coordinators.CoordinatorAgent;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jade.core.AID;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 import org.asaa.agents.coordinators.CoordinatorAgent;
+import org.asaa.behaviours.appliances.tasks.PowerProposal;
+import org.asaa.behaviours.appliances.tasks.PowerRequest;
 import org.asaa.behaviours.base.BaseMessageHandlerBehaviour;
 
 import java.util.*;
@@ -18,12 +22,7 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
 
     @Override
     public void action() {
-        MessageTemplate mt = new MessageTemplate((MessageTemplate.MatchExpression) msg -> msg.getConversationId() != null
-                && !msg.getConversationId().equals("power-relief")
-                && !msg.getConversationId().equals("disable-passive-cfp")
-                && !msg.getConversationId().equals("disable-active-cfp"));
-
-        final ACLMessage msg = agent.receive(mt);
+        final ACLMessage msg = agent.receive();
         if (msg != null) {
             // Here we can add a specialized switch if needed (default -> processMsg(msg);)
             super.processMsg(msg);
@@ -33,24 +32,44 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     }
 
     @Override
-    protected void handleCfp(ACLMessage msg) {
-        int availablePower = agent.environmentService.getPowerAvailability(), requiredPower, priority;
+    protected void handleRequest(ACLMessage msg) {
+        int availablePower = agent.environmentService.getPowerAvailability();
         String convId = msg.getConversationId();
-        String[] msgParts = msg.getContent().split(",");
         switch (convId) {
             case "enable-passive":
             case "enable-active":
-                requiredPower = Integer.parseInt(msgParts[0]);
-                priority = Integer.parseInt(msgParts[1]);
-                if (availablePower >= requiredPower) {
-                    agent.environmentService.modifyPowerConsumption(+requiredPower);
-                    ACLMessage reply = msg.createReply();
-                    reply.setPerformative(ACLMessage.AGREE);
-                    reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + requiredPower + "W");
-                    agent.sendMessage(reply);
-                } else {
-                    agent.addBehaviour(new PowerNegotiationBehaviour(agent, msg, requiredPower - availablePower, requiredPower, priority));
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    PowerRequest powerRequest = mapper.readValue(msg.getContent(), PowerRequest.class);
+                    if (availablePower >= powerRequest.getPowerAmount()) {
+                        agent.environmentService.modifyPowerConsumption(+powerRequest.getPowerAmount());
+                        ACLMessage reply = msg.createReply();
+                        reply.setPerformative(ACLMessage.AGREE);
+                        reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " approved - " + powerRequest.getPowerAmount() + "W");
+                        agent.sendMessage(reply);
+                    } else if (powerRequest.getTaskInfo() == null) {
+                        ACLMessage reply = msg.createReply();
+                        reply.setPerformative(ACLMessage.REFUSE);
+                        reply.setContent("Enable " + (convId.equals("enable-passive") ? "passive" : "active") + " refused - " + powerRequest.getPowerAmount() + "W");
+                        agent.sendMessage(reply);
+                    } else {
+                        if (agent.isCfpInProgress()) {
+                            agent.getPendingCfpQueue().add(msg);
+                            agent.getLogger().warn("Deferring power relief CFP from {} because another is in progress", msg.getSender().getLocalName());
+                            return;
+                        }
+                        agent.setCfpInProgress(true);
+                        agent.getLogger().info("Entering agent negotiation phase for {}", msg.getSender().getLocalName());
+                        agent.setPowerNegotiationBehaviour(new PowerNegotiationBehaviour(agent, msg, powerRequest, powerRequest.getPowerAmount() - availablePower, this::allowNextCfp));
+                        agent.addBehaviour(agent.getPowerNegotiationBehaviour());
+                    }
+                } catch (JsonProcessingException e) {
+                    agent.getLogger().error("{}@handleRequest: JsonProcessingException {}", this.getClass().getSimpleName(), e.getMessage());
                 }
+                break;
+            case "add-to-await-power-list":
+                agent.getAppliancesAwaitingPower().put(msg.getSender(), Integer.parseInt(msg.getContent()));
+                agent.getLogger().info("Adding agent {} to appliances awaiting power list", msg.getSender().getLocalName());
                 break;
             default:
                 break;
@@ -61,21 +80,44 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
     protected void handleInform(ACLMessage msg) {
         int returnedPower;
         switch (msg.getConversationId()) {
+            case "disable-passive-cfp":
+            case "disable-active-cfp":
+                returnedPower = Integer.parseInt(msg.getContent());
+                agent.environmentService.modifyPowerConsumption(-returnedPower);
+                ACLMessage replycfp = msg.createReply();
+                replycfp.setPerformative(ACLMessage.CONFIRM);
+                replycfp.setContent(msg.getContent());
+                agent.sendMessage(replycfp);
+                agent.getPowerNegotiationBehaviour().incrementReceivedMessages();
+                agent.getPowerNegotiationBehaviour().restart();
+                break;
             case "disable-passive":
             case "disable-active":
                 returnedPower = Integer.parseInt(msg.getContent());
                 agent.environmentService.modifyPowerConsumption(-returnedPower);
-                if (!agent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).isEmpty()) {
-                    ACLMessage callback = new ACLMessage(ACLMessage.INFORM);
-                    callback.setConversationId("enable-callback");
-                    callback.setContent(msg.getSender().getName());
-                    agent.getAppliancesAwaitingCallback().get(msg.getSender()).forEach(callback::addReceiver);
-                    agent.getLogger().info("Sending out {} callbacks after {} returned power", agent.getAppliancesAwaitingCallback().get(msg.getSender()).size(), msg.getSender().getLocalName());
-                    agent.sendMessage(callback);
-                    agent.getAppliancesAwaitingCallback().getOrDefault(msg.getSender(), Collections.emptyList()).clear();
+                if (!agent.getAppliancesAwaitingPower().isEmpty()) {
+                    int availablePower = agent.environmentService.getPowerAvailability();
+                    List<AID> candidates = new ArrayList<>();
+
+                    // TODO: Add priority sorting - pass TaskInfo instead of Integer into the map and improve the logic here
+                    for (var entry : agent.getAppliancesAwaitingPower().entrySet()) {
+                        agent.getLogger().info("Comparing {} to {}, req={} avail={}", entry.getKey().getLocalName(), msg.getSender().getLocalName(), entry.getValue(), availablePower);
+                        if (entry.getValue() <= availablePower && !Objects.equals(entry.getKey().getLocalName(), msg.getSender().getLocalName())) {
+                            candidates.add(entry.getKey());
+                            availablePower -= entry.getValue();
+                        }
+                    }
+
+                    if (!candidates.isEmpty()) {
+                        ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+                        message.setConversationId("power-released");
+                        candidates.forEach(message::addReceiver);
+                        agent.getLogger().info("Notifying {} agents of {}W returned power", candidates.size(), returnedPower);
+                        candidates.forEach(agent.getAppliancesAwaitingPower()::remove);
+                        agent.sendMessage(message);
+                    }
                 }
-                ACLMessage reply = msg.createReply();
-                reply.setPerformative(ACLMessage.CONFIRM);
+                ACLMessage reply = msg.createReply(ACLMessage.CONFIRM);
                 reply.setContent(msg.getContent());
                 agent.sendMessage(reply);
                 break;
@@ -129,6 +171,37 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
         }
     }
 
+    @Override
+    protected void handlePropose(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "power-relief":
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    PowerProposal powerProposal = mapper.readValue(msg.getContent(), PowerProposal.class);
+                    agent.getPowerNegotiationBehaviour().incrementReceivedMessages();
+                    agent.getPowerNegotiationBehaviour().getProposals().add(powerProposal);
+                    agent.getPowerNegotiationBehaviour().restart();
+                } catch (JsonProcessingException e) {
+                    agent.getLogger().error("{}@handlePropose: JsonProcessingException {}", this.getClass().getSimpleName(), e.getMessage());
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void handleRefuse(ACLMessage msg) {
+        switch (msg.getConversationId()) {
+            case "power-relief":
+                agent.getPowerNegotiationBehaviour().incrementReceivedMessages();
+                agent.getPowerNegotiationBehaviour().restart();
+                break;
+            default:
+                break;
+        }
+    }
+
     private static class ItemRequest {
         String name;
         int priority;
@@ -136,6 +209,14 @@ public class MessageHandlerBehaviour extends BaseMessageHandlerBehaviour {
         ItemRequest(String name, int priority) {
             this.name = name;
             this.priority = priority;
+        }
+    }
+
+    public void allowNextCfp() {
+        agent.setCfpInProgress(false);
+        if (!agent.getPendingCfpQueue().isEmpty()) {
+            ACLMessage nextCfp = agent.getPendingCfpQueue().poll();
+            handleCfp(nextCfp);
         }
     }
 }

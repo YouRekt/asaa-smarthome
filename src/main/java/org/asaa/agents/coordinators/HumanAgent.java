@@ -21,8 +21,6 @@ public final class HumanAgent extends PhysicalAgent {
                 if (!humanCommunicationService.getReceivedMessages().isEmpty()) {
                     logger.info("Sent message");
 
-
-
                     ((HumanAgent)myAgent).sendMessage(humanCommunicationService.getReceivedMessages().removeFirst());
                 }
             }

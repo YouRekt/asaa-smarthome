@@ -1,6 +1,7 @@
-package org.asaa.behaviours.appliances;
+package org.asaa.behaviours.appliances.tasks;
 
 import jade.core.behaviours.Behaviour;
+import jade.lang.acl.ACLMessage;
 import lombok.Getter;
 import lombok.Setter;
 import org.asaa.agents.base.SmartApplianceAgent;
@@ -14,11 +15,17 @@ import java.util.Random;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behaviour implements Comparable<TaskBehaviour<?>> {
-    protected final T agent;
     protected final Map<String, TaskBehaviour<?>> definedErrors = new HashMap<>();
-    private final String taskName;
-    private final Random random = new Random();
+    protected final T agent;
+
+    private final boolean canBeScheduled;
     private final long delayTime = 5000;
+    private final int maxRetries = 3;
+    private final PowerRequest.Urgency urgency;
+    private final Random random = new Random();
+    private final String taskName;
+    private final TaskInfo.Type type;
+
     @Getter
     protected boolean pausable;
     @Getter
@@ -27,7 +34,12 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     @Setter
     protected int priority;
     protected int powerUsage;
+    protected long estimatedRemainingTime;
+    protected long startTime;
+
     private boolean awaitingDelay = false;
+    private boolean isCfpCall = false;
+    private int currentRetries = 0;
     private long nextWakeTime = 0;
     @Getter
     @Setter
@@ -35,13 +47,16 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     @Getter
     private String error = null;
 
-    protected TaskBehaviour(T agent, String taskName, int priority, boolean pausable, boolean interruptible) {
+    protected TaskBehaviour(T agent, String taskName, int priority, boolean pausable, boolean interruptible, TaskInfo.Type type, PowerRequest.Urgency urgency, boolean canBeScheduled) {
         this.agent = agent;
         this.taskName = taskName;
         this.pausable = pausable;
         this.interruptible = interruptible;
         this.priority = priority;
         this.powerUsage = agent.getActiveDraw();
+        this.type = type;
+        this.urgency = urgency;
+        this.canBeScheduled = canBeScheduled;
     }
 
     protected void registerError(String error, TaskBehaviour<?> resolutionBehaviour) {
@@ -91,14 +106,20 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
             agent.getTaskBehaviourQueue().add(resumeWith(priority));
         }
         if (withError) {
-            status = Status.error;
-        } else {
-            status = Status.finished;
+            error = "interrupt";
         }
+        status = Status.interrupt;
     }
 
-    public void pause() {
+    public void pause(boolean isCfpCall) {
         if (pausable && status != Status.paused) {
+            ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+            msg.setContent(Integer.toString(agent.getActiveDraw()));
+            msg.setConversationId("add-to-await-power-list");
+            msg.addReceiver(agent.getCoordinatorAgent());
+            agent.sendMessage(msg);
+
+            this.isCfpCall = isCfpCall;
             status = Status.poweringOff;
             agent.getLogger().info("Task {}: paused", taskName);
             onPause();
@@ -112,9 +133,9 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
 
     public void resume() {
         if (pausable && status == Status.paused) {
-            agent.addBehaviour(new RequestPowerBehaviour(agent, powerUsage, priority, "enable-active", ""));
+            agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), urgency, 10000, canBeScheduled)));
             status = Status.waitingForPower;
-            agent.getLogger().info("Task {}: resumed", taskName);
+            agent.getLogger().info("Task {}: resumed and waiting for power", taskName);
         } else {
             agent.getLogger().error("Task {}: Cannot resume task that is not paused", taskName);
         }
@@ -132,19 +153,31 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
     @Override
     public void onStart() {
         agent.getLogger().info("Starting {}", taskName);
-        agent.addBehaviour(new RequestPowerBehaviour(agent, powerUsage, priority, "enable-active", ""));
+        agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), urgency, 10000, canBeScheduled)));
     }
+
+    protected void onPowerGranted() {}
 
     @Override
     public void action() {
         switch (status) {
             case powerGranted:
+                startTime = System.currentTimeMillis();
+                currentRetries = 0;
+                onPowerGranted();
                 status = Status.running;
                 break;
             case powerRefused:
+                if (currentRetries >= maxRetries) {
+                    status = Status.abort;
+                    break;
+                }
                 if (awaitingDelay) {
                     if (System.currentTimeMillis() >= nextWakeTime) {
                         awaitingDelay = false;
+                        agent.addBehaviour(new RequestPowerBehaviour(agent, "enable-active", new PowerRequest(agent.getAID().getLocalName(), agent.getActiveDraw(), this.getTaskInfo(), PowerRequest.Urgency.NORMAL, 10000, canBeScheduled)));
+                        currentRetries++;
+                        status = Status.waitingForPower;
                     } else {
                         block(nextWakeTime - System.currentTimeMillis());
                         return;
@@ -153,8 +186,6 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
 
                 nextWakeTime = System.currentTimeMillis() + delayTime;
                 awaitingDelay = true;
-                agent.addBehaviour(new RequestPowerBehaviour(agent, powerUsage, priority, "enable-active", ""));
-                status = Status.waitingForPower;
                 break;
             case running:
                 if (execute()) {
@@ -162,7 +193,8 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
                 }
                 break;
             case poweringOff:
-                agent.addBehaviour(new RelinquishPowerBehaviour(agent, powerUsage, "disable-active"));
+                agent.addBehaviour(new RelinquishPowerBehaviour(agent, powerUsage, isCfpCall ? "disable-active-cfp" : "disable-active"));
+                isCfpCall = false;
                 status = Status.paused;
                 break;
             case waitingForPower:
@@ -181,6 +213,9 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
                 queue.add(resumeWith(basePriority + 1));
                 status = Status.finished;
                 break;
+            case interrupt:
+                agent.getLogger().info("Task {}: interrupted", taskName);
+                break;
             case criticalError:
             case finished:
             default:
@@ -190,6 +225,8 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
 
     @Override
     public int onEnd() {
+        if (status == Status.abort)
+            return super.onEnd();
         agent.addBehaviour(new RelinquishPowerBehaviour(agent, powerUsage, "disable-active"));
         if (status == Status.finished) {
             if (error == null) {
@@ -204,10 +241,14 @@ public abstract class TaskBehaviour<T extends SmartApplianceAgent> extends Behav
 
     @Override
     public boolean done() {
-        return status == Status.finished || status == Status.criticalError;
+        return status == Status.finished || status == Status.criticalError || status == Status.interrupt || status == Status.abort;
     }
 
     public enum Status {
-        waitingForPower, powerGranted, running, paused, error, criticalError, finished, powerRefused, poweringOff
+        waitingForPower, powerGranted, running, paused, error, criticalError, interrupt, finished, powerRefused, poweringOff, abort
+    }
+
+    public TaskInfo getTaskInfo() {
+        return new TaskInfo(taskName, priority, pausable, interruptible, estimatedRemainingTime, type, startTime);
     }
 }

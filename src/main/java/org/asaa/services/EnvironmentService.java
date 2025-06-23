@@ -27,12 +27,14 @@ import java.util.concurrent.TimeUnit;
 @Accessors(chain = true)
 public class EnvironmentService {
     private static final Logger logger = LoggerFactory.getLogger("Environment");
+
     private final Map<String, LocalDateTime> cyclicEvents = new HashMap<>();
-    @Getter
-    private final LocalDateTime simulationStartTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
+
     @Getter
     @Setter
     private Area humanLocation;
+    @Setter
+    private boolean configProvided = false;
     @Getter
     @Setter
     private Map<String, Area> areas = new HashMap<>();
@@ -42,13 +44,11 @@ public class EnvironmentService {
     @Getter
     @Setter
     private Map<String, Integer> batchSize = new HashMap<>(); // minimal purchase batch size per item
-    // Power
     @Getter
     @Setter
     private int MAX_POWER_CAPACITY = 500;
     @Getter
     private int currentPowerConsumption = 0;
-    // Money
     @Getter
     @Setter
     private int credits = 9999;
@@ -65,13 +65,11 @@ public class EnvironmentService {
     @Getter
     private ScheduledFuture<?> future;
     private ScheduledExecutorService executor;
-    @Setter
-    private boolean configProvided = false;
 
     public void startSimulation() {
         if (future != null && future.isDone()) return;
         if (!configProvided) {
-            simulationTime = simulationStartTime;
+            simulationTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 45));
             Area kitchen = new Area("kitchen");
             kitchen.setAttribute("temperature", 21.0);
             addArea("kitchen", kitchen);

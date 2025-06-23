@@ -13,10 +13,10 @@ import java.util.*;
 
 public class ScheduleLoopBehaviour extends TickerBehaviour {
     private final EnvironmentService env;
-    private final Random rand = new Random();
     private final Map<String, Boolean> oneShotSchedules = new HashMap<>();
     private final Map<String, LocalDateTime> cyclicSchedules = new HashMap<>();
     private final SchedulerAgent agent;
+
     private LocalDateTime previousTime;
     private LocalDateTime currentTime;
 
@@ -34,7 +34,7 @@ public class ScheduleLoopBehaviour extends TickerBehaviour {
         oneShotSchedules.put("routine-morning", false);
 
         // These are more cyclical (once 30 minutes etc.)
-        cyclicSchedules.put("human-not-home-lights", env.getSimulationStartTime());
+        cyclicSchedules.put("human-not-home-lights", env.getSimulationTime());
     }
 
     // Reset all scheduled events so they can be executed again

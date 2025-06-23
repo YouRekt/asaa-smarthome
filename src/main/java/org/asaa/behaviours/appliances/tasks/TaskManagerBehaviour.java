@@ -1,6 +1,5 @@
-package org.asaa.behaviours.appliances;
+package org.asaa.behaviours.appliances.tasks;
 
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import org.asaa.agents.base.SmartApplianceAgent;
 
