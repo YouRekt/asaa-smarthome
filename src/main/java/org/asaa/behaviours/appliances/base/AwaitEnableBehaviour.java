@@ -10,9 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 public class AwaitEnableBehaviour extends TickerBehaviour {
-    private final SmartApplianceAgent agent;
     private final List<Runnable> runnables = new ArrayList<>();
     private final Map<String, Behaviour> behaviours = new HashMap<>();
+    private final SmartApplianceAgent agent;
+
     private boolean previouslyEnabled = false;
 
     public AwaitEnableBehaviour(SmartApplianceAgent agent, long period, List<Runnable> runnables, Map<String, Behaviour> behaviours) {

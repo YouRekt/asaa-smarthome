@@ -5,8 +5,8 @@ import jade.lang.acl.ACLMessage;
 import org.asaa.agents.base.SmartApplianceAgent;
 
 public class RelinquishPowerBehaviour extends OneShotBehaviour {
-    private final SmartApplianceAgent agent;
     private final int amount;
+    private final SmartApplianceAgent agent;
     private final String convId;
 
     public RelinquishPowerBehaviour(SmartApplianceAgent agent, int amount, String convId) {

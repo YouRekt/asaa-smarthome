@@ -19,21 +19,22 @@ import java.util.Date;
 import java.util.List;
 
 public class PowerNegotiationBehaviour extends Behaviour {
-    private final CoordinatorAgent agent;
     private final ACLMessage requestMessage;
-    private final PowerRequest powerRequest;
+    private final CoordinatorAgent agent;
     private final int powerShortage;
-    private final Runnable allowNextCfp;
-    private final PowerNegotiationCoordinator powerNegotiationCoordinator = new PowerNegotiationCoordinator();
     @Getter
     private final List<PowerProposal> proposals = new ArrayList<>();
     private final long responseTimeout = 5000L;
+    private final Runnable allowNextCfp;
+    private final PowerNegotiationCoordinator powerNegotiationCoordinator = new PowerNegotiationCoordinator();
+    private final PowerRequest powerRequest;
+
     private int powerRelieved;
+    private int sentMessages;
+    private int receivedMessages;
     @Getter
     @Setter
     private State state = State.collectProposals;
-    private int sentMessages;
-    private int receivedMessages;
 
     private final WakerBehaviour timeoutBehaviour = new WakerBehaviour(myAgent, responseTimeout) {
         @Override

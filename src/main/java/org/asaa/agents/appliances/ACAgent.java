@@ -12,10 +12,11 @@ import java.util.Date;
 
 @Getter
 public final class ACAgent extends SmartApplianceAgent {
+    private final Double coolingRate = 0.2;
+    private final Double targetTemperature = 21.0;
+
     @Setter
     private Double currentTemperature;
-    private final Double targetTemperature = 21.0;
-    private final Double coolingRate = 0.2;
 
     @Override
     protected void setup() {

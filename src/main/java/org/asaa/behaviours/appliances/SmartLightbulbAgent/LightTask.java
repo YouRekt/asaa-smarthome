@@ -6,16 +6,17 @@ import org.asaa.behaviours.appliances.tasks.TaskBehaviour;
 import org.asaa.behaviours.appliances.tasks.TaskInfo;
 
 public class LightTask extends TaskBehaviour<SmartLightbulbAgent> {
+    private boolean firstCycle = true;
     private long fullTime;
     private long remainingTime;
     private long startTime;
-    private boolean firstCycle = true;
 
     public LightTask(SmartLightbulbAgent agent, long duration) {
         super(agent, "light-task", agent.getPriority(), true, true, TaskInfo.Type.USER_COMFORT, PowerRequest.Urgency.LOW, false);
         this.fullTime = duration;
         this.remainingTime = duration;
     }
+
     @Override
     protected boolean execute() {
         estimatedRemainingTime = remainingTime;
